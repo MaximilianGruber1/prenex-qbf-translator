@@ -1,0 +1,18 @@
+Equivalence = Disjunction { "<=>" Disjunction } .
+
+Disjunction = Conjunction { "|" Conjunction } .
+
+Conjunction = Unary { "&" Unary } .
+
+Unary = { "~" } Expr .
+
+Expr = "true" | 
+        "false" | 
+        Variable | 
+        "(" Equivalence ")" | 
+        Quantifier ( Unary | "(" Equivalence ")" ) .
+
+Quantifier = ( "!" | "?" ) Variable { "," Variable } ":" .
+
+Variable = Letter { Letter | Digit | "_" } .
+
