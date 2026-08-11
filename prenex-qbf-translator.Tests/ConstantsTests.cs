@@ -23,7 +23,9 @@ namespace prenex_qbf_translator.Tests
         public void True_Negated_IsFalse()
         {
             var t = new TrueConstant();
-            Assert.IsType<FalseConstant>(t.Negated());
+            var neg = new Not(t);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~true", neg.ToString());
         }
     }
 }

@@ -6,11 +6,11 @@ namespace prenex_qbf_translator.Language
 {
     public interface IFormula
     {
-        /**
-         * Returns the negation of the formula.
-         * For example, if the formula is P(x), then the negation is ¬P(x).
-         */
-        IFormula Negated();
+        IEnumerable<IFormula> Subformulas();
+
+        IFormula DeepCopy();
+
+        IFormula CreateCopy(IEnumerable<IFormula> subformulas);
 
         /**
          * Returns the variables in the formula.

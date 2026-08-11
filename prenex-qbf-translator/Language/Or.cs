@@ -18,16 +18,6 @@
         }
 
 
-        public IFormula Negated()
-        {
-            var negatedOperands = new List<IFormula>();
-            foreach (var operand in Operands)
-            {
-                negatedOperands.Add(operand.Negated());
-            }
-            return new And(negatedOperands);
-        }
-
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -67,6 +57,27 @@
         public override string ToString()
         {
             return $"({string.Join(" | ", Operands)})";
+        }
+
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return Operands;
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new Or(Operands.Select(o => o.DeepCopy()));
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            if (subformulas == null)
+                throw new ArgumentNullException(nameof(subformulas));
+            if (subformulas.Count() != Subformulas().Count())
+            {
+                throw new ArgumentException("The number of subformulas does not match.");
+            }
+            return new Or(subformulas);
         }
     }
 }

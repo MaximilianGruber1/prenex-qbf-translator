@@ -29,7 +29,7 @@ namespace prenex_qbf_translator.Tests
                 _depth = depth;
             }
 
-            public IFormula Negated() => new Not(this);
+            // Negated removed from IFormula; helper does not expose negation.
             public IEnumerable<Variable> Variables() => _vars;
             public IEnumerable<Variable> FreeVariables() => _freeVars;
             public int NBlocks() => _nBlocks;
@@ -38,6 +38,21 @@ namespace prenex_qbf_translator.Tests
             public int QuantifierDepth() => _depth;
             public IFormula ApplySubstitution(Substitution substitution) => this;
             public override string ToString() => _repr;
+
+            public IEnumerable<IFormula> Subformulas()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IFormula DeepCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+            {
+                throw new NotImplementedException();
+            }
         }
         [Fact]
         public void Constructor_NullOperands_Throws()
@@ -103,8 +118,9 @@ namespace prenex_qbf_translator.Tests
             var a = new Variable("a");
             var b = new Variable("b");
             var eq = new Equivalent(new IFormula[] { a, b });
-            var neg = eq.Negated();
+            var neg = new Not(eq);
             Assert.IsType<Not>(neg);
+            Assert.Equal("~(a <=> b)", neg.ToString());
         }
     }
 }

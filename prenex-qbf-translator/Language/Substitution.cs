@@ -1,4 +1,6 @@
-﻿namespace prenex_qbf_translator.Language
+﻿using System.Text;
+
+namespace prenex_qbf_translator.Language
 {
     public class Substitution
     {
@@ -15,6 +17,11 @@
                 }
             }
             Entries = substitutions;
+        }
+
+        public override string ToString()
+        {
+            return "{" + string.Join(", ", Entries.Select(kvp => $"{kvp.Key} -> {kvp.Value}")) + "}";
         }
     }
 }

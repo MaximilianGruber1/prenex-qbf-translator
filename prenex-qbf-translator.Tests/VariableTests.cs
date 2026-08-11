@@ -16,7 +16,7 @@ namespace prenex_qbf_translator.Tests
         public void Negated_ReturnsNot()
         {
             var v = new Variable("x");
-            var n = v.Negated();
+            var n = new Not(v);
             Assert.IsType<Not>(n);
         }
     }

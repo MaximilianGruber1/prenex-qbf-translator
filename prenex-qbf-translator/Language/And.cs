@@ -19,11 +19,6 @@ namespace prenex_qbf_translator.Language
             Operands = operands;
         }
 
-        public IFormula Negated()
-        {
-            return new Or(Operands.Select(o => o.Negated()));
-        }
-
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -59,6 +54,15 @@ namespace prenex_qbf_translator.Language
             Operands = Operands.Select(o => o.ApplySubstitution(substitution));
             return this;
         }
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return Operands;
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new And(Operands.Select(o => o.DeepCopy()));
+        }
 
 
 
@@ -66,6 +70,18 @@ namespace prenex_qbf_translator.Language
         public override string ToString()
         {
             return $"({string.Join(" & ", Operands)})";
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            if (subformulas == null)
+                throw new ArgumentNullException(nameof(subformulas));
+            
+            if (subformulas.Count() != Subformulas().Count())
+            {
+                throw new ArgumentException("The number of subformulas does not match.");
+            }
+            return new And(subformulas);
         }
     }
 }

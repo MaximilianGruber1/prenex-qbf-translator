@@ -20,11 +20,6 @@ namespace prenex_qbf_translator.Language
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
-        public IFormula Negated()
-        {
-            return new Exists(BoundVariables, Inner.Negated());
-        }
-
         public IEnumerable<Variable> Variables()
         {
             return Inner.Variables().Concat(BoundVariables).Distinct();
@@ -76,6 +71,21 @@ namespace prenex_qbf_translator.Language
         public override string ToString()
         {
             return $"! {string.Join(", ", BoundVariables)}: {Inner}";
+        }
+
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return [Inner];
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new Forall(BoundVariables.Select(v => (Variable)(v.DeepCopy())), Inner.DeepCopy());
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            throw new NotImplementedException();
         }
     }
 }

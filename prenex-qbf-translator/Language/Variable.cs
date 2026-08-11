@@ -7,11 +7,6 @@
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
         }
-        public IFormula Negated()
-        {
-            return new Not(this);
-        }
-
 
         public IEnumerable<Variable> Variables()
         {
@@ -77,6 +72,21 @@
         public override int GetHashCode()
         {
             return Name.GetHashCode();
+        }
+
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return [];
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new Variable(Name);
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            throw new NotImplementedException();
         }
     }
 }

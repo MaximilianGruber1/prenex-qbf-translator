@@ -21,17 +21,21 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void True_Negated_IsFalse()
+        public void True_Negated_IsNotWrap()
         {
             var t = new TrueConstant();
-            Assert.IsType<FalseConstant>(t.Negated());
+            var neg = new Not(t);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~true", neg.ToString());
         }
 
         [Fact]
-        public void False_Negated_IsTrue()
+        public void False_Negated_IsNotWrap()
         {
             var f = new FalseConstant();
-            Assert.IsType<TrueConstant>(f.Negated());
+            var neg = new Not(f);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~false", neg.ToString());
         }
 
         [Fact]

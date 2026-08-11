@@ -8,11 +8,6 @@
         {
             Inner = inner;
         }
-        public IFormula Negated()
-        {
-            return Inner;
-        }
-
         public IEnumerable<Variable> Variables()
         {
             return Inner.Variables();
@@ -54,6 +49,27 @@
         public override string ToString()
         {
             return $"~{Inner}";
+        }
+
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return [Inner];
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new Not(Inner.DeepCopy());
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            if (subformulas == null)
+                throw new ArgumentNullException(nameof(subformulas));
+            if (subformulas.Count() != Subformulas().Count())
+            {
+                throw new ArgumentException("The number of subformulas does not match.");
+            }
+            return new Not(subformulas.ElementAt(0));
         }
     }
 }

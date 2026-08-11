@@ -17,7 +17,6 @@ namespace prenex_qbf_translator.Tests
             private readonly int _nQuantified;
             private readonly int _length;
             private readonly int _depth;
-            private readonly IFormula _negatedReturn;
             private readonly IFormula _applySubstReturn;
 
             public TestFormula(
@@ -28,7 +27,6 @@ namespace prenex_qbf_translator.Tests
                 int nQuantified = 0,
                 int length = 1,
                 int depth = 0,
-                IFormula? negatedReturn = null,
                 IFormula? applySubstReturn = null)
             {
                 _repr = repr;
@@ -38,11 +36,9 @@ namespace prenex_qbf_translator.Tests
                 _nQuantified = nQuantified;
                 _length = length;
                 _depth = depth;
-                _negatedReturn = negatedReturn ?? new Not(this);
                 _applySubstReturn = applySubstReturn ?? this;
             }
-
-            public IFormula Negated() => _negatedReturn;
+            // Negated removed from IFormula; helper does not expose negation.
             public IEnumerable<Variable> Variables() => _vars;
             public IEnumerable<Variable> FreeVariables() => _freeVars;
             public int NBlocks() => _nBlocks;
@@ -51,6 +47,21 @@ namespace prenex_qbf_translator.Tests
             public int QuantifierDepth() => _depth;
             public IFormula ApplySubstitution(Substitution substitution) => _applySubstReturn;
             public override string ToString() => _repr;
+
+            public IEnumerable<IFormula> Subformulas()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IFormula DeepCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [Fact]
@@ -91,9 +102,9 @@ namespace prenex_qbf_translator.Tests
             var a = new Variable("a");
             var b = new Variable("b");
             var and = new And(new IFormula[] { a, b });
-            var neg = and.Negated();
-            Assert.IsType<Or>(neg);
-            Assert.Equal("(~a | ~b)", neg.ToString());
+            var neg = new Not(and);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~(a & b)", neg.ToString());
         }
 
         [Fact]
@@ -103,9 +114,9 @@ namespace prenex_qbf_translator.Tests
             var b = new Variable("b");
             var c = new Variable("c");
             var and = new And(new IFormula[] { a, b, c });
-            var neg = and.Negated();
-            Assert.IsType<Or>(neg);
-            Assert.Equal("(~a | ~b | ~c)", neg.ToString());
+            var neg = new Not(and);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~(a & b & c)", neg.ToString());
         }
 
         [Fact]
@@ -192,4 +203,6 @@ namespace prenex_qbf_translator.Tests
             Assert.Equal("(x & b)", and.ToString());
         }
     }
+
+    
 }

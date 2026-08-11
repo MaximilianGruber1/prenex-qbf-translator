@@ -28,7 +28,7 @@ namespace prenex_qbf_translator.Tests
                 _depth = depth;
             }
 
-            public IFormula Negated() => new Not(this);
+            // Negated removed from IFormula; helper does not expose negation.
             public IEnumerable<Variable> Variables() => _vars;
             public IEnumerable<Variable> FreeVariables() => _freeVars;
             public int NBlocks() => _nBlocks;
@@ -37,6 +37,21 @@ namespace prenex_qbf_translator.Tests
             public int QuantifierDepth() => _depth;
             public IFormula ApplySubstitution(Substitution substitution) => this;
             public override string ToString() => _repr;
+
+            public IEnumerable<IFormula> Subformulas()
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public IFormula DeepCopy()
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+            {
+                throw new System.NotImplementedException();
+            }
         }
         [Fact]
         public void ToString_PrefixTilde()
@@ -47,12 +62,12 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Negated_ReturnsInner()
+        public void Negated_ReturnsInner_ReplacedWithDoubleNot()
         {
             var a = new Variable("a");
             var not = new Not(a);
-            var neg = not.Negated();
-            Assert.Equal(a, neg);
+            var doubleNot = new Not(not);
+            Assert.Equal("~~a", doubleNot.ToString());
         }
 
         [Fact]
@@ -86,15 +101,6 @@ namespace prenex_qbf_translator.Tests
             var inner = new SimpleFormula("f1");
             var not = new Not(inner);
             Assert.Equal("~f1", not.ToString());
-        }
-
-        [Fact]
-        public void Negated_OfNot_ReturnsInnerObject()
-        {
-            var inner = new SimpleFormula("f1");
-            var not = new Not(inner);
-            var neg = not.Negated();
-            Assert.Equal(inner, neg);
         }
     }
 }

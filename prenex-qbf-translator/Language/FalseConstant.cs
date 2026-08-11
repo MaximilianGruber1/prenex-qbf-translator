@@ -7,6 +7,16 @@
             return this;
         }
 
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new FalseConstant();
+        }
+
         public IEnumerable<Variable> FreeVariables()
         {
             return [];
@@ -22,11 +32,6 @@
             return 0;
         }
 
-        public IFormula Negated()
-        {
-            return new TrueConstant();
-        }
-
         public int NQuantifiedVariables()
         {
             return 0;
@@ -35,6 +40,11 @@
         public int QuantifierDepth()
         {
             return 0;
+        }
+
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return [];
         }
 
         public override string ToString()

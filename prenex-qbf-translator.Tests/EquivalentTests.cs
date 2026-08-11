@@ -20,8 +20,9 @@ namespace prenex_qbf_translator.Tests
             var a = new Variable("a");
             var b = new Variable("b");
             var eq = new Equivalent(new IFormula[] { a, b });
-            var neg = eq.Negated();
+            var neg = new Not(eq);
             Assert.IsType<Not>(neg);
+            Assert.Equal("~(a <=> b)", neg.ToString());
         }
     }
 }

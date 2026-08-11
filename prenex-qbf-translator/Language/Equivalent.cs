@@ -17,13 +17,6 @@ namespace prenex_qbf_translator.Language
             Operands = operands;
         }
 
-        public IFormula Negated()
-        {
-            // Negation of an equivalence is not trivially an equivalence of negated operands.
-            // Use a Not wrapper; more advanced normalization can expand this into AND/OR form if needed.
-            return new Not(this);
-        }
-
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -60,11 +53,33 @@ namespace prenex_qbf_translator.Language
             return this;
         }
 
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return Operands;
+        }
+
+        public IFormula DeepCopy()
+        {
+            return new Equivalent(Operands.Select(o => o.DeepCopy()));
+        }
+
 
 
         public override string ToString()
         {
             return $"({string.Join(" <=> ", Operands)})";
+        }
+
+        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        {
+            if (subformulas == null)
+                throw new ArgumentNullException(nameof(subformulas));
+            
+            if (subformulas.Count() != Subformulas().Count())
+            {
+                throw new ArgumentException("The number of subformulas does not match.");
+            }
+            return new Equivalent(subformulas);
         }
     }
 }

@@ -20,9 +20,9 @@ namespace prenex_qbf_translator.Tests
             var a = new Variable("a");
             var b = new Variable("b");
             var or = new Or(new IFormula[] { a, b });
-            var neg = or.Negated();
-            Assert.IsType<And>(neg);
-            Assert.Equal("(~a & ~b)", neg.ToString());
+            var neg = new Not(or);
+            Assert.IsType<Not>(neg);
+            Assert.Equal("~(a | b)", neg.ToString());
         }
     }
 }
