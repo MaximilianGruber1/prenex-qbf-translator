@@ -4,7 +4,7 @@ namespace prenex_qbf_translator.Language
 {
     public class Substitution
     {
-        public Dictionary<Variable, IFormula> Entries { get; }
+        public Dictionary<Variable, IFormula> Dictionary { get; }
         
         public Substitution(Dictionary<Variable, IFormula> substitutions)
         {
@@ -16,12 +16,12 @@ namespace prenex_qbf_translator.Language
                     throw new ArgumentNullException("Substitution cannot contain null keys or values.");
                 }
             }
-            Entries = substitutions;
+            Dictionary = substitutions;
         }
 
         public override string ToString()
         {
-            return "{" + string.Join(", ", Entries.Select(kvp => $"{kvp.Key} -> {kvp.Value}")) + "}";
+            return "{" + string.Join(", ", Dictionary.Select(kvp => $"{kvp.Key} -> {kvp.Value}")) + "}";
         }
     }
 }

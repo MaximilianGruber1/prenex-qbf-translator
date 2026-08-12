@@ -40,7 +40,7 @@
 
         public IFormula ApplySubstitution(Substitution substitution)
         {
-            foreach (var kvp in substitution.Entries)
+            foreach (var kvp in substitution.Dictionary)
             {
                 if (this.Equals(kvp.Key))
                 {

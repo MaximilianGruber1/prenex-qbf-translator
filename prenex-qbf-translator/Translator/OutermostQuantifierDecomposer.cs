@@ -5,8 +5,11 @@ using System.Text;
 
 namespace prenex_qbf_translator.Translator
 {
-    public static class OutermostQuantifierDecomposer
+    public class OutermostQuantifierDecomposer
     {
+        private readonly FreshVariableGenerator variableGenerator = new();
+
+
         /// <summary>
         /// Decomposes a formula into beta and a substitution according to Fact 4.
         /// </summary>
@@ -14,19 +17,20 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables">variables that do not occur in the formula but still can't be used</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static Args Decompose(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public Args Decompose(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
             if (formula == null)
                 throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
             var unavailableVariablesList = new List<Variable>(unavailableVariables);
             unavailableVariablesList.AddRange(formula.Variables());
+            unavailableVariablesList = unavailableVariablesList.Distinct().ToList();
             formula = formula.DeepCopy();
             
             return DecomposeRecursive(formula, unavailableVariablesList);
         }
 
-        private static Args DecomposeRecursive(IFormula formula, List<Variable> unavailableVariables)
+        private Args DecomposeRecursive(IFormula formula, List<Variable> unavailableVariables)
         {
             IEnumerable<IFormula> subformulas = formula.Subformulas();
 
@@ -41,7 +45,7 @@ namespace prenex_qbf_translator.Translator
             {
                 if (IsQuantifier(subformula))
                 {
-                    Variable p = GetFreshP(unavailableVariables);
+                    Variable p = variableGenerator.GetP(unavailableVariables);
                     unavailableVariables.Add(p);
                     newSubformulas.Add(p);
                     substitutionDic.Add(p, subformula);
@@ -50,7 +54,7 @@ namespace prenex_qbf_translator.Translator
                 {
                     var args = DecomposeRecursive(subformula, unavailableVariables);
                     newSubformulas.Add(args.Beta);
-                    foreach (var kvp in args.Substitution.Entries)
+                    foreach (var kvp in args.Substitution.Dictionary)
                     {
                         substitutionDic.Add(kvp.Key, kvp.Value);
                     }
@@ -64,21 +68,9 @@ namespace prenex_qbf_translator.Translator
 
 
 
-        private static bool IsQuantifier(IFormula formula)
+        private bool IsQuantifier(IFormula formula)
         {
             return formula is Forall || formula is Exists;
-        }
-
-        private static Variable GetFreshP(IEnumerable<Variable> unavailableVariables)
-        {
-            int index = 1;
-            Variable p;
-            do
-            {
-                p = new Variable($"p{index}");
-                index++;
-            } while (unavailableVariables.Contains(p));
-            return p;
         }
 
 

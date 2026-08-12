@@ -1,8 +1,8 @@
 namespace prenex_qbf_translator.Language
 {
-    public class Exists : IFormula
+    public class Exists : IQuantifier
     {
-        public IReadOnlyList<Variable> BoundVariables { get; }
+        public IEnumerable<Variable> BoundVariables { get; }
         public IFormula Inner { get; private set; }
 
         public Exists(IEnumerable<Variable> variables, IFormula inner)
@@ -37,12 +37,12 @@ namespace prenex_qbf_translator.Language
 
         public int NQuantifiedVariables()
         {
-            return BoundVariables.Count + Inner.NQuantifiedVariables();
+            return BoundVariables.Count() + Inner.NQuantifiedVariables();
         }
 
         public int Length()
         {
-            return 1 + BoundVariables.Count + Inner.Length();
+            return 1 + BoundVariables.Count() + Inner.Length();
         }
 
         public int QuantifierDepth()
@@ -57,7 +57,7 @@ namespace prenex_qbf_translator.Language
                 throw new ArgumentNullException(nameof(substitution));
             }
 
-            var filtered = new Dictionary<Variable, IFormula>(substitution.Entries);
+            var filtered = new Dictionary<Variable, IFormula>(substitution.Dictionary);
             foreach (var v in BoundVariables)
             {
                 if (filtered.ContainsKey(v)) filtered.Remove(v);

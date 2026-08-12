@@ -26,7 +26,7 @@ public class Program
 
         Console.WriteLine(phi);
 
-        var Args = OutermostQuantifierDecomposer.Decompose(phi, []);
+        var Args = new OutermostQuantifierDecomposer().Decompose(phi, []);
         Console.WriteLine(Args);
     }
 
