@@ -68,5 +68,12 @@ namespace prenex_qbf_translator.Language
             }
             return new Implies(subformulas.ElementAt(0), subformulas.ElementAt(1));
         }
+
+        public override string ToString()
+        {
+            List<IFormula> operands = [Left, Right];
+            return $"{string.Join(" => ",
+                operands.Select(o => o is Equivalent ? $"({o.ToString()})" : o.ToString()))}";
+        }
     }
 }

@@ -56,7 +56,8 @@
 
         public override string ToString()
         {
-            return $"({string.Join(" | ", Operands)})";
+            return $"{string.Join(" | ",
+                Operands.Select(o => o is Equivalent || o is Implies ? $"({o.ToString()})" : o.ToString()))}";
         }
 
         public IEnumerable<IFormula> Subformulas()

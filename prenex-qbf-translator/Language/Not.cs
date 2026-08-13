@@ -48,7 +48,9 @@
 
         public override string ToString()
         {
-            return $"~{Inner}";
+            return Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? 
+                $"~({Inner})" : 
+                $"~{Inner}";
         }
 
         public IEnumerable<IFormula> Subformulas()

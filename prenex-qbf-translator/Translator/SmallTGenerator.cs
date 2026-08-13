@@ -137,12 +137,15 @@ namespace prenex_qbf_translator.Translator
                 ]));
             }
 
+            IFormula right = equivalences.Count() == 1 ?
+                equivalences[0] :
+                new And(equivalences);
             if (!group.IsForall) // Exists
             {
                 return
                     new Implies(
                         new Not(group.P),
-                        new And(equivalences)
+                        right
                     );
             }
             else // Forall
@@ -150,7 +153,7 @@ namespace prenex_qbf_translator.Translator
                 return
                     new Implies(
                         group.P,
-                        new And(equivalences)
+                        right
                     );
             }
         }

@@ -70,8 +70,10 @@ namespace prenex_qbf_translator.Language
 
         public override string ToString()
         {
-            return $"! {string.Join(", ", BoundVariables)}: {Inner}";
+            return $"!{string.Join(",", BoundVariables)}: " +
+                (Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? $"({Inner})" : $"{Inner}");
         }
+
 
         public IEnumerable<IFormula> Subformulas()
         {

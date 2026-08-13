@@ -10,7 +10,7 @@ public class Program
     {
         IFormula phi = 
             new And([
-                new Exists([new Variable("p1")],
+                new Exists([new Variable("x")],
                     new And([
                         new Variable("psi"),
                         new Not(
@@ -28,6 +28,15 @@ public class Program
 
         var Args = new OutermostQuantifierDecomposer().Decompose(phi, []);
         Console.WriteLine(Args);
+
+        Console.WriteLine();
+        var tExistsResult = new SmallTGenerator().GenerateTExists(phi, []);
+        var tForallResult = new SmallTGenerator().GenerateTForall(phi, []);
+        Console.WriteLine("tExists: " + tExistsResult.Formula);
+        Console.WriteLine("tForall: " + tForallResult.Formula);
+        Console.WriteLine("P: " + string.Join(", ", tExistsResult.P));
+        Console.WriteLine("N: " + string.Join(", ", tExistsResult.N));
+
     }
 
 }

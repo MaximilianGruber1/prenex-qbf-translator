@@ -69,7 +69,8 @@ namespace prenex_qbf_translator.Language
 
         public override string ToString()
         {
-            return $"({string.Join(" & ", Operands)})";
+            return $"{string.Join(" & ", 
+                Operands.Select(o => o is Equivalent || o is Implies || o is Or ? $"({o.ToString()})" : o.ToString()))}";
         }
 
         public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
