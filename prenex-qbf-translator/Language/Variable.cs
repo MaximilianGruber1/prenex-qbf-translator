@@ -74,19 +74,9 @@
             return Name.GetHashCode();
         }
 
-        public IEnumerable<IFormula> Subformulas()
-        {
-            return [];
-        }
-
         public IFormula DeepCopy()
         {
             return new Variable(Name);
-        }
-
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
-        {
-            throw new NotImplementedException();
         }
     }
 }

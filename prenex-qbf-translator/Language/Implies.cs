@@ -1,6 +1,6 @@
 namespace prenex_qbf_translator.Language
 {
-    public class Implies : IFormula
+    public class Implies : IBooleanOperator
     {
         public IFormula Left { get; private set; }
         public IFormula Right { get; private set; }

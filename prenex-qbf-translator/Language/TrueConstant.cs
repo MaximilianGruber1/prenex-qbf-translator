@@ -7,10 +7,6 @@
             return this;
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
-        {
-            throw new NotImplementedException();
-        }
 
         public IFormula DeepCopy()
         {
@@ -40,11 +36,6 @@
         public int QuantifierDepth()
         {
             return 0;
-        }
-
-        public IEnumerable<IFormula> Subformulas()
-        {
-            return [];
         }
 
         public override string ToString()

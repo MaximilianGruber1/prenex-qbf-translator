@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Or : IFormula
+    public class Or : IBooleanOperator
     {
         public IEnumerable<IFormula> Operands { get; private set; }
 

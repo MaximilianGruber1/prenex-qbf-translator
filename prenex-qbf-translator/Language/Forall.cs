@@ -75,19 +75,14 @@ namespace prenex_qbf_translator.Language
         }
 
 
-        public IEnumerable<IFormula> Subformulas()
-        {
-            return [Inner];
-        }
-
         public IFormula DeepCopy()
         {
             return new Forall(BoundVariables.Select(v => (Variable)(v.DeepCopy())), Inner.DeepCopy());
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IFormula CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula)
         {
-            throw new NotImplementedException();
+            return new Forall(boundVariables, subformula);
         }
     }
 }

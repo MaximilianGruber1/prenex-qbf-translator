@@ -67,11 +67,6 @@ namespace prenex_qbf_translator.Language
             return this;
         }
 
-        public IEnumerable<IFormula> Subformulas()
-        {
-            return [Inner];
-        }
-
         public IFormula DeepCopy()
         {
             return new Exists(BoundVariables.Select(v => (Variable)(v.DeepCopy())), Inner.DeepCopy());
@@ -84,9 +79,9 @@ namespace prenex_qbf_translator.Language
                 (Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? $"({Inner})" : $"{Inner}");
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IFormula CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula)
         {
-            throw new NotImplementedException();
+            return new Exists(boundVariables, subformula);
         }
     }
 }

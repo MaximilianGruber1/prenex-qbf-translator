@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Not : IFormula
+    public class Not : IBooleanOperator
     {
         public IFormula Inner { get; private set; }
 

@@ -2,7 +2,7 @@
 
 namespace prenex_qbf_translator.Language
 {
-    public class And : IFormula
+    public class And : IBooleanOperator
     {
         public IEnumerable<IFormula> Operands { get; private set; }
         

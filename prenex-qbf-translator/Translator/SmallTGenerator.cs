@@ -18,8 +18,10 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
+            unavailableVariables ??= [];
+
             return GenerateSmallT(formula, true, unavailableVariables);
         }
 
@@ -31,13 +33,17 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables0"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
+            unavailableVariables ??= [];
+
             return GenerateSmallT(formula, false, unavailableVariables);
         }
 
-        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
+            unavailableVariables ??= [];
+
             if (formula.IsBoolean())
             {
                 return [];
@@ -51,8 +57,10 @@ namespace prenex_qbf_translator.Translator
             return groups.SelectMany(g => g.XPlus).Concat(groups.Select(g => g.P));
         }
 
-        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
+            unavailableVariables ??= [];
+            
             if (formula.IsBoolean())
             {
                 return [];
