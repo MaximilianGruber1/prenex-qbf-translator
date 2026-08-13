@@ -18,9 +18,9 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Args GenerateTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
-            return GenerateT(formula, true, unavailableVariables);
+            return GenerateSmallT(formula, true, unavailableVariables);
         }
 
 
@@ -31,15 +31,56 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables0"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Args GenerateTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
-            return GenerateT(formula, false, unavailableVariables);
+            return GenerateSmallT(formula, false, unavailableVariables);
+        }
+
+        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        {
+            if (formula.IsBoolean())
+            {
+                return [];
+            }
+
+            var decomp = decomposer.Decompose(formula, unavailableVariables);
+            var unav = new List<Variable>(unavailableVariables);
+            unav.AddRange(formula.Variables());
+            unav = unav.Distinct().ToList();
+            var groups = ConstructGroups(decomp.Substitution, unav);
+            return groups.SelectMany(g => g.XPlus).Concat(groups.Select(g => g.P));
+        }
+
+        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        {
+            if (formula.IsBoolean())
+            {
+                return [];
+            }
+
+            var decomp = decomposer.Decompose(formula, unavailableVariables);
+            var unav = new List<Variable>(unavailableVariables);
+            unav.AddRange(formula.Variables());
+            unav = unav.Distinct().ToList();
+            var groups = ConstructGroups(decomp.Substitution, unav);
+            return groups.SelectMany(g => g.XMinus);
         }
 
 
-
-        private Args GenerateT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
+        /// <summary>
+        /// Generates t_forall(phi) or t_exists(phi), N(phi), and P(phi) for a given formula phi according to Definition 5.
+        /// </summary>
+        /// <param name="formula"></param>
+        /// <param name="isForall"></param>
+        /// <param name="unavailableVariables"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
         {
+            if (formula.IsBoolean())
+            {
+                return formula; // all 3 parentheses are empty, so we just return the formula itself
+            }
             var unav = new List<Variable>(unavailableVariables);
             unav.AddRange(formula.Variables());
             unav = unav.Distinct().ToList();
@@ -47,25 +88,19 @@ namespace prenex_qbf_translator.Translator
             var decomp = decomposer.Decompose(formula, unavailableVariables);
             var groups = ConstructGroups(decomp.Substitution, unav);
 
-            Args args = new();
             IEnumerable<IFormula> parenthesis1 = GetParenthesis1(groups);
             IEnumerable<IFormula> parentheses2and3 = GetParentheses2And3(groups);
             if (isForall)
             {
-                args.Formula = new And([.. parenthesis1, .. parentheses2and3, decomp.Beta]);
+                return new And([.. parenthesis1, .. parentheses2and3, decomp.Beta]);
             }
             else // exists
             {
-                args.Formula =
-                    new Implies(
+                return new Implies(
                         new And([.. parenthesis1, .. parentheses2and3]),
                         decomp.Beta
                     );
             }
-            args.P = [.. groups.SelectMany(g => g.XPlus), .. groups.Select(g => g.P)];
-            args.N = [.. groups.SelectMany(g => g.XMinus)];
-
-            return args;
         }
 
         private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, IEnumerable<Variable> unavailableVariables)
@@ -159,15 +194,6 @@ namespace prenex_qbf_translator.Translator
         }
 
 
-
-        public class Args
-        {
-            public IFormula Formula { get; set; }
-            public IEnumerable<Variable> N { get; set; }
-            public IEnumerable<Variable> P { get; set; }
-
-
-        }
 
         private class Group
         {

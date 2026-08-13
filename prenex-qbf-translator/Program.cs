@@ -8,6 +8,7 @@ public class Program
 
     public static void Main(string[] args)
     {
+
         IFormula phi = 
             new And([
                 new Exists([new Variable("x")],
@@ -23,20 +24,26 @@ public class Program
                     )
                 )]
             );
+        TestFormula(phi);
+        
+        Console.WriteLine();
+        
+        IFormula booleanFormula = new And([new Variable("a"), new Or([new Variable("b"), new Variable("c")])]);
+        TestFormula(booleanFormula);
 
+    }
+
+    private static void TestFormula(IFormula phi)
+    {
         Console.WriteLine(phi);
-
         var Args = new OutermostQuantifierDecomposer().Decompose(phi, []);
         Console.WriteLine(Args);
-
-        Console.WriteLine();
-        var tExistsResult = new SmallTGenerator().GenerateTExists(phi, []);
-        var tForallResult = new SmallTGenerator().GenerateTForall(phi, []);
-        Console.WriteLine("tExists: " + tExistsResult.Formula);
-        Console.WriteLine("tForall: " + tForallResult.Formula);
-        Console.WriteLine("P: " + string.Join(", ", tExistsResult.P));
-        Console.WriteLine("N: " + string.Join(", ", tExistsResult.N));
-
+        Console.WriteLine("tExists: " + new SmallTGenerator().GenerateSmallTExists(phi, []));
+        Console.WriteLine("tForall: " + new SmallTGenerator().GenerateSmallTForall(phi, []));
+        Console.WriteLine("P: " + string.Join(", ", new SmallTGenerator().GetP(phi, [])));
+        Console.WriteLine("N: " + string.Join(", ", new SmallTGenerator().GetN(phi, [])));
+        IFormula TExists = new BigTGenerator().GenerateBigTExists(phi, []);
+        Console.WriteLine("TExists: " + TExists);
     }
 
 }

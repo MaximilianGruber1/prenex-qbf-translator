@@ -60,6 +60,9 @@ namespace prenex_qbf_translator.Language
          * For example, if the formula is P(x) and the substitution is {x -> Q(y)}, then the result of applying the substitution is P(Q(y)).
          */
         IFormula ApplySubstitution(Substitution substitution);
+
+        bool IsBoolean() => QuantifierDepth() == 0;
+
         bool Equals(object obj);
     }
 }

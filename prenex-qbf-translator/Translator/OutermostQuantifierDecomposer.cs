@@ -22,12 +22,12 @@ namespace prenex_qbf_translator.Translator
             if (formula == null)
                 throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
-            var unavailableVariablesList = new List<Variable>(unavailableVariables);
-            unavailableVariablesList.AddRange(formula.Variables());
-            unavailableVariablesList = unavailableVariablesList.Distinct().ToList();
+            var unav = new List<Variable>(unavailableVariables);
+            unav.AddRange(formula.Variables());
+            unav = unav.Distinct().ToList();
             formula = formula.DeepCopy();
             
-            return DecomposeRecursive(formula, unavailableVariablesList);
+            return DecomposeRecursive(formula, unav);
         }
 
         private Args DecomposeRecursive(IFormula formula, List<Variable> unavailableVariables)

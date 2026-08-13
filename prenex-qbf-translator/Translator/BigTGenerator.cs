@@ -3,28 +3,57 @@
 namespace prenex_qbf_translator.Translator
 {
     /// <summary>
-    /// Generates t_exists(phi), t_forall(phi), N(phi), and P(phi) for a given formula phi according to Definition 2.
+    /// Generates T_exists(phi) and T_forall(phi)for a given formula phi according to Definition 5.
     /// </summary>
-    public static class BigTGenerator
+    public class BigTGenerator
     {
-        public static IFormula GenerateTExists(IFormula formula)
+        private readonly SmallTGenerator smallTGenerator = new();
+
+
+        public IFormula GenerateBigTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
-            throw new NotImplementedException();
+            return GenerateBigT(formula, false, unavailableVariables);
         }
 
-        public static IFormula GenerateTForall(IFormula formula)
+        public IFormula GenerateBigTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
-            throw new NotImplementedException();
+            return GenerateBigT(formula, true, unavailableVariables);
         }
 
-        public static IEnumerable< Variable> GetN(IFormula formula)
+
+        private IFormula GenerateBigT(IFormula formula, bool forall, IEnumerable<Variable> unavailableVariables)
         {
-            throw new NotImplementedException();
+            var unav = new List<Variable>(unavailableVariables);
+            unav.AddRange(formula.Variables());
+            unav = unav.Distinct().ToList();
+
+            return GenerateBigTRecursive(formula, forall, unav);
         }
 
-        public static IEnumerable<Variable> GetP(IFormula formula)
+        private IFormula GenerateBigTRecursive(IFormula phi, bool forall, List<Variable> unavailableVariables)
         {
-            throw new NotImplementedException();
+            if (phi.IsBoolean())
+                return phi;
+
+            IFormula psi = smallTGenerator.GenerateSmallT(phi, forall, unavailableVariables);
+            IEnumerable<Variable> pPhi = smallTGenerator.GetP(phi, unavailableVariables);
+            IEnumerable<Variable> nPhi = smallTGenerator.GetN(phi, unavailableVariables);
+            unavailableVariables.AddRange(pPhi); // add to unavailable variables to avoid variable capture
+            unavailableVariables.AddRange(nPhi); // same
+
+            IEnumerable<Variable> nPsi = smallTGenerator.GetN(psi, unavailableVariables);
+            IFormula TPsi = GenerateBigTRecursive(psi, !forall, unavailableVariables);
+
+            IEnumerable<Variable> quantifiedVariables = [.. pPhi, .. nPsi];
+            if (forall)
+                return new Exists(quantifiedVariables, TPsi);
+            else
+                return new Forall(quantifiedVariables, TPsi);
+
         }
+
+
+
+        
     }
 }
