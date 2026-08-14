@@ -18,6 +18,13 @@
         }
 
 
+        public Or(IFormula a, IFormula b) : this([a, b]) { }
+
+        public Or(IFormula a, IFormula b, IFormula c) : this([a, b, c]) { }
+
+        public Or(IFormula a, IFormula b, IFormula c, IFormula d) : this([a, b, c, d]) { }
+
+
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -70,7 +77,7 @@
             return new Or(Operands.Select(o => o.DeepCopy()));
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             if (subformulas == null)
                 throw new ArgumentNullException(nameof(subformulas));

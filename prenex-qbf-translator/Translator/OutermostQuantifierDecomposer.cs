@@ -17,66 +17,68 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables">variables that do not occur in the formula but still can't be used</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public Args Decompose(IFormula formula, IEnumerable<Variable> unavailableVariables = null)
+        public Args Decompose(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
             unavailableVariables ??= [];
+
             if (formula == null)
                 throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
-            var unav = new List<Variable>(unavailableVariables);
-            unav.AddRange(formula.Variables());
-            unav = unav.Distinct().ToList();
             formula = formula.DeepCopy();
-            
-            return DecomposeRecursive(formula, unav);
+            unavailableVariables = unavailableVariables.Concat(formula.Variables());
+
+            if (formula is IQuantifier q)
+            {
+                var p = variableGenerator.GetP(unavailableVariables);
+                var subDic = new Dictionary<Variable, IFormula>() { [p] = formula };
+                return new Args(p, new Substitution(subDic));
+            }
+            else if (formula is IBooleanOperator b)
+            {
+                return DecomposeRecursive(b, unavailableVariables.ToList());
+            }
+            else // truth constant or variable
+            {
+                return new Args(beta: formula, substitution: new Substitution([]));
+            }
         }
 
-        private Args DecomposeRecursive(IFormula formula, List<Variable> unavailableVariables)
+        private Args DecomposeRecursive(IBooleanOperator formula, List<Variable> unavailableVariables)
         {
-            if (formula is IQuantifier)
-                throw new ArgumentException("This method is not supposed to be called with a quantifier");
+            var subformulas = formula.Subformulas();
 
-            if (formula is IBooleanOperator op)
+            List<IFormula> newSubformulas = new();
+            Dictionary<Variable, IFormula> substitutionDic = [];
+            foreach (var subformula in subformulas)
             {
-                List<IFormula> newSubformulas = new();
-                Dictionary<Variable, IFormula> substitutionDic = [];
-                foreach (var subformula in op.Subformulas())
+                if (subformula is IQuantifier)
                 {
-                    if (IsQuantifier(subformula))
+                    Variable p = variableGenerator.GetP(unavailableVariables);
+                    unavailableVariables.Add(p);
+                    newSubformulas.Add(p);
+                    substitutionDic.Add(p, subformula);
+                }
+                else if (subformula is IBooleanOperator b)
+                {
+                    var args = DecomposeRecursive(b, unavailableVariables);
+                    newSubformulas.Add(args.Beta);
+                    foreach (var kvp in args.Substitution.Dictionary)
                     {
-                        Variable p = variableGenerator.GetP(unavailableVariables);
-                        unavailableVariables.Add(p);
-                        newSubformulas.Add(p);
-                        substitutionDic.Add(p, subformula);
-                    }
-                    else
-                    {
-                        var args = DecomposeRecursive(subformula, unavailableVariables);
-                        newSubformulas.Add(args.Beta);
-                        foreach (var kvp in args.Substitution.Dictionary)
-                        {
-                            substitutionDic.Add(kvp.Key, kvp.Value);
-                        }
+                        substitutionDic.Add(kvp.Key, kvp.Value);
                     }
                 }
-
-                return new Args(op.CreateCopy(newSubformulas), new Substitution(substitutionDic));
+                else // truth constant or variable
+                {
+                    newSubformulas.Add(subformula);
+                }
             }
 
-            // variable or constant
-            return new Args(formula.DeepCopy(), new Substitution([]));
-
-
+            return new Args(formula.CreateCopy(newSubformulas), new Substitution(substitutionDic));
         }
 
 
 
 
-
-        private bool IsQuantifier(IFormula formula)
-        {
-            return formula is Forall || formula is Exists;
-        }
 
 
         public class Args

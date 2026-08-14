@@ -53,12 +53,12 @@ namespace prenex_qbf_translator.Translator
 
         public class Args
         {
-            public Variable Plus { get; }
-            public Variable Minus { get; }
+            public Variable P { get; }
+            public Variable N { get; }
             public Args(Variable p, Variable n)
             {
-                Plus = p;
-                Minus = n;
+                P = p;
+                N = n;
             }
         }
     }

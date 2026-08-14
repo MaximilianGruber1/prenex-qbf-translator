@@ -8,6 +8,6 @@ namespace prenex_qbf_translator.Language
 
         IFormula Inner { get; }
 
-        IFormula CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula);
+        IQuantifier CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula);
     }
 }

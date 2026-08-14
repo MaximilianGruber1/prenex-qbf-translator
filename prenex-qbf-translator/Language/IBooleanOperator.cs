@@ -4,6 +4,6 @@
     {
         IEnumerable<IFormula> Subformulas();
 
-        IFormula CreateCopy(IEnumerable<IFormula> subformulas);
+        IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas);
     }
 }

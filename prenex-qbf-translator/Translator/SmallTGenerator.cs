@@ -18,10 +18,8 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables = null)
         {
-            unavailableVariables ??= [];
-
             return GenerateSmallT(formula, true, unavailableVariables);
         }
 
@@ -35,8 +33,6 @@ namespace prenex_qbf_translator.Translator
         /// <exception cref="NotImplementedException"></exception>
         public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
-            unavailableVariables ??= [];
-
             return GenerateSmallT(formula, false, unavailableVariables);
         }
 
@@ -60,7 +56,7 @@ namespace prenex_qbf_translator.Translator
         public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
             unavailableVariables ??= [];
-            
+
             if (formula.IsBoolean())
             {
                 return [];
@@ -83,8 +79,10 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable>? unavailableVariables = null)
         {
+            unavailableVariables ??= [];
+
             if (formula.IsBoolean())
             {
                 return formula; // all 3 parentheses are empty, so we just return the formula itself
@@ -131,10 +129,10 @@ namespace prenex_qbf_translator.Translator
                 foreach (Variable v in group.BoundVariables)
                 {
                     var args = variableGenerator.GetPositiveAndNegative(v, unav);
-                    group.XPlus.Add(args.Plus);
-                    group.XMinus.Add(args.Minus);
-                    unav.Add(args.Plus);
-                    unav.Add(args.Minus);
+                    group.XPlus.Add(args.P);
+                    group.XMinus.Add(args.N);
+                    unav.Add(args.P);
+                    unav.Add(args.N);
                 }
 
                 groups.Add(group);

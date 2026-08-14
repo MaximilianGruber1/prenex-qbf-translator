@@ -20,6 +20,10 @@ namespace prenex_qbf_translator.Language
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
+        public Exists(Variable x, IFormula inner) : this([x], inner) { }
+        public Exists(Variable x1, Variable x2, IFormula inner) : this([x1, x2], inner) { }
+        public Exists(Variable x1, Variable x2, Variable x3, IFormula inner) : this([x1, x2, x3], inner) { }
+
         public IEnumerable<Variable> Variables()
         {
             return Inner.Variables().Concat(BoundVariables).Distinct();
@@ -67,6 +71,11 @@ namespace prenex_qbf_translator.Language
             return this;
         }
 
+        public IEnumerable<IFormula> Subformulas()
+        {
+            return [Inner];
+        }
+
         public IFormula DeepCopy()
         {
             return new Exists(BoundVariables.Select(v => (Variable)(v.DeepCopy())), Inner.DeepCopy());
@@ -75,11 +84,10 @@ namespace prenex_qbf_translator.Language
 
         public override string ToString()
         {
-            return $"?{string.Join(", ", BoundVariables)}: " +
-                (Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? $"({Inner})" : $"{Inner}");
+            return $"? {string.Join(", ", BoundVariables)}: {Inner}";
         }
 
-        public IFormula CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula)
+        public IQuantifier CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula)
         {
             return new Exists(boundVariables, subformula);
         }

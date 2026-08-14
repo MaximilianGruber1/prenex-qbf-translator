@@ -19,13 +19,26 @@ namespace prenex_qbf_translator.Translator
         }
 
 
+        private Substitution GetRSubstitution(Substitution sub)
+        {
+            Dictionary<Variable, IFormula> dic = new();
+            foreach (var entry in sub.Dictionary)
+            {
+                dic[entry.Key] = GetReplacement((IQuantifier)(entry.Value));
+            }
+            return new Substitution(dic);
+        }
+
         private IFormula GetReplacement(IQuantifier q)
         {
             IEnumerable<Variable> x = q.BoundVariables;
             IFormula phi = q.Inner;
             IEnumerable<Variable> n = smallTGenerator.GetN(phi);
+            IFormula T = bigTGenerator.GenerateBigT(phi, q is Forall);
 
-            throw new NotImplementedException();
+            IEnumerable<Variable> boundVariables = x.Concat(n);
+
+            return q.CreateCopy(boundVariables, T);
         }
     }
 }

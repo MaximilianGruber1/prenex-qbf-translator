@@ -10,22 +10,20 @@ namespace prenex_qbf_translator.Translator
         private readonly SmallTGenerator smallTGenerator = new();
 
 
-        public IFormula GenerateBigTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateBigTExists(IFormula formula)
         {
-            return GenerateBigT(formula, false, unavailableVariables);
+            return GenerateBigT(formula, false);
         }
 
-        public IFormula GenerateBigTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateBigTForall(IFormula formula)
         {
-            return GenerateBigT(formula, true, unavailableVariables);
+            return GenerateBigT(formula, true);
         }
 
 
-        private IFormula GenerateBigT(IFormula formula, bool forall, IEnumerable<Variable> unavailableVariables)
+        public IFormula GenerateBigT(IFormula formula, bool forall)
         {
-            var unav = new List<Variable>(unavailableVariables);
-            unav.AddRange(formula.Variables());
-            unav = unav.Distinct().ToList();
+            var unav = formula.Variables().ToList();
 
             return GenerateBigTRecursive(formula, forall, unav);
         }
@@ -54,6 +52,6 @@ namespace prenex_qbf_translator.Translator
 
 
 
-        
+
     }
 }

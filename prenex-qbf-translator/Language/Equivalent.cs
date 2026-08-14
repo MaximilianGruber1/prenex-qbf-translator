@@ -17,6 +17,9 @@ namespace prenex_qbf_translator.Language
             Operands = operands;
         }
 
+        public Equivalent(IFormula a, IFormula b) : this([a, b]) { }
+
+
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -70,7 +73,7 @@ namespace prenex_qbf_translator.Language
             return $"{string.Join(" <=> ", Operands)}";
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             if (subformulas == null)
                 throw new ArgumentNullException(nameof(subformulas));

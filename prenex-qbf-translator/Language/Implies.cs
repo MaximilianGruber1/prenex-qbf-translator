@@ -58,7 +58,7 @@ namespace prenex_qbf_translator.Language
             return new Implies(Left.DeepCopy(), Right.DeepCopy());
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             if (subformulas == null)
                 throw new ArgumentNullException(nameof(subformulas));

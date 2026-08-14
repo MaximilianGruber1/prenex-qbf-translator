@@ -19,6 +19,13 @@ namespace prenex_qbf_translator.Language
             Operands = operands;
         }
 
+        public And(IFormula a, IFormula b) : this([a, b]) { }
+
+        public And(IFormula a, IFormula b, IFormula c) : this([a, b, c]) { }
+
+        public And(IFormula a, IFormula b, IFormula c, IFormula d) : this([a, b, c, d]) { }
+
+
         public IEnumerable<Variable> Variables()
         {
             return Operands.SelectMany(o => o.Variables()).Distinct();
@@ -73,7 +80,7 @@ namespace prenex_qbf_translator.Language
                 Operands.Select(o => o is Equivalent || o is Implies || o is Or ? $"({o.ToString()})" : o.ToString()))}";
         }
 
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
+        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             if (subformulas == null)
                 throw new ArgumentNullException(nameof(subformulas));
