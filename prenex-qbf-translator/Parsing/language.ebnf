@@ -1,0 +1,20 @@
+Equivalence = Implies [ "<=>" Implies ] .
+
+Implies = Disjunction [ "=>" Disjunction ]
+
+Disjunction = Conjunction { "|" Conjunction } .
+
+Conjunction = Unary { "&" Unary } .
+
+Unary = { "~" } Expr .
+
+Expr = "$true" | 
+        "$false" | 
+        Variable | 
+        "(" Equivalence ")" | 
+        "!" QuantifierRest |
+        "?" QuantifierRest .
+
+QuantifierRest = "[" Variable { "," Variable } "]" ":" Unary .
+
+// Variable = Letter { Letter | Digit | "_" } .

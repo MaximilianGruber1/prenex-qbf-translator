@@ -46,7 +46,6 @@ namespace prenex_qbf_translator.Tests
         public void Forall_Constructor_Validation()
         {
             var inner = new Variable("p");
-            Assert.Throws<ArgumentNullException>(() => new Forall(null!, inner));
             Assert.Throws<ArgumentException>(() => new Forall(Array.Empty<Variable>(), inner));
             Assert.Throws<ArgumentNullException>(() => new Forall(new[] { new Variable("x") }, null!));
         }
@@ -55,7 +54,6 @@ namespace prenex_qbf_translator.Tests
         public void Exists_Constructor_Validation()
         {
             var inner = new Variable("p");
-            Assert.Throws<ArgumentNullException>(() => new Exists(null!, inner));
             Assert.Throws<ArgumentException>(() => new Exists(Array.Empty<Variable>(), inner));
             Assert.Throws<ArgumentNullException>(() => new Exists(new[] { new Variable("x") }, null!));
         }

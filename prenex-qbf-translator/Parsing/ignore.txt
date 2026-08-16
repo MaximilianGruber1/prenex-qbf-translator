@@ -1,0 +1,10 @@
+a
+Z
+aZ
+Za
+abcXYZ
+XYZabc
+a1
+Z9
+a_b_c
+A_B_C

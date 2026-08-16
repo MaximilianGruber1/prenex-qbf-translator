@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace prenex_qbf_translator.Parser
+namespace prenex_qbf_translator.Parsing
 {
-    internal class Reader
+    public class Reader
     {
         private readonly string s;
         private int index = 0;

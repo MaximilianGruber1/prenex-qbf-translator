@@ -2,87 +2,78 @@ namespace prenex_qbf_translator.Language
 {
     public class Equivalent : IBooleanOperator
     {
-        public IEnumerable<IFormula> Operands { get; private set; }
-
-        public Equivalent(IEnumerable<IFormula> operands)
+        public IFormula Left { get; private set; }
+        public IFormula Right { get; private set; }
+        public Equivalent(IFormula left, IFormula right)
         {
-            if (operands == null)
+            if (left == null)
             {
-                throw new ArgumentNullException(nameof(operands));
+                throw new ArgumentNullException(nameof(left));
             }
-            if (operands.Count() < 2)
+            if (right == null)
             {
-                throw new ArgumentException("EQUIVALENT must have at least two operands.");
+                throw new ArgumentNullException(nameof(right));
             }
-            Operands = operands;
+            Left = left;
+            Right = right;
         }
-
-        public Equivalent(IFormula a, IFormula b) : this([a, b]) { }
-
-
         public IEnumerable<Variable> Variables()
         {
-            return Operands.SelectMany(o => o.Variables()).Distinct();
+            return Left.Variables().Concat(Right.Variables()).Distinct();
         }
-
         public IEnumerable<Variable> FreeVariables()
         {
-            return Operands.SelectMany(o => o.FreeVariables()).Distinct();
+            return Left.FreeVariables().Concat(Right.FreeVariables()).Distinct();
         }
-
         public int NBlocks()
         {
-            return Operands.Sum(o => o.NBlocks());
+            return Left.NBlocks() + Right.NBlocks();
         }
-
         public int NQuantifiedVariables()
         {
-            return Operands.Sum(o => o.NQuantifiedVariables());
+            return Left.NQuantifiedVariables() + Right.NQuantifiedVariables();
         }
-
         public int Length()
         {
-            return 2 * Operands.Count() - 1 + Operands.Sum(o => o.Length());
+            return 1 + Left.Length() + Right.Length();
         }
-
         public int QuantifierDepth()
         {
-            return Operands.Max(o => o.QuantifierDepth());
+            return Math.Max(Left.QuantifierDepth(), Right.QuantifierDepth());
         }
-
         public IFormula ApplySubstitution(Substitution substitution)
         {
-            Operands = Operands.Select(o => o.ApplySubstitution(substitution));
+            Left = Left.ApplySubstitution(substitution);
+            Right = Right.ApplySubstitution(substitution);
             return this;
         }
 
         public IEnumerable<IFormula> Subformulas()
         {
-            return Operands;
+            return [Left, Right];
         }
 
         public IFormula DeepCopy()
         {
-            return new Equivalent(Operands.Select(o => o.DeepCopy()));
-        }
-
-
-
-        public override string ToString()
-        {
-            return $"{string.Join(" <=> ", Operands)}";
+            return new Equivalent(Left.DeepCopy(), Right.DeepCopy());
         }
 
         public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             if (subformulas == null)
                 throw new ArgumentNullException(nameof(subformulas));
-            
             if (subformulas.Count() != Subformulas().Count())
             {
                 throw new ArgumentException("The number of subformulas does not match.");
             }
-            return new Equivalent(subformulas);
+            return new Equivalent(subformulas.ElementAt(0), subformulas.ElementAt(1));
+        }
+
+        public override string ToString()
+        {
+            List<IFormula> operands = [Left, Right];
+            return $"{string.Join(" <=> ",
+                operands.Select(o => o is Equivalent ? $"({o.ToString()})" : o.ToString()))}";
         }
     }
 }

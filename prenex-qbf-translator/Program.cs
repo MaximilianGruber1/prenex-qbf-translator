@@ -39,6 +39,7 @@ public class Program
                 x, y, new Or(x, y, z)
                 );
         TestFormula(singleQuantifierFormula);
+
     }
 
     private static void TestFormula(IFormula phi)

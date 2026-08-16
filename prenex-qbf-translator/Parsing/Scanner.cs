@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection.PortableExecutable;
 using System.Text;
-using static prenex_qbf_translator.Parser.Token.Kind;
+using static prenex_qbf_translator.Parsing.Token.Kind;
 
-namespace prenex_qbf_translator.Parser
+namespace prenex_qbf_translator.Parsing
 {
-    internal class Scanner
+    public class Scanner
     {
         /// <summary>
         /// Input data to read from
@@ -52,7 +52,24 @@ namespace prenex_qbf_translator.Parser
             switch (ch)
             {
                 case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-                    ReadVariableName(t);
+                    t.Kind_ = Variable;
+                    t.Name = ReadWord();
+                    break;
+                case '$':
+                    NextCh();
+                    string word = ReadWord();
+                    if (word == "true")
+                    {
+                        t.Kind_ = True;
+                    }
+                    else if (word == "false")
+                    {
+                        t.Kind_ = False;
+                    }
+                    else
+                    {
+                        throw new Exception($"Invalid truth constant '{word}' at line {line}, column {col}. '$true' or '$false' expected.");
+                    }
                     break;
                 case '<':
                     t.Kind_ = Equiv;
@@ -65,6 +82,18 @@ namespace prenex_qbf_translator.Parser
                     {
                         throw GetInvalidCharacterException(ch, line, col);
                     }
+                    if (ch == '>')
+                    {
+                        NextCh();
+                    }
+                    else
+                    {
+                        throw GetInvalidCharacterException(ch, line, col);
+                    }
+                    break;
+                case '=':
+                    t.Kind_ = Implies;
+                    NextCh();
                     if (ch == '>')
                     {
                         NextCh();
@@ -156,7 +185,7 @@ namespace prenex_qbf_translator.Parser
             return new Exception($"Invalid character '{c}' at line {line}, column {col}.");
         }
 
-        private void ReadVariableName(Token t)
+        private string ReadWord()
         {
             var sb = new StringBuilder();
             do
@@ -164,9 +193,7 @@ namespace prenex_qbf_translator.Parser
                 sb.Append(ch);
                 NextCh();
             } while (char.IsLetter(ch) || char.IsDigit(ch) || ch == '_');
-            t.Kind_ = Variable;
-            t.Name = sb.ToString();
+            return sb.ToString();
         }
-
     }
 }

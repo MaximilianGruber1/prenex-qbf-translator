@@ -1,4 +1,4 @@
-﻿namespace prenex_qbf_translator.Parser
+﻿namespace prenex_qbf_translator.Parsing
 {
     public class Token
     {
@@ -6,6 +6,7 @@
         {
             None,
             Equiv,
+            Implies,
             Or,
             And,
             Not,
@@ -52,18 +53,22 @@
             {
                 Kind.None => "none",
                 Kind.Equiv => "<=>",
+                Kind.Implies => "=>",
                 Kind.Or => "|",
                 Kind.And => "&",
                 Kind.Not => "~",
-                Kind.True => "true",
-                Kind.False => "false",
+                Kind.True => "$true",
+                Kind.False => "$false",
                 Kind.Variable => "variable",
                 Kind.LPar => "(",
                 Kind.RPar => ")",
-                Kind.Forall => "forall",
-                Kind.Exists => "exists",
+                Kind.LBrack => "[",
+                Kind.RBrack => "]",
+                Kind.Forall => "!",
+                Kind.Exists => "?",
                 Kind.Comma => ",",
-                Kind.Colon => ":"
+                Kind.Colon => ":",
+                Kind.Eof => "end of file"
             };
         }
 

@@ -156,10 +156,10 @@ namespace prenex_qbf_translator.Translator
             }
             Substitution sigma = new(sigmaDic);
 
-            return new Equivalent([
+            return new Equivalent(
                 group.P,
                 group.Phi.ApplySubstitution(sigma)
-                ]);
+                );
         }
 
         private IEnumerable<IFormula> GetParentheses2And3(IEnumerable<Group> groups)
@@ -172,10 +172,10 @@ namespace prenex_qbf_translator.Translator
             List<IFormula> equivalences = [];
             for (int i = 0; i < group.BoundVariables.Count; i++)
             {
-                equivalences.Add(new Equivalent([
+                equivalences.Add(new Equivalent(
                     group.XPlus[i],
                         group.XMinus[i]
-                ]));
+                ));
             }
 
             IFormula right = equivalences.Count() == 1 ?
