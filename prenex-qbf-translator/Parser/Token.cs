@@ -14,6 +14,8 @@
             Variable,
             LPar,
             RPar,
+            LBrack,
+            RBrack,
             Forall,
             Exists,
             Comma,
@@ -23,6 +25,8 @@
 
         public Kind Kind_ { get; set; }
 
+        public int Line { get; set; }
+
         public int Column { get; set; }
 
         /// <summary>
@@ -31,12 +35,13 @@
         public string Name { get; set; }
 
 
-        public Token(int col)
+        public Token(int line, int col)
         {
+            Line = line;
             Column = col;
         }
 
-        public Token(int col, Kind kind) : this(col)
+        public Token(int line, int col, Kind kind) : this(line, col)
         {
             Kind_ = kind;
         }

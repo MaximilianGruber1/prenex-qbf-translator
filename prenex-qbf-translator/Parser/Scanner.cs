@@ -20,6 +20,11 @@ namespace prenex_qbf_translator.Parser
         private char ch;
 
         /// <summary>
+        /// Current line in input stream
+        /// </summary>
+        private int line;
+
+        /// <summary>
         /// Current column in input stream
         /// </summary>
         private int col;
@@ -30,6 +35,7 @@ namespace prenex_qbf_translator.Parser
         public Scanner(string s)
         {
             reader = new Reader(s);
+            line = 1;
             col = 0;
             NextCh();
         }
@@ -41,10 +47,13 @@ namespace prenex_qbf_translator.Parser
                 NextCh();
             }
 
-            Token t = new(col);
+            Token t = new(line, col);
 
             switch (ch)
             {
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+                    ReadVariableName(t);
+                    break;
                 case '<':
                     t.Kind_ = Equiv;
                     NextCh();
@@ -54,7 +63,7 @@ namespace prenex_qbf_translator.Parser
                     }
                     else
                     {
-                        throw GetInvalidCharacterException(ch, col);
+                        throw GetInvalidCharacterException(ch, line, col);
                     }
                     if (ch == '>')
                     {
@@ -62,7 +71,7 @@ namespace prenex_qbf_translator.Parser
                     }
                     else
                     {
-                        throw GetInvalidCharacterException(ch, col);
+                        throw GetInvalidCharacterException(ch, line, col);
                     }
                     break;
                 case '|':
@@ -83,6 +92,14 @@ namespace prenex_qbf_translator.Parser
                     break;
                 case ')':
                     t.Kind_ = RPar;
+                    NextCh();
+                    break;
+                case '[':
+                    t.Kind_ = LBrack;
+                    NextCh();
+                    break;
+                case ']':
+                    t.Kind_ = RBrack;
                     NextCh();
                     break;
                 case '!':
@@ -106,7 +123,7 @@ namespace prenex_qbf_translator.Parser
                     t.Kind_ = Eof;
                     break;
                 default:
-                    throw GetInvalidCharacterException(ch, col);
+                    throw GetInvalidCharacterException(ch, line, col);
             }
 
             return t;
@@ -117,7 +134,15 @@ namespace prenex_qbf_translator.Parser
             try
             {
                 ch = reader.Next();
-                col++;
+                if (ch == '\n')
+                {
+                    line++;
+                    col = 0;
+                }
+                else
+                {
+                    col++;
+                }
             }
             catch (Exception)
             {
@@ -126,9 +151,21 @@ namespace prenex_qbf_translator.Parser
         }
 
 
-        private Exception GetInvalidCharacterException(char c, int pos)
+        private Exception GetInvalidCharacterException(char c, int line, int col)
         {
-            return new Exception($"Invalid character '{c}' at position {pos}");
+            return new Exception($"Invalid character '{c}' at line {line}, column {col}.");
+        }
+
+        private void ReadVariableName(Token t)
+        {
+            var sb = new StringBuilder();
+            do
+            {
+                sb.Append(ch);
+                NextCh();
+            } while (char.IsLetter(ch) || char.IsDigit(ch) || ch == '_');
+            t.Kind_ = Variable;
+            t.Name = sb.ToString();
         }
 
     }
