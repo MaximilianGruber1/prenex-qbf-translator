@@ -26,12 +26,10 @@ public class Program
             );
         TestFormula(phi);
         
-        Console.WriteLine();
         
         IFormula booleanFormula = new And([new Variable("a"), new Or([new Variable("b"), new Variable("c")])]);
         TestFormula(booleanFormula);
 
-        Console.WriteLine();
 
         Variable x = new Variable("x");
         Variable y = new Variable("y");
@@ -54,6 +52,9 @@ public class Program
         Console.WriteLine("N: " + string.Join(", ", new SmallTGenerator().GetN(phi)));
         IFormula TExists = new BigTGenerator().GenerateBigTExists(phi);
         Console.WriteLine("TExists: " + TExists);
+        IFormula R = new RGenerator().GenerateR(phi);
+        Console.WriteLine("R: " + R);
+        Console.WriteLine("-----------------------------------------------------------");
     }
 
 }

@@ -40,7 +40,7 @@
 
         public override string ToString()
         {
-            return "true";
+            return "$true";
         }
 
         public IEnumerable<Variable> Variables()

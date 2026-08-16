@@ -12,10 +12,11 @@ namespace prenex_qbf_translator.Translator
         {
             var decomp = decomposer.Decompose(formula);
             IFormula beta = decomp.Beta;
-            Substitution substitution = decomp.Substitution;
+            Substitution initialSub = decomp.Substitution;
+            Substitution rSub = GetRSubstitution(initialSub);
+            IFormula r = beta.ApplySubstitution(rSub);
 
-
-            throw new NotImplementedException();
+            return r;
         }
 
 

@@ -84,7 +84,7 @@ namespace prenex_qbf_translator.Language
 
         public override string ToString()
         {
-            return $"? {string.Join(", ", BoundVariables)}: {Inner}";
+            return $"? [{string.Join(", ", BoundVariables)}] : {Inner}";
         }
 
         public IQuantifier CreateCopy(IEnumerable<Variable> boundVariables, IFormula subformula)
