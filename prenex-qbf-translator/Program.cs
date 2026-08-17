@@ -1,5 +1,6 @@
 ﻿using prenex_qbf_translator.Language;
 using prenex_qbf_translator.Translator;
+using System.Runtime.Intrinsics.Wasm;
 
 
 public class Program
@@ -8,6 +9,7 @@ public class Program
 
     public static void Main(string[] args)
     {
+
 
         IFormula phi = 
             new And([
@@ -25,6 +27,15 @@ public class Program
                 )]
             );
         TestFormula(phi);
+
+
+        var phi2or = new Or(new Variable("x"), new Variable("y"));
+        var phi2sub = new Substitution(new Dictionary<Variable, IFormula> {
+            { new Variable("psi"), phi2or },
+            { new Variable("xi"), phi2or },
+            { new Variable("rho"), phi2or } });
+        var phi2 = phi.ApplySubstitution(phi2sub);
+        TestFormula(phi2);
 
 
         var phi1 =
@@ -55,6 +66,7 @@ public class Program
     private static void TestFormula(IFormula phi)
     {
         Console.WriteLine(phi);
+        Console.WriteLine("IsBoolean: " + phi.IsBoolean());
         var Args = new OutermostQuantifierDecomposer().Decompose(phi, []);
         Console.WriteLine(Args);
         Console.WriteLine("tExists: " + new SmallTGenerator().GenerateSmallTExists(phi));

@@ -22,7 +22,7 @@ namespace prenex_qbf_translator.Language
 
         public Quantifier CreateCopy(IEnumerable<Variable> quantifiedVariables, IFormula inner)
         {
-            return (Quantifier)Activator.CreateInstance(GetType(), QuantifiedVariables.ToList(), inner)!;
+            return (Quantifier)Activator.CreateInstance(GetType(), quantifiedVariables, inner)!;
         }
 
         public IFormula Clone()

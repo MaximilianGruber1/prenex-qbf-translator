@@ -30,7 +30,7 @@ namespace prenex_qbf_translator.Translator
             return new Substitution(dic);
         }
 
-        private IFormula GetReplacement(Quantifier q)
+        private Quantifier GetReplacement(Quantifier q)
         {
             IEnumerable<Variable> x = q.QuantifiedVariables;
             IFormula phi = q.Inner;
