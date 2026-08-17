@@ -24,16 +24,16 @@ namespace prenex_qbf_translator.Translator
             if (formula == null)
                 throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
-            formula = formula.DeepCopy();
+            formula = formula.Clone();
             unavailableVariables = unavailableVariables.Concat(formula.Variables());
 
-            if (formula is IQuantifier q)
+            if (formula is Quantifier q)
             {
                 var p = variableGenerator.GetP(unavailableVariables);
                 var subDic = new Dictionary<Variable, IFormula>() { [p] = formula };
                 return new Args(p, new Substitution(subDic));
             }
-            else if (formula is IBooleanOperator b)
+            else if (formula is BooleanOperator b)
             {
                 return DecomposeRecursive(b, unavailableVariables.ToList());
             }
@@ -43,22 +43,22 @@ namespace prenex_qbf_translator.Translator
             }
         }
 
-        private Args DecomposeRecursive(IBooleanOperator formula, List<Variable> unavailableVariables)
+        private Args DecomposeRecursive(BooleanOperator formula, List<Variable> unavailableVariables)
         {
-            var subformulas = formula.Subformulas();
+            var subformulas = formula.Subformulas;
 
             List<IFormula> newSubformulas = new();
             Dictionary<Variable, IFormula> substitutionDic = [];
             foreach (var subformula in subformulas)
             {
-                if (subformula is IQuantifier)
+                if (subformula is Quantifier)
                 {
                     Variable p = variableGenerator.GetP(unavailableVariables);
                     unavailableVariables.Add(p);
                     newSubformulas.Add(p);
                     substitutionDic.Add(p, subformula);
                 }
-                else if (subformula is IBooleanOperator b)
+                else if (subformula is BooleanOperator b)
                 {
                     var args = DecomposeRecursive(b, unavailableVariables);
                     newSubformulas.Add(args.Beta);

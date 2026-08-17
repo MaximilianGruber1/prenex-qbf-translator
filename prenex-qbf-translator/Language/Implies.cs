@@ -1,73 +1,36 @@
 namespace prenex_qbf_translator.Language
 {
-    public class Implies : IBooleanOperator
+    public class Implies : BooleanOperator
     {
         public IFormula Left { get; private set; }
         public IFormula Right { get; private set; }
+
+        public override IEnumerable<IFormula> Subformulas => [Left, Right];
+
+
         public Implies(IFormula left, IFormula right)
         {
-            if (left == null)
-            {
-                throw new ArgumentNullException(nameof(left));
-            }
-            if (right == null)
-            {
-                throw new ArgumentNullException(nameof(right));
-            }
+            ArgumentNullException.ThrowIfNull(left);
+            ArgumentNullException.ThrowIfNull(right);
             Left = left;
             Right = right;
         }
-        public IEnumerable<Variable> Variables()
-        {
-            return Left.Variables().Concat(Right.Variables()).Distinct();
-        }
-        public IEnumerable<Variable> FreeVariables()
-        {
-            return Left.FreeVariables().Concat(Right.FreeVariables()).Distinct();
-        }
-        public int NBlocks()
-        {
-            return Left.NBlocks() + Right.NBlocks();
-        }
-        public int NQuantifiedVariables()
-        {
-            return Left.NQuantifiedVariables() + Right.NQuantifiedVariables();
-        }
-        public int Length()
-        {
-            return 1 + Left.Length() + Right.Length();
-        }
-        public int QuantifierDepth()
-        {
-            return Math.Max(Left.QuantifierDepth(), Right.QuantifierDepth());
-        }
-        public IFormula ApplySubstitution(Substitution substitution)
-        {
-            Left = Left.ApplySubstitution(substitution);
-            Right = Right.ApplySubstitution(substitution);
-            return this;
-        }
 
-        public IEnumerable<IFormula> Subformulas()
+        public Implies(IEnumerable<IFormula> subformulas)
         {
-            return [Left, Right];
-        }
-
-        public IFormula DeepCopy()
-        {
-            return new Implies(Left.DeepCopy(), Right.DeepCopy());
-        }
-
-        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
-        {
-            if (subformulas == null)
-                throw new ArgumentNullException(nameof(subformulas));
-            if (subformulas.Count() != Subformulas().Count())
+            ArgumentNullException.ThrowIfNull(subformulas);
+            if (subformulas.Count() != 2)
             {
-                throw new ArgumentException("The number of subformulas does not match.");
+                throw new ArgumentException("'Implies' must be instantiated with exactly 2 subformulas.");
             }
-            return new Implies(subformulas.ElementAt(0), subformulas.ElementAt(1));
+            var left = subformulas.ElementAt(0);
+            var right = subformulas.ElementAt(1);
+            ArgumentNullException.ThrowIfNull(left);
+            ArgumentNullException.ThrowIfNull(right);
+            Left = left;
+            Right = right;
         }
+        
 
         public override string ToString()
         {

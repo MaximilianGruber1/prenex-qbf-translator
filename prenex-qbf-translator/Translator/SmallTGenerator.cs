@@ -117,12 +117,12 @@ namespace prenex_qbf_translator.Translator
             foreach (var entry in unnamedSub.Dictionary)
             {
                 var from = entry.Key;
-                var to = (IQuantifier)entry.Value;
+                var to = (Quantifier)entry.Value;
 
                 Group group = new();
                 group.P = from;
                 group.IsForall = entry.Value is Forall;
-                group.BoundVariables = to.BoundVariables.ToList();
+                group.BoundVariables = to.QuantifiedVariables.ToList();
                 group.Phi = to.Inner;
                 group.XPlus = [];
                 group.XMinus = [];

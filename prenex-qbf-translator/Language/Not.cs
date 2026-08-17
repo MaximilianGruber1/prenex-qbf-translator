@@ -1,77 +1,35 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Not : IBooleanOperator
+    public class Not : BooleanOperator
     {
         public IFormula Inner { get; private set; }
 
+        public override IEnumerable<IFormula> Subformulas => [Inner];
+
         public Not(IFormula inner)
         {
+            ArgumentNullException.ThrowIfNull(inner);
             Inner = inner;
         }
-        public IEnumerable<Variable> Variables()
+
+        public Not(IEnumerable<IFormula> subformulas) // needed for Activator.CreateInstance call in BooleanOperator
         {
-            return Inner.Variables();
+            ArgumentNullException.ThrowIfNull(subformulas);
+            if (subformulas.Count() != 1)
+            {
+                throw new ArgumentException("'Not' must be instantiated with exactly one subformula.");
+            }
+            var inner = subformulas.ElementAt(0);
+            ArgumentNullException.ThrowIfNull(inner);
+            Inner = inner;
         }
-
-        public IEnumerable<Variable> FreeVariables()
-        {
-            return Inner.FreeVariables();
-        }
-
-        public int NBlocks()
-        {
-            return Inner.NBlocks();
-        }
-
-        public int NQuantifiedVariables()
-        {
-            return Inner.NQuantifiedVariables();
-        }
-
-        public int Length()
-        {
-            return Inner.Length();
-        }
-
-        public int QuantifierDepth()
-        {
-            return Inner.QuantifierDepth();
-        }
-
-        public IFormula ApplySubstitution(Substitution substitution)
-        {
-            Inner = Inner.ApplySubstitution(substitution);
-            return this;
-        }
-
-
+        
 
         public override string ToString()
         {
             return Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? 
                 $"~({Inner})" : 
                 $"~{Inner}";
-        }
-
-        public IEnumerable<IFormula> Subformulas()
-        {
-            return [Inner];
-        }
-
-        public IFormula DeepCopy()
-        {
-            return new Not(Inner.DeepCopy());
-        }
-
-        public IBooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
-        {
-            if (subformulas == null)
-                throw new ArgumentNullException(nameof(subformulas));
-            if (subformulas.Count() != Subformulas().Count())
-            {
-                throw new ArgumentException("The number of subformulas does not match.");
-            }
-            return new Not(subformulas.ElementAt(0));
         }
     }
 }

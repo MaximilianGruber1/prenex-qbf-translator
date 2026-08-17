@@ -25,8 +25,18 @@ public class Program
                 )]
             );
         TestFormula(phi);
-        
-        
+
+
+        var phi1 =
+            new And(
+                new Variable("psi"),
+                new Not(
+                    new Exists(new Variable("x"), new Variable("xi")))
+                );
+        TestFormula(phi1);
+
+
+
         IFormula booleanFormula = new And([new Variable("a"), new Or([new Variable("b"), new Variable("c")])]);
         TestFormula(booleanFormula);
 

@@ -25,14 +25,14 @@ namespace prenex_qbf_translator.Translator
             Dictionary<Variable, IFormula> dic = new();
             foreach (var entry in sub.Dictionary)
             {
-                dic[entry.Key] = GetReplacement((IQuantifier)(entry.Value));
+                dic[entry.Key] = GetReplacement((Quantifier)(entry.Value));
             }
             return new Substitution(dic);
         }
 
-        private IFormula GetReplacement(IQuantifier q)
+        private IFormula GetReplacement(Quantifier q)
         {
-            IEnumerable<Variable> x = q.BoundVariables;
+            IEnumerable<Variable> x = q.QuantifiedVariables;
             IFormula phi = q.Inner;
             IEnumerable<Variable> n = smallTGenerator.GetN(phi);
             IFormula T = bigTGenerator.GenerateBigT(phi, q is Forall);

@@ -22,15 +22,24 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
+        public void ApplySubstitution_Variable()
+        {
+            var a = new Variable("a");
+            var f = a;
+            var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, new Variable("x") } });
+            var ret = f.ApplySubstitution(subs);
+            Assert.Equal("x", ret.ToString());
+        }
+
+        [Fact]
         public void ApplySubstitution_ReplacesInAnd()
         {
             var a = new Variable("a");
             var b = new Variable("b");
-            var and = new And(new IFormula[] { a, b });
+            var and = new And(a, b);
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, new Variable("x") } });
             var ret = and.ApplySubstitution(subs);
-            Assert.Same(and, ret);
-            Assert.Equal("(x & b)", and.ToString());
+            Assert.Equal("x&b", ret.ToString().Replace(" ", ""));
         }
 
         [Fact]
@@ -38,11 +47,10 @@ namespace prenex_qbf_translator.Tests
         {
             var a = new Variable("a");
             var b = new Variable("b");
-            var or = new Or(new IFormula[] { a, b });
+            var or = new Or(a, b);
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, new Variable("x") } });
             var ret = or.ApplySubstitution(subs);
-            Assert.Same(or, ret);
-            Assert.Equal("(x | b)", or.ToString());
+            Assert.Equal("x|b", ret.ToString().Replace(" ", ""));
         }
 
         [Fact]
@@ -52,8 +60,7 @@ namespace prenex_qbf_translator.Tests
             var not = new Not(a);
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, new Variable("x") } });
             var ret = not.ApplySubstitution(subs);
-            Assert.Same(not, ret);
-            Assert.Equal("~x", not.ToString());
+            Assert.Equal("~x", ret.ToString().Replace(" ", ""));
         }
 
         [Fact]
@@ -62,12 +69,34 @@ namespace prenex_qbf_translator.Tests
             var a = new Variable("a");
             var b = new Variable("b");
             // complex formula: (x & ~y)
-            var complex = new And(new IFormula[] { new Variable("x"), new Not(new Variable("y")) });
-            var or = new Or(new IFormula[] { a, b });
+            var complex = new And(new Variable("x"), new Not(new Variable("y")));
+            var or = new Or(a, b);
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, complex } });
             var ret = or.ApplySubstitution(subs);
-            Assert.Same(or, ret);
-            Assert.Equal("((x & ~y) | b)", or.ToString());
+            Assert.Equal(
+                "x & ~y | b".Replace(" ", ""), 
+                ret.ToString().Replace(" ", "")
+                );
+        }
+
+        [Fact]
+        public void ApplySubstitution_Quantifier()
+        {
+            var a = new Variable("a");
+            var b = new Variable("b");
+            var complex = new Or(
+                new And(a, b),
+                new Exists(a, new Implies(a, b))
+                );
+            var x = new Variable("x");
+            var y = new Variable("y");
+            var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, x }, { b, y } });
+            var result = complex.ApplySubstitution(subs);
+
+            Assert.Equal(
+                "x & y | ?[a]: (a => y)".Replace(" ", ""),
+                result.ToString().Replace(" ", "")
+                );
         }
     }
 }

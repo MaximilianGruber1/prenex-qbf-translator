@@ -13,30 +13,7 @@
             return [this];
         }
 
-        public IEnumerable<Variable> FreeVariables()
-        {
-            return [this];
-        }
-
-        public int NBlocks()
-        {
-            return 0;
-        }
-
-        public int NQuantifiedVariables()
-        {
-            return 0;
-        }
-
-        public int Length()
-        {
-            return 1;
-        }
-
-        public int QuantifierDepth()
-        {
-            return 0;
-        }
+        
 
         public IFormula ApplySubstitution(Substitution substitution)
         {
@@ -74,19 +51,14 @@
             return Name.GetHashCode();
         }
 
-        public IEnumerable<IFormula> Subformulas()
+        public IFormula Clone()
         {
-            return [];
+            return this; // immutable, so fine
         }
 
-        public IFormula DeepCopy()
+        public bool IsBoolean()
         {
-            return new Variable(Name);
-        }
-
-        public IFormula CreateCopy(IEnumerable<IFormula> subformulas)
-        {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }
