@@ -8,7 +8,7 @@ Conjunction = Unary { "&" Unary } .
 
 Unary = Expr | ("-" | "!") Unary.
 
-Expr = "Variable | 
+Expr = Variable | 
         "(" Equivalence ")" | 
         "#" Variable Unary |
         "?" Variable Unary .

@@ -92,6 +92,7 @@ namespace prenex_qbf_translator.Parsing
                     }
                     break;
                 case '|':
+                case '/':
                     t.Kind_ = Or;
                     NextCh();
                     break;

@@ -37,17 +37,24 @@ namespace prenex_qbf_translator.Parsing
 
         private IFormula Equivalence()
         {
-            IFormula left = Implies();
+            IFormula first = Implies();
 
-            if (sym == Equiv) // 2 subformulas
+            List<IFormula> other = [];
+            while (sym == Equiv)
             {
                 Scan();
-                IFormula right = Implies();
-                return new Equivalent(left, right);
+                IFormula next = Implies();
+                other.Add(next);
             }
-            else // 1 subformula
+
+            if (other.Count == 0) // only one subformula, return this subformula
             {
-                return left;
+                return first;
+            }
+            else // more than one subformula, return new disjunction of these subformulas
+            {
+                var all = other.Prepend(first);
+                return new Equivalent(all);
             }
         }
 
@@ -79,11 +86,11 @@ namespace prenex_qbf_translator.Parsing
                 other.Add(next);
             }
 
-            if (other.Count == 0) // only one subformula, return this subformula
+            if (other.Count == 0)
             {
                 return first;
             }
-            else // more than one subformula, return new disjunction of these subformulas
+            else
             {
                 var all = other.Prepend(first);
                 return new Or(all);
@@ -115,33 +122,22 @@ namespace prenex_qbf_translator.Parsing
 
         private IFormula Unary()
         {
-            int count = 0;
-            while (sym == Token.Kind.Not)
+            if (sym == Token.Kind.Not)
             {
                 Scan();
-                count++;
+                IFormula f = Unary();
+                return new Not(f);
             }
-            IFormula f = Expr();
-            for (int i = 0; i < count; i++)
+            else
             {
-                f = new Not(f);
+                IFormula expr = Expr();
+                return expr;
             }
-            return f;
         }
 
         private IFormula Expr()
         {
-            if (sym == True)
-            {
-                Scan();
-                return new TrueConstant();
-            }
-            else if (sym == False)
-            {
-                Scan();
-                return new FalseConstant();
-            }
-            else if (sym == Token.Kind.Variable)
+            if (sym == Token.Kind.Variable)
             {
                 Scan();
                 return new Variable(t.Name);
@@ -156,37 +152,42 @@ namespace prenex_qbf_translator.Parsing
             else if (sym == Token.Kind.Forall)
             {
                 Scan();
-                (var variables, var inner) = QuantifierRest();
-                return new Forall(variables, inner);
+                Check(Token.Kind.Variable);
+                Variable v = new(t.Name);
+                IFormula inner = Unary();
+                if (inner is Forall f) // combine multiple forall to one forall
+                {
+                    var quantifiedVariables = f.QuantifiedVariables.Prepend(v);
+                    var newInner = f.Inner;
+                    return new Forall(quantifiedVariables, newInner);
+                }
+                else
+                {
+                    return inner;
+                }
             }
             else if (sym == Token.Kind.Exists)
             {
                 Scan();
-                (var variables, var inner) = QuantifierRest();
-                return new Exists(variables, inner);
+                Check(Token.Kind.Variable);
+                Variable v = new(t.Name);
+                IFormula inner = Unary();
+                if (inner is Exists e) // combine multiple exists to one exists
+                {
+                    var quantifiedVariables = e.QuantifiedVariables.Prepend(v);
+                    var newInner = e.Inner;
+                    return new Exists(quantifiedVariables, newInner);
+                }
+                else
+                {
+                    return inner;
+                }
             }
             else
             {
-                throw new Exception($"Invalid token '{la.GetStringRepresentationOfKind()}' at line {la.Line}, column {la.Column}.");
+                throw new Exception(GetExceptionMessagePrefix(la.Line, la.Column) + 
+                    $"invalid token '{la.GetStringRepresentationOfKind()}'");
             }
-        }
-
-        private (IEnumerable<Variable>, IFormula) QuantifierRest()
-        {
-            Check(LBrack);
-            Check(Token.Kind.Variable);
-            List<Variable> quantifiedVariables = [new(t.Name)];
-            while (sym == Comma)
-            {
-                Scan();
-                Check(Token.Kind.Variable);
-                Variable v = new(t.Name);
-                quantifiedVariables.Add(v);
-            }
-            Check(RBrack);
-            Check(Colon);
-            IFormula inner = Unary();
-            return (quantifiedVariables, inner);
         }
 
 
@@ -213,8 +214,14 @@ namespace prenex_qbf_translator.Parsing
             }
             else
             {
-                throw new Exception($"Invalid token '{la.GetStringRepresentationOfKind()}' at line {la.Line}, column {la.Column}. Token '{expected}' is expected.");
+                throw new Exception(GetExceptionMessagePrefix(la.Line, la.Column) + 
+                    $"invalid token '{la.GetStringRepresentationOfKind()}', expected '{expected}'");
             }
+        }
+
+        private string GetExceptionMessagePrefix(int line, int col)
+        {
+            return $"{line}:{col}: parse error: ";
         }
     }
 }
