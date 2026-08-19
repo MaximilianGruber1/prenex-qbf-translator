@@ -11,7 +11,7 @@
             ArgumentNullException.ThrowIfNull(operands);
             if (operands.Count() < 2)
             {
-                throw new ArgumentException("OR must have at least two operands.");
+                throw new ArgumentException("'|' must have at least two operands.");
             }
             foreach (var operand in operands)
             {
@@ -31,7 +31,7 @@
         public override string ToString()
         {
             return $"{string.Join(" | ",
-                operands.Select(o => o is Equivalent || o is Implies ? $"({o.ToString()})" : o.ToString()))}";
+                operands.Select(o => o is Equivalent || o is Implies || o is IsImpliedBy ? $"({o})" : o.ToString()))}";
         }
     }
 }

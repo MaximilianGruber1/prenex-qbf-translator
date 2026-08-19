@@ -1,20 +1,17 @@
-Equivalence = Implies [ "<=>" Implies ] .
+Equivalence = Implies { "<=>" Implies } .
 
-Implies = Disjunction [ "=>" Disjunction ]
+Implies = Disjunction [ ("=>" | "<=") Disjunction ] .
 
-Disjunction = Conjunction { "|" Conjunction } .
+Disjunction = Conjunction { ("|" | "/") Conjunction } .
 
 Conjunction = Unary { "&" Unary } .
 
-Unary = { "~" } Expr .
+Unary = Expr | ("-" | "!") Unary.
 
-Expr = "$true" | 
-        "$false" | 
-        Variable | 
+Expr = "Variable | 
         "(" Equivalence ")" | 
-        "!" QuantifierRest |
-        "?" QuantifierRest .
+        "#" Variable Unary |
+        "?" Variable Unary .
 
-QuantifierRest = "[" Variable { "," Variable } "]" ":" Unary .
 
-// Variable = Letter { Letter | Digit | "_" } .
+Variable is a string over letters, digits and the following characters: - _ . [ ] $ @. Variable must not end with '-'. Note that it also cannot start with '-' since '-' is interpreted as a logical NOT.

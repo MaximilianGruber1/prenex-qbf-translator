@@ -31,10 +31,13 @@ namespace prenex_qbf_translator.Language
 
         public override string ToString()
         {
-            return $"![{string.Join(", ", QuantifiedVariables)}]: " +
-                ((Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And) ? 
-                    $"({Inner.ToString()})" : 
-                    Inner.ToString());
+            string symb = "#";
+            string variables = string.Join(" ", QuantifiedVariables.Select(v => symb + v.Name));
+            string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?
+                    $"({Inner})" :
+                    $"{Inner}";
+            return $"{variables} {subformula}";
         }
     }
 }
+

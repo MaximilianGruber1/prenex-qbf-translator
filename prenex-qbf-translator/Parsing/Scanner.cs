@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using System.Text;
 using static prenex_qbf_translator.Parsing.Token.Kind;
 
@@ -49,58 +50,45 @@ namespace prenex_qbf_translator.Parsing
 
             Token t = new(line, col);
 
+            if (CanOccurAtStartOfVariable(ch) )
+            {
+                string name = ReadVariable();
+                t.Kind_ = Variable;
+                t.Name = name;
+            }
+
             switch (ch)
             {
-                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-                    t.Kind_ = Variable;
-                    t.Name = ReadWord();
-                    break;
-                case '$':
-                    NextCh();
-                    string word = ReadWord();
-                    if (word == "true")
-                    {
-                        t.Kind_ = True;
-                    }
-                    else if (word == "false")
-                    {
-                        t.Kind_ = False;
-                    }
-                    else
-                    {
-                        throw new Exception($"Invalid truth constant '{word}' at line {line}, column {col}. '$true' or '$false' expected.");
-                    }
-                    break;
                 case '<':
-                    t.Kind_ = Equiv;
                     NextCh();
-                    if (ch == '=')
+                    if (ch == '-')
                     {
                         NextCh();
                     }
                     else
                     {
-                        throw GetInvalidCharacterException(ch, line, col);
+                        throw new Exception(GetExceptionMessagePrefix(line, col) + $"expected '-' after '<'");
                     }
                     if (ch == '>')
                     {
                         NextCh();
+                        t.Kind_ = Equiv;
                     }
                     else
                     {
-                        throw GetInvalidCharacterException(ch, line, col);
+                        t.Kind_ = IsImpliedBy;
                     }
                     break;
-                case '=':
-                    t.Kind_ = Implies;
+                case '-':
                     NextCh();
                     if (ch == '>')
                     {
+                        t.Kind_ = Implies;
                         NextCh();
                     }
                     else
                     {
-                        throw GetInvalidCharacterException(ch, line, col);
+                        t.Kind_ = Not;
                     }
                     break;
                 case '|':
@@ -111,7 +99,7 @@ namespace prenex_qbf_translator.Parsing
                     t.Kind_ = And;
                     NextCh();
                     break;
-                case '~':
+                case '!':
                     t.Kind_ = Not;
                     NextCh();
                     break;
@@ -123,15 +111,7 @@ namespace prenex_qbf_translator.Parsing
                     t.Kind_ = RPar;
                     NextCh();
                     break;
-                case '[':
-                    t.Kind_ = LBrack;
-                    NextCh();
-                    break;
-                case ']':
-                    t.Kind_ = RBrack;
-                    NextCh();
-                    break;
-                case '!':
+                case '#':
                     t.Kind_ = Forall;
                     NextCh();
                     break;
@@ -139,20 +119,11 @@ namespace prenex_qbf_translator.Parsing
                     t.Kind_ = Exists;
                     NextCh();
                     break;
-                case ',':
-                    t.Kind_ = Comma;
-                    NextCh();
-                    break;
-                case ':':
-                    t.Kind_ = Colon;
-                    NextCh();
-                    break;
-                
                 case EOF:
                     t.Kind_ = Eof;
                     break;
                 default:
-                    throw GetInvalidCharacterException(ch, line, col);
+                    throw new Exception(GetExceptionMessagePrefix(line, col) + $"invalid character '{ch}'");
             }
 
             return t;
@@ -160,7 +131,7 @@ namespace prenex_qbf_translator.Parsing
 
         private void NextCh()
         {
-            try
+            if (reader.HasNext())
             {
                 ch = reader.Next();
                 if (ch == '\n')
@@ -173,27 +144,40 @@ namespace prenex_qbf_translator.Parsing
                     col++;
                 }
             }
-            catch (Exception)
+            else
             {
                 ch = EOF;
             }
         }
 
 
-        private Exception GetInvalidCharacterException(char c, int line, int col)
+        private string GetExceptionMessagePrefix(int line, int col)
         {
-            return new Exception($"Invalid character '{c}' at line {line}, column {col}.");
+            return $"{line}:{col}: scan error: ";
         }
 
-        private string ReadWord()
+        private string ReadVariable()
         {
             var sb = new StringBuilder();
             do
             {
                 sb.Append(ch);
                 NextCh();
-            } while (char.IsLetter(ch) || char.IsDigit(ch) || ch == '_');
+            } while (CanOccurInVariable(ch));
+            var name = sb.ToString();
+            if (name.EndsWith('-'))
+            {
+                throw new Exception($"{line}:{col}: scan error: variable '{name}' ends with '-'");
+            }
             return sb.ToString();
         }
+
+        private bool CanOccurInVariable(char c) =>
+            (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            char.IsDigit(ch) ||
+            ch == '-' || ch == '_' || ch == '.' || ch == '[' || ch == ']' ||
+            ch == '$' || ch == '@';
+
+        private bool CanOccurAtStartOfVariable(char c) => CanOccurInVariable(c) && c != '-';
     }
 }

@@ -13,7 +13,7 @@ namespace prenex_qbf_translator.Language
             ArgumentNullException.ThrowIfNull(operands);
             if (operands.Count() < 2)
             {
-                throw new ArgumentException("AND must have at least two operands.");
+                throw new ArgumentException("'&' must have at least two operands.");
             }
             foreach (var operand in operands)
             {
@@ -33,7 +33,7 @@ namespace prenex_qbf_translator.Language
         public override string ToString()
         {
             return $"{string.Join(" & ", 
-                operands.Select(o => o is Equivalent || o is Implies || o is Or ? $"({o})" : o.ToString()))}";
+                operands.Select(o => o is Equivalent || o is Implies || o is IsImpliedBy || o is Or ? $"({o})" : o.ToString()))}";
         }
     }
 }

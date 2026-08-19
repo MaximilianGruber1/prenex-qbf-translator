@@ -4,23 +4,17 @@
     {
         public enum Kind
         {
-            None,
             Equiv,
             Implies,
+            IsImpliedBy,
             Or,
             And,
             Not,
-            True,
-            False,
             Variable,
             LPar,
             RPar,
-            LBrack,
-            RBrack,
             Forall,
             Exists,
-            Comma,
-            Colon,
             Eof
         }
 
@@ -51,24 +45,18 @@
         {
             return kind switch
             {
-                Kind.None => "none",
-                Kind.Equiv => "<=>",
-                Kind.Implies => "=>",
+                Kind.Equiv => "<->",
+                Kind.Implies => "->",
+                Kind.IsImpliedBy => "<-",
                 Kind.Or => "|",
                 Kind.And => "&",
-                Kind.Not => "~",
-                Kind.True => "$true",
-                Kind.False => "$false",
-                Kind.Variable => "variable",
+                Kind.Not => "!",
+                Kind.Variable => "Variable",
                 Kind.LPar => "(",
                 Kind.RPar => ")",
-                Kind.LBrack => "[",
-                Kind.RBrack => "]",
-                Kind.Forall => "!",
+                Kind.Forall => "#",
                 Kind.Exists => "?",
-                Kind.Comma => ",",
-                Kind.Colon => ":",
-                Kind.Eof => "end of file"
+                Kind.Eof => "EOF"
             };
         }
 
@@ -87,21 +75,6 @@
             return GetStringRepresentation(Kind_);
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            Token other = (Token)obj;
-            return Kind_ == other.Kind_ && Name == other.Name && Column == other.Column;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Kind_, Name, Column);
-        }
 
     }
 }

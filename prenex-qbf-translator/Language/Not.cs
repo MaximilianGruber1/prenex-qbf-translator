@@ -17,7 +17,7 @@
             ArgumentNullException.ThrowIfNull(subformulas);
             if (subformulas.Count() != 1)
             {
-                throw new ArgumentException("'Not' must be instantiated with exactly one subformula.");
+                throw new ArgumentException("'!' must have exactly one operand.");
             }
             var inner = subformulas.ElementAt(0);
             ArgumentNullException.ThrowIfNull(inner);
@@ -27,9 +27,9 @@
 
         public override string ToString()
         {
-            return Inner is Equivalent || Inner is Implies || Inner is Or || Inner is And ? 
-                $"~({Inner})" : 
-                $"~{Inner}";
+            return Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And ? 
+                $"!({Inner})" : 
+                $"!{Inner}";
         }
     }
 }

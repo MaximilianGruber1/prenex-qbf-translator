@@ -2,40 +2,36 @@ namespace prenex_qbf_translator.Language
 {
     public class Equivalent : BooleanOperator
     {
-        public IFormula Left { get; private set; }
-        public IFormula Right { get; private set; }
+        private readonly List<IFormula> operands;
 
-        public override IEnumerable<IFormula> Subformulas => [Left, Right];
+        public override IEnumerable<IFormula> Subformulas => operands;
 
-
-        public Equivalent(IFormula left, IFormula right)
+        public Equivalent(IEnumerable<IFormula> operands)
         {
-            ArgumentNullException.ThrowIfNull(left);
-            ArgumentNullException.ThrowIfNull(right);
-            Left = left;
-            Right = right;
-        }
-
-        public Equivalent(IEnumerable<IFormula> subformulas)
-        {
-            ArgumentNullException.ThrowIfNull(subformulas);
-            if (subformulas.Count() != 2)
+            ArgumentNullException.ThrowIfNull(operands);
+            if (operands.Count() < 2)
             {
-                throw new ArgumentException("'Equivalent' must be instantiated with exactly 2 subformulas.");
+                throw new ArgumentException("'<->' must have at least two operands");
             }
-            var left = subformulas.ElementAt(0);
-            var right = subformulas.ElementAt(1);
-            ArgumentNullException.ThrowIfNull(left);
-            ArgumentNullException.ThrowIfNull(right);
-            Left = left;
-            Right = right;
+            foreach (var operand in operands)
+            {
+                ArgumentNullException.ThrowIfNull(operand);
+            }
+            this.operands = operands.ToList();
         }
+
+        public Equivalent(IFormula a, IFormula b) : this([a, b]) { }
+
+        public Equivalent(IFormula a, IFormula b, IFormula c) : this([a, b, c]) { }
+
+        public Equivalent(IFormula a, IFormula b, IFormula c, IFormula d) : this([a, b, c, d]) { }
+
+
 
         public override string ToString()
         {
-            List<IFormula> operands = [Left, Right];
-            return $"{string.Join(" <=> ",
-                operands.Select(o => o is Equivalent ? $"({o})" : o.ToString()))}";
+            return $"{string.Join(" <-> ",
+                operands.Select(o => o is Equivalent || o is Implies || o is Or ? $"({o})" : o.ToString()))}";
         }
     }
 }

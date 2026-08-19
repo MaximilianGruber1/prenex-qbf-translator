@@ -1,6 +1,6 @@
 namespace prenex_qbf_translator.Language
 {
-    public class Implies : BooleanOperator
+    public class IsImpliedBy : BooleanOperator
     {
         public IFormula Left { get; private set; }
         public IFormula Right { get; private set; }
@@ -8,7 +8,7 @@ namespace prenex_qbf_translator.Language
         public override IEnumerable<IFormula> Subformulas => [Left, Right];
 
 
-        public Implies(IFormula left, IFormula right)
+        public IsImpliedBy(IFormula left, IFormula right)
         {
             ArgumentNullException.ThrowIfNull(left);
             ArgumentNullException.ThrowIfNull(right);
@@ -16,12 +16,12 @@ namespace prenex_qbf_translator.Language
             Right = right;
         }
 
-        public Implies(IEnumerable<IFormula> subformulas)
+        public IsImpliedBy(IEnumerable<IFormula> subformulas)
         {
             ArgumentNullException.ThrowIfNull(subformulas);
             if (subformulas.Count() != 2)
             {
-                throw new ArgumentException("'->' must be instantiated with exactly 2 subformulas.");
+                throw new ArgumentException("'<-' must be instantiated with exactly 2 subformulas.");
             }
             var left = subformulas.ElementAt(0);
             var right = subformulas.ElementAt(1);
@@ -35,8 +35,8 @@ namespace prenex_qbf_translator.Language
         public override string ToString()
         {
             List<IFormula> operands = [Left, Right];
-            return $"{string.Join(" => ",
-                operands.Select(o => o is Equivalent ? $"({o.ToString()})" : o.ToString()))}";
+            return $"{string.Join(" <- ",
+                operands.Select(o => o is Equivalent ? $"({o})" : o.ToString()))}";
         }
     }
 }

@@ -15,7 +15,7 @@ namespace prenex_qbf_translator.Parsing
             index = 0;
         }
 
-        private bool HasNext()
+        public bool HasNext()
         {
             return index < s.Length;
         }
