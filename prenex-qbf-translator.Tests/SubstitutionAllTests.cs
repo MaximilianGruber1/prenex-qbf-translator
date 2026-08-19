@@ -60,7 +60,7 @@ namespace prenex_qbf_translator.Tests
             var not = new Not(a);
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, new Variable("x") } });
             var ret = not.ApplySubstitution(subs);
-            Assert.Equal("~x", ret.ToString().Replace(" ", ""));
+            Assert.Equal("!x", ret.ToString().Replace(" ", ""));
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace prenex_qbf_translator.Tests
             var subs = new Substitution(new Dictionary<Variable, IFormula> { { a, complex } });
             var ret = or.ApplySubstitution(subs);
             Assert.Equal(
-                "x & ~y | b".Replace(" ", ""), 
+                "x & !y | b".Replace(" ", ""), 
                 ret.ToString().Replace(" ", "")
                 );
         }
@@ -94,7 +94,7 @@ namespace prenex_qbf_translator.Tests
             var result = complex.ApplySubstitution(subs);
 
             Assert.Equal(
-                "x & y | ?[a]: (a => y)".Replace(" ", ""),
+                "x & y | ?a (a -> y)".Replace(" ", ""),
                 result.ToString().Replace(" ", "")
                 );
         }

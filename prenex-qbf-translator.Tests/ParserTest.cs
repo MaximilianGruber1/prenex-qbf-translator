@@ -1,3 +1,4 @@
+
 using Xunit;
 using System;
 using prenex_qbf_translator.Parsing;
@@ -28,12 +29,7 @@ namespace prenex_qbf_translator.Tests
 
 
 
-        [Fact]
-        public void TestConstants()
-        {
-            TestSuccess("$true");
-            TestSuccess("$false");
-        }
+
 
         [Fact]
         public void TestVariableNames()
@@ -49,48 +45,121 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("Y");
             TestSuccess("Z");
 
-            TestSuccess("p");
-            TestSuccess("P");
             TestSuccess("foo");
             TestSuccess("Foo");
             TestSuccess("FOO");
             TestSuccess("foobar");
-            TestSuccess("x1");
-            TestSuccess("x2");
-            TestSuccess("x10");
-            TestSuccess("abc123");
+
+            TestSuccess("0");
+            TestSuccess("1");
+            TestSuccess("9");
+            TestSuccess("123");
+            TestSuccess("1abc");
+            TestSuccess("123abc");
+
             TestSuccess("a_b");
             TestSuccess("a_");
             TestSuccess("foo_bar");
-            TestSuccess("foo_bar_baz");
             TestSuccess("x_1");
             TestSuccess("x1_y2");
-            TestSuccess("A1_B2");
-            TestSuccess("a123456789");
 
-            TestSuccess("a_");
-            TestSuccess("a__");
-            TestSuccess("a___");
-            TestSuccess("a_1");
-            TestSuccess("a_2");
-            TestSuccess("a_123");
-            TestSuccess("a1_");
-            TestSuccess("a1__");
-            TestSuccess("a1_2");
-            TestSuccess("a1__2");
-            TestSuccess("a123_456");
-            TestSuccess("a1__23_4____56___");
+            TestSuccess("a-b");
+            TestSuccess("foo-bar-baz");
+            TestSuccess("a--b");
+            TestSuccess("a-1");
+            TestSuccess("1-a");
 
+            TestSuccess("a.b");
+            TestSuccess("foo.bar.baz");
+
+            TestSuccess("a[b]");
+            TestSuccess("foo[bar]");
+            TestSuccess("a[");
+            TestSuccess("a]");
+
+            TestSuccess("a$b");
+            TestSuccess("a$");
+            TestSuccess("$a");
+            TestSuccess("$true");
+            TestSuccess("$false");
+            TestSuccess("$true1");
+
+            TestSuccess("a@b");
+            TestSuccess("a@");
+            TestSuccess("@a");
+
+            TestSuccess("_a");
+            TestSuccess(".a");
+            TestSuccess("[a]");
+            TestSuccess("a-b_c.d[e]$f@g");
+            TestSuccess("123-a_b.c[d]$e@f");
+            TestSuccess("a__b..c$$d@@e");
+        }
+
+        [Fact]
+        public void InvalidVariableNames2()
+        {
+            TestFailure("a-");
+            TestFailure("a--");
+            TestFailure("a-b-");
+        }
+
+        [Fact]
+        public void VariableHyphenRules()
+        {
+            TestSuccess("a-b");
+            TestSuccess("a--b");
+            TestSuccess("1-a");
+            TestSuccess("a-1");
+            TestSuccess("a--b--c");
+
+            TestFailure("a-");
+            TestFailure("a--");
+            TestFailure("a-b-");
+        }
+
+        [Fact]
+        public void VariableAllowedCharacters()
+        {
             TestSuccess("a");
             TestSuccess("Z");
-            TestSuccess("aZ");
-            TestSuccess("Za");
-            TestSuccess("abcXYZ");
-            TestSuccess("XYZabc");
-            TestSuccess("a1");
-            TestSuccess("Z9");
-            TestSuccess("a_b_c");
-            TestSuccess("A_B_C");
+            TestSuccess("0");
+            TestSuccess("9");
+            TestSuccess("a-b");
+            TestSuccess("a_b");
+            TestSuccess("a.b");
+            TestSuccess("a[b]");
+            TestSuccess("a$b");
+            TestSuccess("a@b");
+
+            TestSuccess("a_");
+            TestSuccess("a.");
+            TestSuccess("a[");
+            TestSuccess("a]");
+            TestSuccess("a$");
+            TestSuccess("a@");
+
+            TestSuccess("_a");
+            TestSuccess(".a");
+            TestSuccess("[a]");
+            TestSuccess("$a");
+            TestSuccess("@a");
+        }
+
+        [Fact]
+        public void VariableSpecialCharacterCombinations()
+        {
+            TestSuccess("a-b_c.d");
+            TestSuccess("a[b]$c@d");
+            TestSuccess("a-b_c.d[e]$f@g");
+            TestSuccess("123-a_b.c[d]$e@f");
+            TestSuccess("a__b..c$$d@@e");
+            TestSuccess("[a]");
+            TestSuccess("[$]");
+            TestSuccess("@a");
+            TestSuccess("$a");
+            TestSuccess(".a");
+            TestSuccess("_a");
         }
 
         [Fact]
@@ -108,55 +177,61 @@ namespace prenex_qbf_translator.Tests
 
             TestSuccess("(a & b)");
             TestSuccess("(a | b)");
-            TestSuccess("(a => b)");
-            TestSuccess("(a <=> b)");
+            TestSuccess("(a -> b)");
+            TestSuccess("(a <- b)");
+            TestSuccess("(a <-> b)");
 
             TestSuccess("((a & b))");
             TestSuccess("((a | b))");
-            TestSuccess("((a => b))");
-            TestSuccess("((a <=> b))");
+            TestSuccess("((a -> b))");
+            TestSuccess("((a <- b))");
+            TestSuccess("((a <-> b))");
 
             TestSuccess("(a & (b | c))");
             TestSuccess("((a & b) | c)");
             TestSuccess("(a | (b & c))");
             TestSuccess("((a | b) & c)");
-            TestSuccess("(a => (b => c))");
-            TestSuccess("((a => b) => c)");
-            TestSuccess("(a <=> (b <=> c))");
-            TestSuccess("((a <=> b) <=> c)");
+            TestSuccess("(a -> (b -> c))");
+            TestSuccess("(a <- (b <- c))");
+            TestSuccess("((a -> b) -> c)");
+            TestSuccess("((a <- b) <- c)");
+            TestSuccess("(a <-> (b <-> c))");
+            TestSuccess("((a <-> b) <-> c)");
         }
 
         [Fact]
         public void UnaryNegation()
         {
-            TestSuccess("~a");
-            TestSuccess("~b");
-            TestSuccess("~x");
-            TestSuccess("~$true");
-            TestSuccess("~$false");
-            TestSuccess("~(a)");
-            TestSuccess("~(a & b)");
-            TestSuccess("~(a | b)");
-            TestSuccess("~(a => b)");
-            TestSuccess("~(a <=> b)");
-            TestSuccess("~(![x]:a)");
-            TestSuccess("~(?[x]:a)");
+            TestSuccess("-a");
+            TestSuccess("-b");
+            TestSuccess("-x");
+            TestSuccess("-$true");
+            TestSuccess("-$false");
+            TestSuccess("-(a)");
+            TestSuccess("-(a & b)");
+            TestSuccess("-(a | b)");
+            TestSuccess("-(a -> b)");
+            TestSuccess("-(a <- b)");
+            TestSuccess("-(a <-> b)");
+            TestSuccess("-(#x a)");
+            TestSuccess("-(?x a)");
 
-            TestSuccess("(~a)");
-            TestSuccess("(~$true)");
-            TestSuccess("(~(a & b))");
-            TestSuccess("(~(a | b))");
-            TestSuccess("(~(a => b))");
-            TestSuccess("(~(a <=> b))");
+            TestSuccess("(-a)");
+            TestSuccess("(-$true)");
+            TestSuccess("(-(a & b))");
+            TestSuccess("(-(a | b))");
+            TestSuccess("(-(a -> b))");
+            TestSuccess("(-(a <- b))");
+            TestSuccess("(-(a <-> b))");
 
-            TestSuccess("~~a");
-            TestSuccess("~~~a");
-            TestSuccess("~~~~a");
-            TestSuccess("~~~~~a");
-            TestSuccess("~(~a)");
-            TestSuccess("~(~(~a))");
-            TestSuccess("~~(a & b)");
-            TestSuccess("~(~(a | b))");
+            TestSuccess("--a");
+            TestSuccess("---a");
+            TestSuccess("----a");
+            TestSuccess("-----a");
+            TestSuccess("-(-a)");
+            TestSuccess("-(-(-a))");
+            TestSuccess("--(a & b)");
+            TestSuccess("-(-(a | b))");
         }
 
         [Fact]
@@ -179,11 +254,11 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("$true & a");
             TestSuccess("a & $false");
             TestSuccess("$false & a");
-            TestSuccess("a & ~b");
-            TestSuccess("~a & b");
-            TestSuccess("~a & ~b");
-            TestSuccess("~a & $true");
-            TestSuccess("$false & ~a");
+            TestSuccess("a & -b");
+            TestSuccess("-a & b");
+            TestSuccess("-a & -b");
+            TestSuccess("-a & $true");
+            TestSuccess("$false & -a");
 
             TestSuccess("(a) & b");
             TestSuccess("a & (b)");
@@ -213,9 +288,9 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("$true | a");
             TestSuccess("a | $false");
             TestSuccess("$false | a");
-            TestSuccess("a | ~b");
-            TestSuccess("~a | b");
-            TestSuccess("~a | ~b");
+            TestSuccess("a | -b");
+            TestSuccess("-a | b");
+            TestSuccess("-a | -b");
 
             TestSuccess("(a) | b");
             TestSuccess("a | (b)");
@@ -228,286 +303,360 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void Implication()
         {
-            TestSuccess("a => b");
-            TestSuccess("$true => a");
-            TestSuccess("a => $true");
-            TestSuccess("$false => b");
-            TestSuccess("b => $false");
+            TestSuccess("a -> b");
+            TestSuccess("a <- b");
 
-            TestSuccess("~a => b");
-            TestSuccess("a => ~b");
-            TestSuccess("~a => ~b");
+            TestSuccess("$true -> a");
+            TestSuccess("$true <- a");
+            TestSuccess("a -> $true");
+            TestSuccess("a <- $true");
+            TestSuccess("$false -> b");
+            TestSuccess("$false <- b");
+            TestSuccess("b -> $false");
+            TestSuccess("b <- $false");
 
-            TestSuccess("a & b => c");
-            TestSuccess("a => b & c");
-            TestSuccess("a | b => c");
-            TestSuccess("a => b | c");
+            TestSuccess("-a -> b");
+            TestSuccess("-a <- b");
+            TestSuccess("a -> -b");
+            TestSuccess("a <- -b");
+            TestSuccess("-a -> -b");
+            TestSuccess("-a <- -b");
 
-            TestSuccess("a & b | c => d");
-            TestSuccess("a => b & c | d");
-            TestSuccess("a | b & c => d | e");
+            TestSuccess("a & b -> c");
+            TestSuccess("a & b <- c");
+            TestSuccess("a -> b & c");
+            TestSuccess("a <- b & c");
+            TestSuccess("a | b -> c");
+            TestSuccess("a | b <- c");
+            TestSuccess("a -> b | c");
+            TestSuccess("a <- b | c");
 
-            TestSuccess("(a => b)");
-            TestSuccess("((a => b))");
-            TestSuccess("(a & b) => c");
-            TestSuccess("a => (b & c)");
-            TestSuccess("(a | b) => c");
-            TestSuccess("a => (b | c)");
+            TestSuccess("a & b | c -> d");
+            TestSuccess("a & b | c <- d");
+            TestSuccess("a -> b & c | d");
+            TestSuccess("a <- b & c | d");
+            TestSuccess("a | b & c -> d | e");
+            TestSuccess("a | b & c <- d | e");
+
+            TestSuccess("(a -> b)");
+            TestSuccess("(a <- b)");
+            TestSuccess("((a -> b))");
+            TestSuccess("((a <- b))");
+            TestSuccess("(a & b) -> c");
+            TestSuccess("(a & b) <- c");
+            TestSuccess("a -> (b & c)");
+            TestSuccess("a <- (b & c)");
+            TestSuccess("(a | b) -> c");
+            TestSuccess("(a | b) <- c");
+            TestSuccess("a -> (b | c)");
+            TestSuccess("a <- (b | c)");
         }
 
         [Fact]
         public void Equivalence()
         {
-            TestSuccess("a <=> b");
-            TestSuccess("$true <=> a");
-            TestSuccess("a <=> $false");
-            TestSuccess("~a <=> b");
+            TestSuccess("a <-> b");
+            TestSuccess("$true <-> a");
+            TestSuccess("a <-> $false");
+            TestSuccess("-a <-> b");
 
-            TestSuccess("a & b <=> c");
-            TestSuccess("a | b <=> c");
-            TestSuccess("a => b <=> c");
-            TestSuccess("a <=> b => c");
+            TestSuccess("a & b <-> c");
+            TestSuccess("a | b <-> c");
+            TestSuccess("a -> b <-> c");
+            TestSuccess("a <- b <-> c");
+            TestSuccess("a <-> b -> c");
+            TestSuccess("a <-> b <- c");
 
-            TestSuccess("a & b | c <=> d");
-            TestSuccess("a => b & c <=> d");
-            TestSuccess("a | b => c | d <=> e");
+            TestSuccess("a & b | c <-> d");
+            TestSuccess("a -> b & c <-> d");
+            TestSuccess("a <- b & c <-> d");
+            TestSuccess("a | b -> c | d <-> e");
+            TestSuccess("a | b <- c | d <-> e");
 
-            TestSuccess("(a <=> b)");
-            TestSuccess("((a <=> b))");
-            TestSuccess("(a => b) <=> c");
-            TestSuccess("a <=> (b => c)");
-            TestSuccess("(a & b) <=> (c | d)");
+            TestSuccess("(a <-> b)");
+            TestSuccess("((a <-> b))");
+            TestSuccess("(a -> b) <-> c");
+            TestSuccess("(a <- b) <-> c");
+            TestSuccess("a <-> (b -> c)");
+            TestSuccess("a <-> (b <- c)");
+            TestSuccess("(a & b) <-> (c | d)");
 
-            TestSuccess("(a <=> b) <=> c");
-            TestSuccess("a <=> (b <=> c)");
-            TestSuccess("(a <=> b) <=> (c <=> d)");
+            TestSuccess("(a <-> b) <-> c");
+            TestSuccess("a <-> (b <-> c)");
+            TestSuccess("(a <-> b) <-> (c <-> d)");
 
-            TestFailure("a <=> b <=> c");
-            TestFailure("a <=> b <=> c <=> d");
+            TestSuccess("a <-> b <-> c");
+            TestSuccess("a <-> b <-> c <-> d");
         }
 
         [Fact]
         public void ImplicationAssociativityAndRestriction()
         {
-            TestSuccess("a => b");
-            TestSuccess("$true => a");
-            TestSuccess("a => $true");
-            TestSuccess("$false => b");
-            TestSuccess("b => $false");
+            TestSuccess("a -> b");
+            TestSuccess("a <- b");
 
-            TestSuccess("~a => b");
-            TestSuccess("a => ~b");
-            TestSuccess("~a => ~b");
+            TestSuccess("$true -> a");
+            TestSuccess("$true <- a");
+            TestSuccess("a -> $true");
+            TestSuccess("a <- $true");
+            TestSuccess("$false -> b");
+            TestSuccess("$false <- b");
+            TestSuccess("b -> $false");
+            TestSuccess("b <- $false");
 
-            TestSuccess("a & b => c");
-            TestSuccess("a => b & c");
-            TestSuccess("a | b => c");
-            TestSuccess("a => b | c");
+            TestSuccess("-a -> b");
+            TestSuccess("-a <- b");
+            TestSuccess("a -> -b");
+            TestSuccess("a <- -b");
+            TestSuccess("-a -> -b");
+            TestSuccess("-a <- -b");
 
-            TestSuccess("a & b | c => d");
-            TestSuccess("a => b & c | d");
-            TestSuccess("a | b & c => d | e");
+            TestSuccess("a & b -> c");
+            TestSuccess("a & b <- c");
+            TestSuccess("a -> b & c");
+            TestSuccess("a <- b & c");
+            TestSuccess("a | b -> c");
+            TestSuccess("a | b <- c");
+            TestSuccess("a -> b | c");
+            TestSuccess("a <- b | c");
 
-            TestFailure("a => b => c");
-            TestFailure("a => b => c => d");
+            TestSuccess("a & b | c -> d");
+            TestSuccess("a & b | c <- d");
+            TestSuccess("a -> b & c | d");
+            TestSuccess("a <- b & c | d");
+            TestSuccess("a | b & c -> d | e");
+            TestSuccess("a | b & c <- d | e");
 
-            TestSuccess("(a => b) => c");
-            TestSuccess("a => (b => c)");
-            TestSuccess("((a => b) => c)");
-            TestSuccess("(a => (b => c))");
+            TestFailure("a -> b -> c");
+            TestFailure("a <- b <- c");
+            TestFailure("a -> b <- c");
+            TestFailure("a <- b -> c");
 
-            TestSuccess("(a => b) => (c => d)");
-            TestFailure("(a => b => c)");
+            TestSuccess("(a -> b) -> c");
+            TestSuccess("(a <- b) -> c");
+            TestSuccess("(a -> b) <- c");
+            TestSuccess("(a <- b) <- c");
+
+            TestSuccess("a -> (b -> c)");
+            TestSuccess("a <- (b <- c)");
+            TestSuccess("a -> (b <- c)");
+            TestSuccess("a <- (b -> c)");
+
+            TestSuccess("((a -> b) -> c)");
+            TestSuccess("((a <- b) <- c)");
+
+            TestFailure("(a -> b -> c)");
+            TestFailure("(a <- b <- c)");
         }
 
         [Fact]
         public void EquivalenceNesting()
         {
-            TestSuccess("(a <=> b) <=> c");
-            TestSuccess("a <=> (b <=> c)");
-            TestSuccess("(a <=> b) <=> (c <=> d)");
-            TestSuccess("((a <=> b) <=> c) <=> d");
-            TestSuccess("a <=> (b <=> (c <=> d))");
+            TestSuccess("(a <-> b) <-> c");
+            TestSuccess("a <-> (b <-> c)");
+            TestSuccess("(a <-> b) <-> (c <-> d)");
+            TestSuccess("((a <-> b) <-> c) <-> d");
+            TestSuccess("a <-> (b <-> (c <-> d))");
 
-            TestSuccess("a <=> (b => c)");
-            TestSuccess("(a => b) <=> c");
-            TestSuccess("(a <=> b) => c");
-            TestSuccess("a => (b <=> c)");
+            TestSuccess("a <-> (b -> c)");
+            TestSuccess("a <-> (b <- c)");
+            TestSuccess("(a -> b) <-> c");
+            TestSuccess("(a <- b) <-> c");
+            TestSuccess("(a <-> b) -> c");
+            TestSuccess("(a <-> b) <- c");
+            TestSuccess("a -> (b <-> c)");
+            TestSuccess("a <- (b <-> c)");
         }
 
         [Fact]
         public void QuantifierBasics()
         {
-            TestSuccess("![x]:a");
-            TestSuccess("![x]:b");
-            TestSuccess("![x]:$true");
-            TestSuccess("![x]:$false");
+            TestSuccess("#x a");
+            TestSuccess("#x b");
+            TestSuccess("#x $true");
+            TestSuccess("#x $false");
 
-            TestSuccess("?[x]:a");
-            TestSuccess("?[x]:b");
-            TestSuccess("?[x]:$true");
-            TestSuccess("?[x]:$false");
+            TestSuccess("?x a");
+            TestSuccess("?x b");
+            TestSuccess("?x $true");
+            TestSuccess("?x $false");
 
-            TestSuccess("![x,y]:a");
-            TestSuccess("![x,y,z]:a");
-            TestSuccess("![x,y,z,w]:a");
+            TestSuccess("#x #y a");
+            TestSuccess("#x #y #z a");
+            TestSuccess("#x #y #z #w a");
 
-            TestSuccess("?[x,y]:a");
-            TestSuccess("?[x,y,z]:a");
-            TestSuccess("?[x,y,z,w]:a");
+            TestSuccess("?x ?y a");
+            TestSuccess("?x ?y ?z a");
+            TestSuccess("?x ?y ?z ?w a");
 
-            TestSuccess("![x,x]:a");
-            TestSuccess("?[x,x]:a");
-            TestSuccess("![x,y,x]:a");
-            TestSuccess("?[x,y,y]:a");
+            TestSuccess("#x #x a");
+            TestSuccess("?x ?x a");
+            TestSuccess("#x #y #x a");
+            TestSuccess("?x ?y ?y a");
         }
 
         [Fact]
         public void QuantifierVariableNames()
         {
-            TestSuccess("![x1]:a");
-            TestSuccess("![x_1]:a");
-            TestSuccess("![foo]:a");
-            TestSuccess("![foo_bar]:a");
-            TestSuccess("![Foo]:a");
-            TestSuccess("![ABC123]:a");
-            TestSuccess("![a_b_c]:a");
+            TestSuccess("#x1 a");
+            TestSuccess("#x_1 a");
+            TestSuccess("#foo a");
+            TestSuccess("#foo_bar a");
+            TestSuccess("#Foo a");
+            TestSuccess("#ABC123 a");
+            TestSuccess("#a_b_c a");
 
-            TestSuccess("![x1,y2,z3]:a");
-            TestSuccess("![foo,bar,baz]:a");
-            TestSuccess("![a_1,b_2,c_3]:a");
-            TestSuccess("![A,B,C]:a");
+            TestSuccess("#x1 #y2 #z3 a");
+            TestSuccess("#foo #bar #baz a");
+            TestSuccess("#a_1 #b_2 #c_3 a");
+            TestSuccess("#A #B #C a");
         }
 
         [Fact]
         public void QuantifierNesting()
         {
-            TestSuccess("![x]:![y]:a");
-            TestSuccess("![x]:?[y]:a");
-            TestSuccess("?[x]:![y]:a");
-            TestSuccess("?[x]:?[y]:a");
+            TestSuccess("#x #y a");
+            TestSuccess("#x ?y a");
+            TestSuccess("?x #y a");
+            TestSuccess("?x ?y a");
 
-            TestSuccess("![x,y]:?[z]:a");
-            TestSuccess("?[x,y]:![z]:a");
-            TestSuccess("![x]:?[y,z]:a");
-            TestSuccess("?[x]:![y,z]:a");
+            TestSuccess("#x #y ?z a");
+            TestSuccess("?x ?y #z a");
+            TestSuccess("#x ?y ?z a");
+            TestSuccess("?x #y #z a");
 
-            TestSuccess("![a]:![b]:![c]:a");
-            TestSuccess("![a]:?[b]:![c]:a");
-            TestSuccess("?[a]:![b]:?[c]:a");
-            TestSuccess("?[a]:?[b]:?[c]:a");
+            TestSuccess("#a #b #c a");
+            TestSuccess("#a ?b #c a");
+            TestSuccess("?a #b ?c a");
+            TestSuccess("?a ?b ?c a");
         }
 
         [Fact]
         public void QuantifiersWithNegation()
         {
-            TestSuccess("![x]:~a");
-            TestSuccess("?[x]:~a");
+            TestSuccess("#x -a");
+            TestSuccess("?x -a");
 
-            TestSuccess("~![x]:a");
-            TestSuccess("~?[x]:a");
+            TestSuccess("-#x a");
+            TestSuccess("-?x a");
 
-            TestSuccess("![x]:~(a & b)");
-            TestSuccess("?[x]:~(a | b)");
+            TestSuccess("#x -(a & b)");
+            TestSuccess("?x -(a | b)");
 
-            TestSuccess("~![x]:(a & b)");
-            TestSuccess("~?[x]:(a | b)");
+            TestSuccess("-#x (a & b)");
+            TestSuccess("-?x (a | b)");
 
-            TestSuccess("![x]:~![y]:a");
-            TestSuccess("?[x]:~?[y]:a");
-            TestSuccess("![x]:~?[y]:a");
-            TestSuccess("?[x]:~![y]:a");
+            TestSuccess("#x -#y a");
+            TestSuccess("?x -?y a");
+            TestSuccess("#x -?y a");
+            TestSuccess("?x -#y a");
         }
 
         [Fact]
         public void QuantifierBodyPrecedence()
         {
-            TestSuccess("![x]:a & b");
-            TestSuccess("![x]:a | b");
-            TestSuccess("![x]:a => b");
-            TestSuccess("![x]:a <=> b");
+            TestSuccess("#x a & b");
+            TestSuccess("#x a | b");
+            TestSuccess("#x a -> b");
+            TestSuccess("#x a <- b");
+            TestSuccess("#x a <-> b");
 
-            TestSuccess("![x]:~a & b");
-            TestSuccess("![x]:~a | b");
-            TestSuccess("![x]:~a => b");
-            TestSuccess("![x]:~a <=> b");
+            TestSuccess("#x -a & b");
+            TestSuccess("#x -a | b");
+            TestSuccess("#x -a -> b");
+            TestSuccess("#x -a <- b");
+            TestSuccess("#x -a <-> b");
 
-            TestSuccess("![x]:(a & b)");
-            TestSuccess("![x]:(a | b)");
-            TestSuccess("![x]:(a => b)");
-            TestSuccess("![x]:(a <=> b)");
+            TestSuccess("#x (a & b)");
+            TestSuccess("#x (a | b)");
+            TestSuccess("#x (a -> b)");
+            TestSuccess("#x (a <- b)");
+            TestSuccess("#x (a <-> b)");
 
-            TestSuccess("(![x]:a) & b");
-            TestSuccess("(![x]:a) | b");
-            TestSuccess("(![x]:a) => b");
-            TestSuccess("(![x]:a) <=> b");
+            TestSuccess("(#x a) & b");
+            TestSuccess("(#x a) | b");
+            TestSuccess("(#x a) -> b");
+            TestSuccess("(#x a) <- b");
+            TestSuccess("(#x a) <-> b");
         }
 
         [Fact]
         public void QuantifiersWithFullExpressions()
         {
-            TestSuccess("![x]:(a & b)");
-            TestSuccess("![x]:(a | b)");
-            TestSuccess("![x]:(a => b)");
-            TestSuccess("![x]:(a <=> b)");
+            TestSuccess("#x (a & b)");
+            TestSuccess("#x (a | b)");
+            TestSuccess("#x (a -> b)");
+            TestSuccess("#x (a <- b)");
+            TestSuccess("#x (a <-> b)");
 
-            TestSuccess("?[x]:(a & b)");
-            TestSuccess("?[x]:(a | b)");
-            TestSuccess("?[x]:(a => b)");
-            TestSuccess("?[x]:(a <=> b)");
+            TestSuccess("?x (a & b)");
+            TestSuccess("?x (a | b)");
+            TestSuccess("?x (a -> b)");
+            TestSuccess("?x (a <- b)");
+            TestSuccess("?x (a <-> b)");
 
-            TestSuccess("![x]:((a & b) | c)");
-            TestSuccess("![x]:(a & (b | c))");
-            TestSuccess("![x]:((a => b) & c)");
-            TestSuccess("![x]:(a <=> (b | c))");
+            TestSuccess("#x ((a & b) | c)");
+            TestSuccess("#x (a & (b | c))");
+            TestSuccess("#x ((a -> b) & c)");
+            TestSuccess("#x ((a <- b) & c)");
+            TestSuccess("#x (a <-> (b | c))");
         }
 
         [Fact]
         public void FullPrecedenceStack()
         {
-            TestSuccess("a & b | c => d <=> e");
-            TestSuccess("a | b & c => d <=> e");
-            TestSuccess("a => b | c & d <=> e");
-            TestSuccess("a <=> b => c | d & e");
+            TestSuccess("a & b | c -> d <-> e");
+            TestSuccess("a & b | c <- d <-> e");
+            TestSuccess("a | b & c -> d <-> e");
+            TestSuccess("a | b & c <- d <-> e");
+            TestSuccess("a -> b | c & d <-> e");
+            TestSuccess("a <- b | c & d <-> e");
+            TestSuccess("a <-> b -> c | d & e");
+            TestSuccess("a <-> b <- c | d & e");
 
-            TestSuccess("a & b | c & d => e | f & g <=> h");
-            TestSuccess("a | b & c | d => e & f | g <=> h");
-            TestSuccess("a & b & c | d | e & f => g | h & i <=> j");
+            TestSuccess("a & b & c | d | e & f -> g | h & i <-> j");
+            TestSuccess("a & b & c | d | e & f <- g | h & i <-> j");
 
-            TestSuccess("~a & b | c => d <=> e");
-            TestSuccess("a & ~b | ~c => d <=> ~e");
-            TestSuccess("~(a & b) | c => ~(d | e) <=> f");
+            TestSuccess("-a & b | c -> d <-> e");
+            TestSuccess("-a & b | c <- d <-> e");
+            TestSuccess("a & -b | -c -> d <-> -e");
+            TestSuccess("a & -b | -c <- d <-> -e");
+            TestSuccess("-(a & b) | c -> -(d | e) <-> f");
+            TestSuccess("-(a & b) | c <- -(d | e) <-> f");
         }
 
         [Fact]
         public void QuantifiersMixedWithBinaryOperators()
         {
-            TestSuccess("![x]:a & ![y]:b");
-            TestSuccess("![x]:a | ?[y]:b");
-            TestSuccess("![x]:a => ?[y]:b");
-            TestSuccess("![x]:a <=> ?[y]:b");
+            TestSuccess("#x a & #y b");
+            TestSuccess("#x a | ?y b");
+            TestSuccess("#x a -> ?y b");
+            TestSuccess("#x a <- ?y b");
+            TestSuccess("#x a <-> ?y b");
 
-            TestSuccess("(![x]:a) & (![y]:b)");
-            TestSuccess("(![x]:a) | (?[y]:b)");
-            TestSuccess("(![x]:a) => (?[y]:b)");
-            TestSuccess("(![x]:a) <=> (?[y]:b)");
+            TestSuccess("(#x a) & (#y b)");
+            TestSuccess("(#x a) | (?y b)");
+            TestSuccess("(#x a) -> (?y b)");
+            TestSuccess("(#x a) <- (?y b)");
+            TestSuccess("(#x a) <-> (?y b)");
 
-            TestSuccess("![x]:a & ?[y]:b | c");
-            TestSuccess("![x]:a | ?[y]:b & c");
-            TestSuccess("![x]:a => ?[y]:b | c");
-            TestSuccess("![x]:a <=> ?[y]:(b | c)");
+            TestSuccess("#x a & ?y b | c");
+            TestSuccess("#x a | ?y b & c");
+            TestSuccess("#x a -> ?y b | c");
+            TestSuccess("#x a <- ?y b | c");
+            TestSuccess("#x a <-> ?y (b | c)");
         }
 
         [Fact]
         public void QuantifierShadowing()
         {
-            TestSuccess("![x]:![x]:x");
-            TestSuccess("?[x]:?[x]:x");
-            TestSuccess("![x]:?[x]:x");
-            TestSuccess("?[x]:![x]:x");
+            TestSuccess("#x #x x");
+            TestSuccess("?x ?x x");
+            TestSuccess("#x ?x x");
+            TestSuccess("?x #x x");
 
-            TestSuccess("![x,y]:![y,z]:a");
-            TestSuccess("?[x,y]:?[x,z]:b");
+            TestSuccess("#x #y #y #z a");
+            TestSuccess("?x ?y ?x ?z b");
         }
 
         [Fact]
@@ -524,32 +673,40 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("((a & b) | ((c & d) | e))");
             TestSuccess("(a | (b & (c | (d & e))))");
 
-            TestSuccess("![a]:![b]:![c]:![d]:a");
-            TestSuccess("![a]:?[b]:![c]:?[d]:a");
-            TestSuccess("?[a]:![b]:?[c]:![d]:a");
+            TestSuccess("#a #b #c #d a");
+            TestSuccess("#a ?b #c ?d a");
+            TestSuccess("?a #b ?c #d a");
 
-            TestSuccess("![a]:(![b]:((a & b) | c))");
-            TestSuccess("?[a]:(![b]:((a | b) & c))");
-            TestSuccess("![a]:(~(?[b]:(a => b)))");
-            TestSuccess("?[a]:(~(![b]:(a <=> b)))");
+            TestSuccess("#a (#b ((a & b) | c))");
+            TestSuccess("?a (#b ((a | b) & c))");
+            TestSuccess("#a (#b ((a -> b) <- c))");
+            TestSuccess("?a (-(#b (a <-> b)))");
+            TestSuccess("#a (-(?b (a -> b)))");
+            TestSuccess("#a (-(?b (a <- b)))");
         }
 
         [Fact]
         public void FullValidFormulas()
         {
-            TestSuccess("![x,y]:~((x & y) | $false)");
-            TestSuccess("?[x]:(~x => $true)");
-            TestSuccess("![x]:(x <=> (~x | $false))");
-            TestSuccess("![x,y]:((x & ~y) => (y | $false))");
-            TestSuccess("?[x,y]:(((x | y) & ~(x & y)) <=> (x | y))");
+            TestSuccess("#x #y -((x & y) | $false)");
+            TestSuccess("?x (-x -> $true)");
+            TestSuccess("?x (-x <- $true)");
+            TestSuccess("#x (x <-> (-x | $false))");
+            TestSuccess("#x #y ((x & -y) -> (y | $false))");
+            TestSuccess("#x #y ((x & -y) <- (y | $false))");
+            TestSuccess("?x ?y (((x | y) & -(x & y)) <-> (x | y))");
 
-            TestSuccess("![x]:((![y]:(x & y)) => (?[z]:(x | z)))");
-            TestSuccess("?[x]:((![y]:(x => y)) <=> (~x | $true))");
-            TestSuccess("![a,b,c]:((a & b) | (~b & c) => (a <=> c))");
-            TestSuccess("?[x,y,z]:((x | y) & (~x | z) & (~y | ~z))");
+            TestSuccess("#x ((#y (x & y)) -> (?z (x | z)))");
+            TestSuccess("#x ((#y (x & y)) <- (?z (x | z)))");
+            TestSuccess("?x ((#y (x -> y)) <-> (-x | $true))");
+            TestSuccess("?x ((#y (x <- y)) <-> (-x | $true))");
+            TestSuccess("#a #b #c ((a & b) | (-b & c) -> (a <-> c))");
+            TestSuccess("#a #b #c ((a & b) | (-b & c) <- (a <-> c))");
+            TestSuccess("?x ?y ?z ((x | y) & (-x | z) & (-y | -z))");
 
-            TestSuccess("![x]:(~(![y]:((x & y) => (x | $false))))");
-            TestSuccess("?[x]:(~(?[y]:((x | y) <=> (x & $true))))");
+            TestSuccess("#x (-(#y ((x & y) -> (x | $false))))");
+            TestSuccess("#x (-(#y ((x & y) <- (x | $false))))");
+            TestSuccess("?x (-(?y ((x | y) <-> (x & $true))))");
         }
 
         [Fact]
@@ -560,141 +717,68 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a & b | c & d | e & f | g & h | i & j");
             TestSuccess("a | b & c | d & e | f & g | h & i | j");
 
-            TestSuccess("![a,b,c]:((a & b) | (b & c) | (c & a))");
-            TestSuccess("![a,b,c]:((a => b) & (b => c) & (c => a))");
+            TestSuccess("#a #b #c ((a & b) | (b & c) | (c & a))");
+            TestSuccess("#a #b #c ((a -> b) & (b -> c) & (c -> a))");
+            TestSuccess("#a #b #c ((a <- b) & (b <- c) & (c <- a))");
         }
 
         [Fact]
         public void RandomLookingValidFormulas()
         {
-            TestSuccess("![foo,bar]:((foo & ~bar) | $false)");
-            TestSuccess("?[x1,y_2]:((x1 | y_2) => ~(x1 & y_2))");
-            TestSuccess("A1_B2 <=> (~foo | ?[bar_baz]:$true)");
-            TestSuccess("![x,y,z]:((x => y) & (y => z) & ~(x <=> z))");
-            TestSuccess("?[a1,b2]:(~((a1 | $false) & (b2 => $true)))");
-            TestSuccess("![foo_1,Bar2]:((foo_1 & Bar2) | (![x]:x))");
-            TestSuccess("((a => b) & (~c | d)) <=> (![x,y]:(x & y))");
-            TestSuccess("~(?[x]:(x <=> (![y]:(y => x))))");
+            TestSuccess("#foo #bar ((foo & -bar) | $false)");
+            TestSuccess("?x1 ?y_2 ((x1 | y_2) -> -(x1 & y_2))");
+            TestSuccess("?x1 ?y_2 ((x1 | y_2) <- -(x1 & y_2))");
+            TestSuccess("A1_B2 <-> (-foo | ?bar_baz $true)");
+            TestSuccess("#x #y #z ((x -> y) & (y -> z) & -(x <-> z))");
+            TestSuccess("#x #y #z ((x <- y) & (y <- z) & -(x <-> z))");
+            TestSuccess("?a1 ?b2 (-((a1 | $false) -> (b2 -> $true)))");
+            TestSuccess("?a1 ?b2 (-((a1 | $false) <- (b2 <- $true)))");
+            TestSuccess("#foo_1 #Bar2 ((foo_1 & Bar2) | (#x x))");
+            TestSuccess("((a -> b) & (-c | d)) <-> (#x #y (x & y))");
+            TestSuccess("((a <- b) & (-c | d)) <-> (#x #y (x & y))");
+            TestSuccess("-(?x (x <-> (#y (y -> x))))");
+            TestSuccess("-(?x (x <-> (#y (y <- x))))");
         }
 
-        [Fact]
-        public void LexicalBoundaryTests()
-        {
-            TestFailure("$truex");
-            TestFailure("$falsex");
-            TestFailure("$true_foo");
-            TestFailure("$false_foo");
-
-            TestFailure("x$true");
-            TestFailure("x$false");
-            TestFailure("a$b");
-        }
 
         [Fact]
         public void InvalidVariableNames()
         {
-            TestFailure("1");
-            TestFailure("123");
-            TestFailure("1abc");
-            TestFailure("_abc");
-            TestFailure("__abc");
-            TestFailure("_1");
-            TestFailure("1_");
-            TestFailure("1_abc");
-            TestFailure("-abc");
-            TestFailure("a-b");
-            TestFailure("a.b");
+            TestSuccess("1");
+            TestSuccess("123");
+            TestSuccess("1abc");
+            TestSuccess("_abc");
+            TestSuccess("__abc");
+            TestSuccess("_1");
+            TestSuccess("1_");
+            TestSuccess("1_abc");
+            TestSuccess("-abc");
+            TestSuccess("a-b");
+            TestSuccess("a.b");
             TestFailure("a+b");
             TestFailure("a=b");
-            TestFailure("a/b");
             TestFailure("a b");
         }
 
-        [Fact]
-        public void InvalidConstants()
-        {
-            TestFailure("$True");
-            TestFailure("$False");
-            TestFailure("$TRUE");
-            TestFailure("$FALSE");
-            TestFailure("$tru");
-            TestFailure("$fals");
-            TestFailure("$truee");
-            TestFailure("$falsee");
-            TestFailure("$true1");
-            TestFailure("$false1");
-        }
-
-        [Fact]
-        public void InvalidQuantifiers()
-        {
-            TestFailure("![]:a");
-            TestFailure("?[]:a");
-
-            TestFailure("![x:a");
-            TestFailure("?[x:a");
-
-            TestFailure("!x]:a");
-            TestFailure("?x]:a");
-
-            TestFailure("![x]a");
-            TestFailure("?[x]a");
-
-            TestFailure("![x]:");
-            TestFailure("?[x]:");
-
-            TestFailure("![x,]:a");
-            TestFailure("?[x,]:a");
-
-            TestFailure("![,x]:a");
-            TestFailure("?[,x]:a");
-
-            TestFailure("![x,,y]:a");
-            TestFailure("?[x,,y]:a");
-
-            TestFailure("![x,y,]:a");
-            TestFailure("?[x,y,]:a");
-        }
-
-        [Fact]
-        public void InvalidQuantifierPunctuation()
-        {
-            TestFailure("![x,y:a");
-            TestFailure("![x,y]a");
-            TestFailure("![x,y]::a");
-            TestFailure("![x,y]::");
-            TestFailure("![x y]:a");
-            TestFailure("![x; y]:a");
-            TestFailure("![x | y]:a");
-
-            TestFailure("?[x,y:a");
-            TestFailure("?[x,y]a");
-            TestFailure("?[x,y]::a");
-            TestFailure("?[x y]:a");
-            TestFailure("?[x; y]:a");
-        }
 
         [Fact]
         public void InvalidOperators()
         {
-            TestFailure("=");
-            TestFailure("==");
-            TestFailure("===");
-            TestFailure(">");
-            TestFailure("<");
-            TestFailure("<=");
-            TestFailure(">=");
-            TestFailure("<>");
-            TestFailure("!=");
+            TestFailure("a>b");
+            TestFailure("a<b");
+            TestFailure("a>-b");
+            TestFailure("a<>b");
+            TestFailure("a!-b");
 
-            TestFailure("&&");
-            TestFailure("||");
+            TestFailure("a&&b");
+            TestFailure("a||b");
 
-            TestFailure("=");
-            TestFailure("<");
-            TestFailure("<<=>");
-            TestFailure("<==");
-            TestFailure("==>");
+            TestFailure("a<ib");
+            TestFailure("a<<->b");
+            TestFailure("a-->b");
+
+            TestFailure("a<<-b");
+            TestFailure("a<-><-b");
         }
 
         [Fact]
@@ -702,18 +786,21 @@ namespace prenex_qbf_translator.Tests
         {
             TestFailure("&");
             TestFailure("|");
-            TestFailure("=>");
-            TestFailure("<=>");
+            TestFailure("->");
+            TestFailure("<-");
+            TestFailure("<->");
 
             TestFailure("a &");
             TestFailure("a |");
-            TestFailure("a =>");
-            TestFailure("a <=>");
+            TestFailure("a ->");
+            TestFailure("a <-");
+            TestFailure("a <->");
 
             TestFailure("& a");
             TestFailure("| a");
-            TestFailure("=> a");
-            TestFailure("<=> a");
+            TestFailure("-> a");
+            TestFailure("<- a");
+            TestFailure("<-> a");
         }
 
         [Fact]
@@ -724,13 +811,20 @@ namespace prenex_qbf_translator.Tests
             TestFailure("a & | b");
             TestFailure("a | & b");
 
-            TestFailure("a => => b");
-            TestFailure("a <=> <=> b");
+            TestFailure("a -> -> b");
+            TestFailure("a <- <- b");
+            TestFailure("a -> <- b");
+            TestFailure("a <- -> b");
 
-            TestFailure("a => | b");
-            TestFailure("a | => b");
-            TestFailure("a & => b");
-            TestFailure("a => & b");
+            TestFailure("a -> | b");
+            TestFailure("a | -> b");
+            TestFailure("a & -> b");
+            TestFailure("a -> & b");
+
+            TestFailure("a <- | b");
+            TestFailure("a | <- b");
+            TestFailure("a & <- b");
+            TestFailure("a <- & b");
         }
 
         [Fact]
@@ -754,21 +848,22 @@ namespace prenex_qbf_translator.Tests
 
             TestFailure("(&)");
             TestFailure("(|)");
-            TestFailure("(=>)");
-            TestFailure("(<=>)");
+            TestFailure("(->)");
+            TestFailure("(<-)");
+            TestFailure("(<->)");
         }
 
         [Fact]
         public void BadNegation()
         {
-            TestFailure("~");
-            TestFailure("~~");
-            TestFailure("~&");
-            TestFailure("~|");
-            TestFailure("~=>");
-            TestFailure("~<=>");
-            TestFailure("~)");
-            TestFailure("~]");
+            TestFailure("-");
+            TestFailure("-~");
+            TestFailure("-&");
+            TestFailure("-|");
+            TestFailure("-->");
+            TestFailure("-<->");
+            TestFailure("-<-");
+            TestFailure("-)");
         }
 
         [Fact]
@@ -779,25 +874,26 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a& b");
             TestSuccess("a & b");
 
-            TestSuccess("a=>b");
-            TestSuccess("a =>b");
-            TestSuccess("a=> b");
-            TestSuccess("a => b");
+            TestFailure("a->b"); // very weird behavior of limboole
+            TestSuccess("a ->b");
+            TestFailure("a-> b"); // also here
+            TestSuccess("a -> b");
 
-            TestSuccess("a<=>b");
-            TestSuccess("a <=>b");
-            TestSuccess("a<=> b");
-            TestSuccess("a <=> b");
+            TestSuccess("a<-b");
+            TestSuccess("a <-b");
+            TestSuccess("a<- b");
+            TestSuccess("a <- b");
 
-            TestSuccess("![x]:a");
-            TestSuccess("! [x] : a");
-            TestSuccess("! [ x ] : a");
-            TestSuccess("![ x,y ] : a");
-            TestSuccess("![x , y] : a");
+            TestSuccess("a<->b");
+            TestSuccess("a <->b");
+            TestSuccess("a<-> b");
+            TestSuccess("a <-> b");
 
-            TestSuccess("~a");
-            TestSuccess("~ a");
-            TestSuccess("~  a");
+            TestSuccess("#x  a");
+
+            TestSuccess("-a");
+            TestSuccess("- a");
+            TestSuccess("-  a");
 
             TestSuccess("(a&b)");
             TestSuccess("( a & b )");
@@ -809,10 +905,13 @@ namespace prenex_qbf_translator.Tests
             TestFailure("$ true");
             TestFailure("$ t r u e");
             TestFailure("$ f alse");
+            
+            TestFailure("-< -");
+            TestFailure("- >");
+            TestFailure("< - >");
 
-            TestFailure("< =");
-            TestFailure("= >");
-            TestFailure("< = >");
+            TestFailure("< -");
+            TestFailure("<  -");
 
             TestFailure("foo bar");
             TestFailure("foo 123");
@@ -837,17 +936,17 @@ namespace prenex_qbf_translator.Tests
             TestFailure("x?");
             TestFailure("x:");
             TestFailure("x,");
-            TestFailure("x]");
             TestFailure("x)");
-            TestFailure("x~");
+            TestFailure("x-");
             TestFailure("x&");
             TestFailure("x|");
-            TestFailure("x=>");
-            TestFailure("x<=>");
+            TestFailure("x->");
+            TestFailure("x<-");
+            TestFailure("x<->");
 
-            TestFailure("!x");
+            TestFailure("#x");
             TestFailure("?x");
-            TestFailure("![x]");
+            TestFailure("#[x]");
             TestFailure("?[x]");
         }
 
@@ -857,17 +956,140 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a");
             TestSuccess("a & b");
             TestSuccess("(a)");
-            TestSuccess("![x]:a");
+            TestSuccess("#x a");
 
             TestFailure("a b");
             TestFailure("a & b c");
             TestFailure("(a) b");
-            TestFailure("![x]:a b");
-            TestFailure("a <=> b c");
+            TestFailure("#x a b");
+            TestFailure("a <-> b c");
 
             TestFailure("a)");
             TestFailure("(a))");
             TestFailure("((a)))");
         }
+
+        [Fact]
+        public void QuantifierVariableCharacters()
+        {
+            TestSuccess("#a a");
+            TestSuccess("#1 a");
+            TestSuccess("#a-b a");
+            TestSuccess("#a_b a");
+            TestSuccess("#a.b a");
+            TestSuccess("#a[b] a");
+            TestSuccess("#a$b a");
+            TestSuccess("#a@b a");
+
+            TestSuccess("?a a");
+            TestSuccess("?1 a");
+            TestSuccess("?a-b a");
+            TestSuccess("?a_b a");
+            TestSuccess("?a.b a");
+            TestSuccess("?a[b] a");
+            TestSuccess("?a$b a");
+            TestSuccess("?a@b a");
+
+            TestFailure("#a- a");
+            TestFailure("?a- a");
+            TestFailure("#-a a");
+            TestFailure("?-a a");
+        }
+
+        [Fact]
+        public void DisjunctionOperators()
+        {
+            TestSuccess("a | b");
+            TestSuccess("a / b");
+            TestSuccess("a | b | c");
+            TestSuccess("a / b / c");
+            TestSuccess("a | b / c");
+            TestSuccess("a / b | c");
+
+            TestFailure("a || b");
+            TestFailure("a // b");
+            TestFailure("a | / b");
+            TestFailure("a / | b");
+        }
+
+        [Fact]
+        public void ImplicationOperators()
+        {
+            TestSuccess("a -> b");
+            TestSuccess("a <- b");
+
+            TestSuccess("a -> $true");
+            TestSuccess("a <- $true");
+            TestSuccess("$true -> a");
+            TestSuccess("$true <- a");
+
+            TestSuccess("-a -> b");
+            TestSuccess("-a <- b");
+            TestSuccess("a -> -b");
+            TestSuccess("a <- -b");
+
+            TestFailure("a -> -> b");
+            TestFailure("a <- <- b");
+            TestFailure("a -> <- b");
+            TestFailure("a <- -> b");
+        }
+
+        [Fact]
+        public void EquivalenceAssociativity()
+        {
+            TestSuccess("a <-> b");
+            TestSuccess("a <-> b <-> c");
+            TestSuccess("a <-> b <-> c <-> d");
+            TestSuccess("a <-> b <-> c <-> d <-> e");
+
+            TestSuccess("(a <-> b) <-> c");
+            TestSuccess("a <-> (b <-> c)");
+            TestSuccess("(a <-> b) <-> (c <-> d)");
+            TestSuccess("a <-> (b <-> (c <-> d))");
+        }
+
+        [Fact]
+        public void RecursiveUnaryOperators()
+        {
+            TestSuccess("-a");
+            TestSuccess("!a");
+            TestSuccess("--a");
+            TestSuccess("!!a");
+            TestSuccess("-!a");
+            TestSuccess("!-a");
+            TestSuccess("-!-a");
+            TestSuccess("!-!a");
+
+            TestFailure("-");
+            TestFailure("!");
+            TestFailure("--");
+            TestFailure("!!");
+            TestFailure("-&");
+            TestFailure("!&");
+        }
+
+        [Fact]
+        public void LexerParserBoundaries()
+        {
+            TestSuccess("a-b");
+            TestSuccess("a--b");
+            TestSuccess("a-b-c");
+
+            TestSuccess("-a");
+            TestSuccess("--a");
+
+            TestSuccess("#a a");
+            TestSuccess("?a a");
+
+            TestSuccess("#a-b a");
+            TestSuccess("?a-b a");
+
+            TestSuccess("$true");
+            TestSuccess("$true1");
+            TestSuccess("a$b");
+            TestSuccess("a@b");
+            TestSuccess("a[b]");
+        }
+
     }
 }

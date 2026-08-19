@@ -55,6 +55,7 @@ namespace prenex_qbf_translator.Parsing
                 string name = ReadVariable();
                 t.Kind_ = Variable;
                 t.Name = name;
+                return t;
             }
 
             switch (ch)

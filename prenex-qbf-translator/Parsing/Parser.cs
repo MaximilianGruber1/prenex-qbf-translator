@@ -68,6 +68,12 @@ namespace prenex_qbf_translator.Parsing
                 IFormula right = Disjunction();
                 return new Implies(left, right);
             }
+            else if (sym == Token.Kind.IsImpliedBy)
+            {
+                Scan();
+                IFormula right = Disjunction();
+                return new IsImpliedBy(left, right);
+            }
             else
             {
                 return left;
