@@ -169,7 +169,7 @@ namespace prenex_qbf_translator.Parsing
                 }
                 else
                 {
-                    return inner;
+                    return new Forall(v, inner);
                 }
             }
             else if (sym == Token.Kind.Exists)
@@ -186,7 +186,7 @@ namespace prenex_qbf_translator.Parsing
                 }
                 else
                 {
-                    return inner;
+                    return new Exists(v, inner);
                 }
             }
             else

@@ -1,4 +1,5 @@
 ﻿using prenex_qbf_translator.Language;
+using prenex_qbf_translator.Parsing;
 using prenex_qbf_translator.Translator;
 using System.Runtime.Intrinsics.Wasm;
 
@@ -60,6 +61,13 @@ public class Program
                 x, y, new Or(x, y, z)
                 );
         TestFormula(singleQuantifierFormula);
+
+
+        Parser p = new(new Scanner("#a a"));
+        IFormula f = p.Parse();
+        Console.WriteLine(f);
+        IFormula TExists = new BigTGenerator().GenerateBigTExists(f);
+        Console.WriteLine(TExists);
 
     }
 

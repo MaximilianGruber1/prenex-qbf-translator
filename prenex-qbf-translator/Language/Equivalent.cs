@@ -31,7 +31,7 @@ namespace prenex_qbf_translator.Language
         public override string ToString()
         {
             return $"{string.Join(" <-> ",
-                operands.Select(o => o is Equivalent || o is Implies || o is Or ? $"({o})" : o.ToString()))}";
+                operands.Select(o => o.ToString()))}";
         }
     }
 }
