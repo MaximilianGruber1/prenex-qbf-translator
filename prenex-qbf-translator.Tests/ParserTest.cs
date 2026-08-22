@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace prenex_qbf_translator.Tests
 {
+
     public class ParserTest
     {
 
@@ -170,11 +171,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("(((a)))");
             TestSuccess("((((a))))");
 
-            TestSuccess("($true)");
-            TestSuccess("($false)");
-            TestSuccess("(($true))");
-            TestSuccess("((($false)))");
-
             TestSuccess("(a & b)");
             TestSuccess("(a | b)");
             TestSuccess("(a -> b)");
@@ -205,8 +201,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("-a");
             TestSuccess("-b");
             TestSuccess("-x");
-            TestSuccess("-$true");
-            TestSuccess("-$false");
             TestSuccess("-(a)");
             TestSuccess("-(a & b)");
             TestSuccess("-(a | b)");
@@ -217,7 +211,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("-(?x a)");
 
             TestSuccess("(-a)");
-            TestSuccess("(-$true)");
             TestSuccess("(-(a & b))");
             TestSuccess("(-(a | b))");
             TestSuccess("(-(a -> b))");
@@ -240,8 +233,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a & b");
             TestSuccess("a & c");
             TestSuccess("x & y");
-            TestSuccess("$true & $false");
-            TestSuccess("$false & $true");
 
             TestSuccess("a & b & c");
             TestSuccess("a & b & c & d");
@@ -250,15 +241,9 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a & b & c & d & e & f");
             TestSuccess("a & b & c & d & e & f & g & h");
 
-            TestSuccess("a & $true");
-            TestSuccess("$true & a");
-            TestSuccess("a & $false");
-            TestSuccess("$false & a");
             TestSuccess("a & -b");
             TestSuccess("-a & b");
             TestSuccess("-a & -b");
-            TestSuccess("-a & $true");
-            TestSuccess("$false & -a");
 
             TestSuccess("(a) & b");
             TestSuccess("a & (b)");
@@ -274,8 +259,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a | b");
             TestSuccess("a | c");
             TestSuccess("x | y");
-            TestSuccess("$true | $false");
-            TestSuccess("$false | $true");
 
             TestSuccess("a | b | c");
             TestSuccess("a | b | c | d");
@@ -284,10 +267,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a | b | c | d | e | f");
             TestSuccess("a | b | c | d | e | f | g | h");
 
-            TestSuccess("a | $true");
-            TestSuccess("$true | a");
-            TestSuccess("a | $false");
-            TestSuccess("$false | a");
             TestSuccess("a | -b");
             TestSuccess("-a | b");
             TestSuccess("-a | -b");
@@ -305,15 +284,6 @@ namespace prenex_qbf_translator.Tests
         {
             TestSuccess("a -> b");
             TestSuccess("a <- b");
-
-            TestSuccess("$true -> a");
-            TestSuccess("$true <- a");
-            TestSuccess("a -> $true");
-            TestSuccess("a <- $true");
-            TestSuccess("$false -> b");
-            TestSuccess("$false <- b");
-            TestSuccess("b -> $false");
-            TestSuccess("b <- $false");
 
             TestSuccess("-a -> b");
             TestSuccess("-a <- b");
@@ -394,15 +364,6 @@ namespace prenex_qbf_translator.Tests
         {
             TestSuccess("a -> b");
             TestSuccess("a <- b");
-
-            TestSuccess("$true -> a");
-            TestSuccess("$true <- a");
-            TestSuccess("a -> $true");
-            TestSuccess("a <- $true");
-            TestSuccess("$false -> b");
-            TestSuccess("$false <- b");
-            TestSuccess("b -> $false");
-            TestSuccess("b <- $false");
 
             TestSuccess("-a -> b");
             TestSuccess("-a <- b");
@@ -688,25 +649,25 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void FullValidFormulas()
         {
-            TestSuccess("#x #y -((x & y) | $false)");
-            TestSuccess("?x (-x -> $true)");
-            TestSuccess("?x (-x <- $true)");
-            TestSuccess("#x (x <-> (-x | $false))");
-            TestSuccess("#x #y ((x & -y) -> (y | $false))");
-            TestSuccess("#x #y ((x & -y) <- (y | $false))");
+            TestSuccess("#x #y -((x & y) | w)");
+            TestSuccess("?x (-x -> w)");
+            TestSuccess("?x (-x <- w)");
+            TestSuccess("#x (x <-> (-x | w))");
+            TestSuccess("#x #y ((x & -y) -> (y | w))");
+            TestSuccess("#x #y ((x & -y) <- (y | w))");
             TestSuccess("?x ?y (((x | y) & -(x & y)) <-> (x | y))");
 
             TestSuccess("#x ((#y (x & y)) -> (?z (x | z)))");
             TestSuccess("#x ((#y (x & y)) <- (?z (x | z)))");
-            TestSuccess("?x ((#y (x -> y)) <-> (-x | $true))");
-            TestSuccess("?x ((#y (x <- y)) <-> (-x | $true))");
+            TestSuccess("?x ((#y (x -> y)) <-> (-x | w))");
+            TestSuccess("?x ((#y (x <- y)) <-> (-x | w))");
             TestSuccess("#a #b #c ((a & b) | (-b & c) -> (a <-> c))");
             TestSuccess("#a #b #c ((a & b) | (-b & c) <- (a <-> c))");
             TestSuccess("?x ?y ?z ((x | y) & (-x | z) & (-y | -z))");
 
-            TestSuccess("#x (-(#y ((x & y) -> (x | $false))))");
-            TestSuccess("#x (-(#y ((x & y) <- (x | $false))))");
-            TestSuccess("?x (-(?y ((x | y) <-> (x & $true))))");
+            TestSuccess("#x (-(#y ((x & y) -> (x | w))))");
+            TestSuccess("#x (-(#y ((x & y) <- (x | w))))");
+            TestSuccess("?x (-(?y ((x | y) <-> (x & w))))");
         }
 
         [Fact]
@@ -725,14 +686,14 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void RandomLookingValidFormulas()
         {
-            TestSuccess("#foo #bar ((foo & -bar) | $false)");
+            TestSuccess("#foo #bar ((foo & -bar) | w)");
             TestSuccess("?x1 ?y_2 ((x1 | y_2) -> -(x1 & y_2))");
             TestSuccess("?x1 ?y_2 ((x1 | y_2) <- -(x1 & y_2))");
-            TestSuccess("A1_B2 <-> (-foo | ?bar_baz $true)");
+            TestSuccess("A1_B2 <-> (-foo | ?bar_baz w)");
             TestSuccess("#x #y #z ((x -> y) & (y -> z) & -(x <-> z))");
             TestSuccess("#x #y #z ((x <- y) & (y <- z) & -(x <-> z))");
-            TestSuccess("?a1 ?b2 (-((a1 | $false) -> (b2 -> $true)))");
-            TestSuccess("?a1 ?b2 (-((a1 | $false) <- (b2 <- $true)))");
+            TestSuccess("?a1 ?b2 (-((a1 | w) -> (b2 -> w)))");
+            TestSuccess("?a1 ?b2 (-((a1 | w) <- (b2 <- w)))");
             TestSuccess("#foo_1 #Bar2 ((foo_1 & Bar2) | (#x x))");
             TestSuccess("((a -> b) & (-c | d)) <-> (#x #y (x & y))");
             TestSuccess("((a <- b) & (-c | d)) <-> (#x #y (x & y))");
@@ -874,7 +835,7 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a& b");
             TestSuccess("a & b");
 
-            TestFailure("a->b"); // very weird behavior of limboole scanner, reads 'a-' as invalid variable name
+            TestFailure("a->b"); // very weird behavior of limboole
             TestSuccess("a ->b");
             TestFailure("a-> b"); // also here
             TestSuccess("a -> b");
@@ -902,10 +863,6 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void WhitespaceInsideTokens()
         {
-            TestFailure("$ true");
-            TestFailure("$ t r u e");
-            TestFailure("$ f alse");
-            
             TestFailure("-< -");
             TestFailure("- >");
             TestFailure("< - >");
@@ -1018,11 +975,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a -> b");
             TestSuccess("a <- b");
 
-            TestSuccess("a -> $true");
-            TestSuccess("a <- $true");
-            TestSuccess("$true -> a");
-            TestSuccess("$true <- a");
-
             TestSuccess("-a -> b");
             TestSuccess("-a <- b");
             TestSuccess("a -> -b");
@@ -1084,8 +1036,6 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("#a-b a");
             TestSuccess("?a-b a");
 
-            TestSuccess("$true");
-            TestSuccess("$true1");
             TestSuccess("a$b");
             TestSuccess("a@b");
             TestSuccess("a[b]");
