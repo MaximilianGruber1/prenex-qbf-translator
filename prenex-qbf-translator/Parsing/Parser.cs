@@ -163,9 +163,14 @@ namespace prenex_qbf_translator.Parsing
                 IFormula inner = Unary();
                 if (inner is Forall f) // combine multiple forall to one forall
                 {
-                    var quantifiedVariables = f.QuantifiedVariables.Prepend(v);
+                    var vars = f.QuantifiedVariables;
+                    if (!vars.Contains(v))
+                    {
+                        vars = vars.Prepend(v);
+                    }
+
                     var newInner = f.Inner;
-                    return new Forall(quantifiedVariables, newInner);
+                    return new Forall(vars, newInner);
                 }
                 else
                 {
@@ -180,9 +185,14 @@ namespace prenex_qbf_translator.Parsing
                 IFormula inner = Unary();
                 if (inner is Exists e) // combine multiple exists to one exists
                 {
-                    var quantifiedVariables = e.QuantifiedVariables.Prepend(v);
+                    var vars = e.QuantifiedVariables;
+                    if (!vars.Contains(v))
+                    {
+                        vars = vars.Prepend(v);
+                    }
+
                     var newInner = e.Inner;
-                    return new Exists(quantifiedVariables, newInner);
+                    return new Exists(vars, newInner);
                 }
                 else
                 {
