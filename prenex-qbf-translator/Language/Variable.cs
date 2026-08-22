@@ -6,6 +6,10 @@
         public Variable(string name)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            if (name.Length < 1)
+            {
+                throw new ArgumentException("empty variable name");
+            }
         }
 
         public IEnumerable<Variable> Variables()
