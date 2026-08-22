@@ -874,7 +874,7 @@ namespace prenex_qbf_translator.Tests
             TestSuccess("a& b");
             TestSuccess("a & b");
 
-            TestFailure("a->b"); // very weird behavior of limboole
+            TestFailure("a->b"); // very weird behavior of limboole scanner, reads 'a-' as invalid variable name
             TestSuccess("a ->b");
             TestFailure("a-> b"); // also here
             TestSuccess("a -> b");
