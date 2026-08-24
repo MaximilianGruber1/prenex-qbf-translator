@@ -3,7 +3,7 @@
 namespace prenex_qbf_translator.Translator
 {
     /// <summary>
-    /// Generates t_forall(phi), t_exists(phi), N(phi), and P(phi) for a given formula phi according to Definition 5. 
+    /// Generates t_forall(phi), t_exists(phi), P(phi), and N(phi) for a given formula phi according to Definition 5. 
     /// </summary>
     public class SmallTGenerator
     {
@@ -12,20 +12,20 @@ namespace prenex_qbf_translator.Translator
 
 
         /// <summary>
-        /// Generates t_forall(phi), N(phi), and P(phi) for a given formula phi according to Definition 5.
+        /// Generates t_forall(phi), N(phi), and P(phi) for a formula phi according to Definition 2.
         /// </summary>
         /// <param name="formula"></param>
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables = null)
+        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
             return GenerateSmallT(formula, true, unavailableVariables);
         }
 
 
         /// <summary>
-        /// Generates t_exists(phi), N(phi), and P(phi) for a given formula phi according to Definition 5.
+        /// Generates t_exists(phi), N(phi), and P(phi) for a formula phi according to Definition 2.
         /// </summary>
         /// <param name="formula"></param>
         /// <param name="unavailableVariables0"></param>
@@ -71,21 +71,13 @@ namespace prenex_qbf_translator.Translator
         }
 
 
-        /// <summary>
-        /// Generates t_forall(phi) or t_exists(phi), N(phi), and P(phi) for a given formula phi according to Definition 5.
-        /// </summary>
-        /// <param name="formula"></param>
-        /// <param name="isForall"></param>
-        /// <param name="unavailableVariables"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
         public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable>? unavailableVariables = null)
         {
             unavailableVariables ??= [];
 
             if (formula.IsBoolean())
             {
-                return formula; // all 3 parentheses are empty, so we just return the formula itself
+                return formula; // all three big parentheses of Definition 2 (t terms) lines 1 and 2 are empty, so just return the formula itself
             }
             var unav = new List<Variable>(unavailableVariables);
             unav.AddRange(formula.Variables());
@@ -141,7 +133,7 @@ namespace prenex_qbf_translator.Translator
         }
 
 
-        // of course assuming all list have equal length, and that the lists are ordered in the same way as the entries of the substitution
+        // of course assuming all lists have equal length, and that the lists are ordered in the same way as the entries of the substitution
         private IEnumerable<IFormula> GetParenthesis1(IEnumerable<Group> groups)
         {
             return groups.Select(GetParenthesis1Part);

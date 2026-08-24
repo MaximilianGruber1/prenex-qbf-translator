@@ -57,7 +57,7 @@
 
         public IFormula Clone()
         {
-            return this; // immutable, so fine
+            return this; // immutable, therefore fine
         }
 
         public bool IsBoolean()

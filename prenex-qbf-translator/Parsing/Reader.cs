@@ -4,6 +4,9 @@ using System.Text;
 
 namespace prenex_qbf_translator.Parsing
 {
+    /// <summary>
+    /// Returns one character at a time of a given string.
+    /// </summary>
     public class Reader
     {
         private readonly string s;
@@ -14,14 +17,18 @@ namespace prenex_qbf_translator.Parsing
             this.s = s;
             index = 0;
         }
-
+        
+        /// <summary>
+        /// Returns whether the end of the string has been reached.
+        /// </summary>
+        /// <returns></returns>
         public bool HasNext()
         {
             return index < s.Length;
         }
 
         /// <summary>
-        /// returns one char at a time of a given string. If the End of the string is reached, an exception is thrown.
+        /// Returns the next character. If the end is reached, an exception is thrown.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
@@ -29,7 +36,7 @@ namespace prenex_qbf_translator.Parsing
         {
             if (!HasNext())
             {
-                throw new Exception("End of string reached");
+                throw new Exception("end of string reached");
             }
             return s[index++];
         }

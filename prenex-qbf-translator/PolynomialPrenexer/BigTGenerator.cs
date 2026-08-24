@@ -3,18 +3,27 @@
 namespace prenex_qbf_translator.Translator
 {
     /// <summary>
-    /// Generates T_exists(phi) and T_forall(phi)for a given formula phi according to Definition 5.
+    /// Implements the polynomial prenexing approach described in the paper. Use GenerateBigTExists to prenex a formula for Limboole.
     /// </summary>
     public class BigTGenerator
     {
         private readonly SmallTGenerator smallTGenerator = new();
 
-
+        /// <summary>
+        /// Generates T_exists according to Definition 5.
+        /// </summary>
+        /// <param name="formula"></param>
+        /// <returns></returns>
         public IFormula GenerateBigTExists(IFormula formula)
         {
             return GenerateBigT(formula, false);
         }
 
+        /// <summary>
+        /// Generates T_forall according to Definition 5.
+        /// </summary>
+        /// <param name="formula"></param>
+        /// <returns></returns>
         public IFormula GenerateBigTForall(IFormula formula)
         {
             return GenerateBigT(formula, true);
@@ -49,9 +58,5 @@ namespace prenex_qbf_translator.Translator
                 return new Forall(quantifiedVariables, TPsi);
 
         }
-
-
-
-
     }
 }

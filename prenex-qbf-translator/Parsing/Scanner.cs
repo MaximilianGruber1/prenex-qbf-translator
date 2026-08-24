@@ -8,10 +8,13 @@ using static prenex_qbf_translator.Parsing.Token.Kind;
 
 namespace prenex_qbf_translator.Parsing
 {
+    /// <summary>
+    /// Transform a stream of characters into a stream of tokens according to language.ebnf.
+    /// </summary>
     public class Scanner
     {
         /// <summary>
-        /// Input data to read from
+        /// Input data
         /// </summary>
         private readonly Reader reader;
 

@@ -24,9 +24,6 @@
 
         public int Column { get; set; }
 
-        /// <summary>
-        /// Piece type (for pieces)
-        /// </summary>
         public string Name { get; set; }
 
 

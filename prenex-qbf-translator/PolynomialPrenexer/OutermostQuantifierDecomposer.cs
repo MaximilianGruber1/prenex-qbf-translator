@@ -14,7 +14,7 @@ namespace prenex_qbf_translator.Translator
         /// Decomposes a formula into beta and a substitution according to Fact 4.
         /// </summary>
         /// <param name="formula"></param>
-        /// <param name="unavailableVariables">variables that do not occur in the formula but still can't be used</param>
+        /// <param name="unavailableVariables">variables that do not occur in the formula but still must not be used</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         public Args Decompose(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
@@ -27,7 +27,7 @@ namespace prenex_qbf_translator.Translator
             formula = formula.Clone();
             unavailableVariables = unavailableVariables.Concat(formula.Variables());
 
-            if (formula is Quantifier q)
+            if (formula is Quantifier)
             {
                 var p = variableGenerator.GetP(unavailableVariables);
                 var subDic = new Dictionary<Variable, IFormula>() { [p] = formula };
@@ -37,7 +37,7 @@ namespace prenex_qbf_translator.Translator
             {
                 return DecomposeRecursive(b, unavailableVariables.ToList());
             }
-            else // truth constant or variable
+            else // variable
             {
                 return new Args(beta: formula, substitution: new Substitution([]));
             }
@@ -67,7 +67,7 @@ namespace prenex_qbf_translator.Translator
                         substitutionDic.Add(kvp.Key, kvp.Value);
                     }
                 }
-                else // truth constant or variable
+                else // variable
                 {
                     newSubformulas.Add(subformula);
                 }

@@ -1,5 +1,8 @@
 ﻿namespace prenex_qbf_translator.Language
 {
+    /// <summary>
+    /// superclass of !, &, |, ->, <-, <->
+    /// </summary>
     public abstract class BooleanOperator : IFormula
     {
         public abstract IEnumerable<IFormula> Subformulas { get; }
@@ -12,6 +15,11 @@
             return (IFormula)Activator.CreateInstance(GetType(), subs)!;
         }
 
+        /// <summary>
+        /// Creates an object of the same class with different subformulas
+        /// </summary>
+        /// <param name="subformulas"></param>
+        /// <returns></returns>
         public BooleanOperator CreateCopy(IEnumerable<IFormula> subformulas)
         {
             return (BooleanOperator)Activator.CreateInstance(GetType(), subformulas)!;

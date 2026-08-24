@@ -5,7 +5,7 @@ namespace prenex_qbf_translator.Translator
     public class FreshVariableGenerator
     {
         /// <summary>
-        /// Generates a fresh variable px that is not in the set of unavailable variables. Used in Fact 4.
+        /// Generates a fresh variable "pn" that is not in the set of unavailable variables where "n" is the smallest integer >= 1. Used for Fact 4 (decomposition with outermost quantifiers).
         /// </summary>
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
@@ -22,7 +22,7 @@ namespace prenex_qbf_translator.Translator
         }
 
         /// <summary>
-        /// Generates fresh variables x+ and x- for a given variable x. If the variable x_p and x_m are available, they are returned. Otherwise, it generates x1_p and x1_m, x2_p and x2_m, etc., until it finds a pair that is not in the set of unavailable variables.
+        /// Generates fresh variables x^+ and x^- that are not in the set of unavailable variables for a given variable x. If "xp" and "xm" are available, they are returned. Otherwise, "xpn" and "xmn" are returned where n is the smallest integer >= 1. Used for Definition 2 (t terms).
         /// </summary>
         /// <param name="baseVariable"></param>
         /// <param name="unavailableVariables"></param>
