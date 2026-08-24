@@ -11,7 +11,7 @@ namespace prenex_qbf_translator.Tests
         private void TestFormula(string formula, string prenexedFormula)
         {
             string expected = new Parser(new Scanner(prenexedFormula)).Parse().ToString(); // to standardize (whitespace and parentheses)
-            
+
             Parser p = new(new Scanner(formula));
             IFormula f = p.Parse();
             IFormula TExists = new BigTGenerator().GenerateBigTExists(f);
@@ -21,7 +21,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void TestBooleanFormulas() // for a boolean formula phi, T_exists(phi) = phi
+        public void TestBooleanFormulas() // for a boolean formula phi, Texists(phi) = phi
         {
             TestFormula("a", "a");
             TestFormula("!a", "!a");
@@ -32,7 +32,7 @@ namespace prenex_qbf_translator.Tests
             TestFormula("a <-> b", "a <-> b");
             TestFormula("!(a & b) | c <- !(d | e) <-> f",
                         "!(a & b) | c <- !(d | e) <-> f");
-            TestFormula("a & b & c | d | e & f -> g | h & i <-> j", 
+            TestFormula("a & b & c | d | e & f -> g | h & i <-> j",
                         "a & b & c | d | e & f -> g | h & i <-> j");
         }
 
@@ -41,11 +41,11 @@ namespace prenex_qbf_translator.Tests
         {
             TestFormula(
                 "# a a",
-                "#a_p #p1 ((p1 <-> a_p) & (p1 -> (a_p <-> a_m)) -> p1)"
+                "#ap #p1 ((p1 <-> ap) & (p1 -> (ap <-> am)) -> p1)"
                 );
             TestFormula(
                 "?a a",
-                "#a_p #p1 ((p1 <-> a_p) & (!p1 -> (a_p <-> a_m)) -> p1)"
+                "#ap #p1 ((p1 <-> ap) & (!p1 -> (ap <-> am)) -> p1)"
                 );
         }
 
@@ -54,20 +54,20 @@ namespace prenex_qbf_translator.Tests
         {
             TestFormula(
                 "#a#b (a | b)",
-                "#a_p #b_p #p1 (" +
+                "#ap #bp #p1 (" +
                 "(" +
-                "p1 <-> a_p | b_p) & " +
-                "(p1 -> (a_p <-> a_m) & (b_p <-> b_m)) " +
+                "p1 <-> ap | bp) & " +
+                "(p1 -> (ap <-> am) & (bp <-> bm)) " +
                 "-> " +
                 "p1" +
                 ")"
                 );
             TestFormula(
                 "?a?b (a | b)",
-                "#a_p #b_p #p1 " +
+                "#ap #bp #p1 " +
                 "(" +
-                "(p1 <-> a_p | b_p) & " +
-                "(!p1 -> (a_p <-> a_m) & (b_p <-> b_m)) " +
+                "(p1 <-> ap | bp) & " +
+                "(!p1 -> (ap <-> am) & (bp <-> bm)) " +
                 "-> " +
                 "p1" +
                 ")"
@@ -80,36 +80,35 @@ namespace prenex_qbf_translator.Tests
             TestFormula(
                 "?x (psi & !?x xi) & !#y rho",
 
-                "#x_p #y_p #p1 #p2 #x1_m ?x1_p ?p3" +
+                "#xp #yp #p1 #p2 #xm1 ?xp1 ?p3" +
                 "(" +
                 "(p3 <-> xi) &" +
-                "(!p3 -> (x1_p <-> x1_m)) &" +
+                "(!p3 -> (xp1 <-> xm1)) &" +
                     "(" +
                     "(p1 <-> psi & !p3) &" +
                     "(p2 <-> rho) &" +
-                    "(!p1 -> (x_p <-> x_m)) &" +
-                    "(p2 -> (y_p <-> y_m))" +
+                    "(!p1 -> (xp <-> xm)) &" +
+                    "(p2 -> (yp <-> ym))" +
                     "->" +
                     "p1 & !p2" +
                     ")" +
-
                 ")"
                 );
         }
 
-        
+
 
         [Fact]
         public void TripleNestedQuantifier()
         {
             TestFormula("#a ?b #c (a|b|c)",
 
-                "#a_p #p1 #b_m ?b_p ?p2 ?c_m #c_p #p3 " +
+                "#ap #p1 #bm ?bp ?p2 ?cm #cp #p3 " +
                 "    (" +
-                "    (p3 <-> a_p | b_p | c_p)  &  (p3 -> (c_p <-> c_m))" +
+                "    (p3 <-> ap | bp | cp)  &  (p3 -> (cp <-> cm))" +
                 "    ->" +
-                "    (p2 <-> p3)  &  (!p2 -> (b_p <-> b_m)) &" +
-                "    ((p1 <-> p2)  &  (p1 -> (a_p <-> a_m))    ->    p1)" +
+                "    (p2 <-> p3)  &  (!p2 -> (bp <-> bm)) &" +
+                "    ((p1 <-> p2)  &  (p1 -> (ap <-> am))    ->    p1)" +
                 ")");
         }
 
@@ -127,17 +126,17 @@ namespace prenex_qbf_translator.Tests
                 ")"
 
                 ,
-                "#a_p #b_p #c_p #d_p #e_p #p_p #q_p #r_p #s_p #t_p #p1 #p2 #p3 #p4" +
+                "#ap #bp #cp #dp #ep #pp #qp #rp #sp #tp #p1 #p2 #p3 #p4" +
                 "(" +
-                "    (p1 <-> a_p <- b_p) &" +
-                "    (p2 <-> c_p | d_p | e_p) &" +
-                "    (p3 <-> p_p -> q_p) &" +
-                "    (p4 <-> r_p <-> s_p <-> t_p)" +
+                "    (p1 <-> ap <- bp) &" +
+                "    (p2 <-> cp | dp | ep) &" +
+                "    (p3 <-> pp -> qp) &" +
+                "    (p4 <-> rp <-> sp <-> tp)" +
                 "    &" +
-                "    (!p1 -> (a_p <-> a_m) & (b_p <-> b_m)) &" +
-                "    (!p2 -> (c_p <-> c_m) & (d_p <-> d_m) & (e_p <-> e_m)) &" +
-                "    (p3  -> (p_p <-> p_m) & (q_p <-> q_m)) &" +
-                "    (p4  -> (r_p <-> r_m) & (s_p <-> s_m) & (t_p <-> t_m))" +
+                "    (!p1 -> (ap <-> am) & (bp <-> bm)) &" +
+                "    (!p2 -> (cp <-> cm) & (dp <-> dm) & (ep <-> em)) &" +
+                "    (p3  -> (pp <-> pm) & (qp <-> qm)) &" +
+                "    (p4  -> (rp <-> rm) & (sp <-> sm) & (tp <-> tm))" +
                 "    ->" +
                 "    (p1 & -p2 & z  ->  (p3 <-> -p4))" +
                 ")"
@@ -157,19 +156,19 @@ namespace prenex_qbf_translator.Tests
                 "! #x#y#z (x|y|z)"
                 ,
 
-                "#a_p #b_p #c_p #x_p #y_p #z_p #p1 #p2 #p_m #q_m #r_m" +
-                "?p_p ?q_p ?r_p ?p3" +
+                "#ap #bp #cp #xp #yp #zp #p1 #p2 #pm #qm #rm" +
+                "?pp ?qp ?rp ?p3" +
                 "(" +
-                "    (p3 <-> p_p|q_p|r_p)" +
+                "    (p3 <-> pp|qp|rp)" +
                 "    &" +
-                "    (!p3 -> (p_p <-> p_m) & (q_p <-> q_m) & (r_p <-> r_m))" +
+                "    (!p3 -> (pp <-> pm) & (qp <-> qm) & (rp <-> rm))" +
                 "    &" +
                 "    (" +
-                "        (p1 <-> (a_p|b_p|c_p) & !p3) &" +
-                "        (p2 <-> (x_p|y_p|z_p))" +
+                "        (p1 <-> (ap|bp|cp) & !p3) &" +
+                "        (p2 <-> (xp|yp|zp))" +
                 "        &" +
-                "        (!p1 -> (a_p <-> a_m) & (b_p <-> b_m) & (c_p <-> c_m)) &" +
-                "        (p2  -> (x_p <-> x_m) & (y_p <-> y_m) & (z_p <-> z_m))" +
+                "        (!p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm)) &" +
+                "        (p2  -> (xp <-> xm) & (yp <-> ym) & (zp <-> zm))" +
                 "        ->" +
                 "        p1 & !p2" +
                 "    )" +
@@ -178,34 +177,68 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void ReoccurringVariablesABC() // constructed with find and replace based on PaperExampleChangedTo3VariablesPerQuantifier
+        public void VariableNamingInsanityA_IncludingNesting()
         {
             TestFormula(
-                "?a?b?c " +
+                "?a ?ap1 ?app " +
                 "(" +
-                "    (a|b|c) & " +
-                "    ! ?a?b?c (a|b|c)" +
+                "    (a|ap1|app) & " +
+                "    ! ?a ?am2 ?apm1 (a|am2|apm1)" +
                 ")" +
                 "&" +
-                "! #a#b#c (a|b|c)"
+                "! #ap #ap4 #a (ap|ap4|a)"
                 ,
 
-                "#a_p #b_p #c_p #a1_p #b1_p #c1_p #p1 #p2 #a2_m #b2_m #c2_m" +
-                "?a2_p ?b2_p ?c2_p ?p3" +
+                "#ap3 #ap1p #appp #app2 #ap4p #ap5 #p1 #p2 #am6 #am2m #apm1m" +
+                "?ap6 ?am2p ?apm1p ?p3" +
                 "(" +
-                "    (p3 <-> a2_p|b2_p|c2_p)" +
+                "    (p3 <-> ap6|am2p|apm1p)" +
                 "    &" +
-                "    (!p3 -> (a2_p <-> a2_m) & (b2_p <-> b2_m) & (c2_p <-> c2_m))" +
+                "    (!p3 -> (ap6 <-> am6) & (am2p <-> am2m) & (apm1p <-> apm1m))" +
                 "    &" +
                 "    (" +
-                "        (p1 <-> (a_p|b_p|c_p) & !p3) &" +
-                "        (p2 <-> (a1_p|b1_p|c1_p))" +
+                "        (p1 <-> (ap3|ap1p|appp) & !p3) &" +
+                "        (p2 <-> (app2|ap4p|ap5))" +
                 "        &" +
-                "        (!p1 -> (a_p <-> a_m) & (b_p <-> b_m) & (c_p <-> c_m)) &" +
-                "        (p2  -> (a1_p <-> a1_m) & (b1_p <-> b1_m) & (c1_p <-> c1_m))" +
+                "        (!p1 -> (ap3 <-> am3) & (ap1p <-> ap1m) & (appp <-> appm)) &" +
+                "        (p2  -> (app2 <-> apm2) & (ap4p <-> ap4m) & (ap5 <-> am5))" +
                 "        ->" +
                 "        p1 & !p2" +
                 "    )" +
+                ")"
+                );
+        }
+
+        [Fact]
+        public void OneQuantifierManyVariables()
+        {
+            TestFormula(
+                "?a?b?c(a|b|c|d|e|f|g|h|i) & (x|y|z)",
+
+                "#ap #bp #cp #p1" +
+                "(" +
+                "    (p1 <-> ap|bp|cp|d|e|f|g|h|i)" +
+                "    &" +
+                "    (!p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm))" +
+                "    ->" +
+                "    p1 & (x|y|z)" +
+                ")"
+                );
+        }
+
+        [Fact]
+        public void VariableNamingInsanityP_NoNesting()
+        {
+            TestFormula(
+                "?p ?p1 ?pm (p|p1|pm|p3|pm2) & (p2|pp1)",
+
+                "#pp3 #p1p #pmp #p4" +
+                "(" +
+                "    (p4 <-> pp3|p1p|pmp|p3|pm2)" +
+                "    &" +
+                "    (!p4 -> (pp3 <-> pm3) & (p1p <-> p1m) & (pmp <-> pmm))" +
+                "    ->" +
+                "    p4 & (p2|pp1)" +
                 ")"
                 );
         }

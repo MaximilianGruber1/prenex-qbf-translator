@@ -29,8 +29,8 @@ namespace prenex_qbf_translator.Translator
         /// <returns></returns>
         public Args GetPositiveAndNegative(Variable baseVariable, IEnumerable<Variable> unavailableVariables)
         {
-            string plusEnding = "_p";
-            string minusEnding = "_m";
+            string plusEnding = "p";
+            string minusEnding = "m";
             
             Variable plusVariable = new Variable(baseVariable.Name + plusEnding);
             Variable minusVariable = new Variable(baseVariable.Name + minusEnding);
@@ -44,8 +44,8 @@ namespace prenex_qbf_translator.Translator
             Variable vPlus, vMinus;
             do
             {
-                vPlus = new Variable(baseVariable.Name + index + plusEnding);
-                vMinus = new Variable(baseVariable.Name + index + minusEnding);
+                vPlus = new Variable(baseVariable.Name + plusEnding + index);
+                vMinus = new Variable(baseVariable.Name + minusEnding + index);
                 index++;
             } while (unavailableVariables.Contains(vPlus) || unavailableVariables.Contains(vMinus));
             return new Args(vPlus, vMinus);
