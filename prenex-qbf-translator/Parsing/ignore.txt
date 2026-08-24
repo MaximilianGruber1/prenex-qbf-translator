@@ -1,9 +1,20 @@
+TestSuccess("!a");
+            TestSuccess("!b");
+            TestSuccess("!x");
+            TestSuccess("!(a)");
+            TestSuccess("!(a & b)");
+            TestSuccess("!(a | b)");
+            TestSuccess("!(a !> b)");
+            TestSuccess("!(a <! b)");
+            TestSuccess("!(a <!> b)");
+            TestSuccess("!(#x a)");
+            TestSuccess("!(?x a)");
 
-                "#ap #bp #cp #p1" +
-                "(" +
-                "    (p1 <-> ap|bp|cp|d|e|f|g|h|i)" +
-                "    &" +
-                "    (!p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm))" +
-                "    ->" +
-                "    p1 & (x|y|z)" +
-                ")"
+            TestSuccess("!!a");
+            TestSuccess("!!!a");
+            TestSuccess("!!!!a");
+            TestSuccess("!!!!!a");
+            TestSuccess("!(!a)");
+            TestSuccess("!(!(!a))");
+            TestSuccess("!!(a & b)");
+            TestSuccess("!(!(a | b))");
