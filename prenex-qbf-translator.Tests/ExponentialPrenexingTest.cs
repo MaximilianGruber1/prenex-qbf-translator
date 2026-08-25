@@ -2,7 +2,7 @@
 using Xunit;
 using prenex_qbf_translator.Parsing;
 using prenex_qbf_translator.Language;
-using prenex_qbf_translator.Translator;
+using prenex_qbf_translator.ExponentialPrenexing;
 
 namespace prenex_qbf_translator.Tests
 {
@@ -14,11 +14,59 @@ namespace prenex_qbf_translator.Tests
 
             Parser p = new(new Scanner(formula));
             IFormula f = p.Parse();
-            IFormula TExists = new BigTGenerator().GenerateBigTExists(f);
-            string actual = TExists.ToString();
+            IFormula prenexed = new ExponentialPrenexer().Prenexed(f);
+            string actual = prenexed.ToString();
 
             Assert.Equal(expected, actual);
         }
+
+
+        [Fact]
+        public void TestBooleanFormulas() // no quantifiers, no prenexing required
+        {
+            TestFormula("a", "a");
+            TestFormula("!a", "!a");
+            TestFormula("a & b", "a&b");
+            TestFormula("a | b", "a | b");
+            TestFormula("a -> b", "a -> b");
+            TestFormula("a <- b", "a <- b");
+            TestFormula("a <-> b", "a <-> b");
+            TestFormula("!(a & b) | c <- !(d | e) <-> f",
+                        "!(a & b) | c <- !(d | e) <-> f");
+            TestFormula("a & b & c | d | e & f -> g | h & i <-> j",
+                        "a & b & c | d | e & f -> g | h & i <-> j");
+        }
+
+        [Fact]
+        public void Not()
+        {
+            TestFormula("!?a a", "#a !a");
+            TestFormula("!#a a", "?a !a");
+
+            TestFormula("!?a !a", "#a a");
+            TestFormula("!#a !a", "?a a");
+
+            TestFormula("!?a ?b a", "#a #b !a");
+            TestFormula("!#a ?b a", "?a #b !a");
+            TestFormula("!?a #b a", "#a ?b !a");
+            TestFormula("!#a #b a", "?a ?b !a");
+
+            TestFormula("?a !?b a", "?a #b !a");
+            TestFormula("#a !?b a", "#a #b !a");
+            TestFormula("?a !#b a", "?a ?b !a");
+            TestFormula("#a !#b a", "#a ?b !a");
+
+            TestFormula("!?a !?b a", "#a ?b a");
+            TestFormula("!#a !?b a", "?a ?b a");
+            TestFormula("!?a !#b a", "#a #b a");
+            TestFormula("!#a !#b a", "?a #b a");
+
+            TestFormula("!?a ?b !#c #d a", "#a #b #c #d a");
+            TestFormula("!#a #b #c !?d ?e ?f !a", "?a ?b ?c ?d ?e ?f !a");
+            TestFormula("#a #b ?c !?d ?e !?f ?g !#h !#i #j !a", "#a #b ?c #d #e ?f ?g ?h #i #j !a");
+        }
+
+
 
         [Fact]
         public void And_2operands()
