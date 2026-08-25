@@ -10,11 +10,11 @@ namespace prenex_qbf_translator.Language
         /// Creates a deep copy of the object
         /// </summary>
         /// <returns></returns>
-        IFormula Clone();
+        IFormula DeepCopy();
 
         IEnumerable<Variable> Variables();
 
-        IFormula ApplySubstitution(Substitution substitution);
+        IEnumerable<Variable> FreeVariables();
 
         /// <summary>
         /// Checks if the formula does not contain any quantifiers

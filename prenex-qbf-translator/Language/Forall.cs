@@ -2,30 +2,47 @@ namespace prenex_qbf_translator.Language
 {
     public class Forall : Quantifier
     {
-        public override IEnumerable<Variable> QuantifiedVariables { get; }
-        public override IFormula Inner { get; }
+        private IEnumerable<Variable> quantifiedVariables;
+        private IFormula inner;
 
-        public Forall(IEnumerable<Variable> variables, IFormula inner)
+        public override IEnumerable<Variable> QuantifiedVariables
         {
-            ArgumentNullException.ThrowIfNull(variables);
-            ArgumentNullException.ThrowIfNull(inner);
-            if (!variables.Any())
+            get => quantifiedVariables;
+            set
             {
-                throw new ArgumentException("Forall must bind at least one variable.");
+                ArgumentNullException.ThrowIfNull(value);
+                var variables = value.ToArray();
+                if (variables.Length == 0)
+                {
+                    throw new ArgumentException("Quantifier must bind at least one variable.");
+                }
+                foreach (var variable in variables)
+                {
+                    ArgumentNullException.ThrowIfNull(variable);
+                }
+                quantifiedVariables = variables;
             }
-            foreach (var variable in variables)
+        }
+
+        public override IFormula Inner
+        {
+            get => inner;
+            set
             {
-                ArgumentNullException.ThrowIfNull(variable);
+                ArgumentNullException.ThrowIfNull(value);
+                inner = value;
             }
-            QuantifiedVariables = variables;
+        }
+
+        public Forall(IEnumerable<Variable> quantifiedVariables, IFormula inner)
+        {
+            QuantifiedVariables = quantifiedVariables;
             Inner = inner;
         }
 
         public Forall(Variable x, IFormula inner) : this([x], inner) { }
         public Forall(Variable x1, Variable x2, IFormula inner) : this([x1, x2], inner) { }
         public Forall(Variable x1, Variable x2, Variable x3, IFormula inner) : this([x1, x2, x3], inner) { }
-
-
 
 
 

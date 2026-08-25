@@ -6,7 +6,7 @@ using prenex_qbf_translator.Translator;
 
 namespace prenex_qbf_translator.Tests
 {
-    public class PrenexingTest
+    public class PolynomialPrenexingTest
     {
         private void TestFormula(string formula, string prenexedFormula)
         {

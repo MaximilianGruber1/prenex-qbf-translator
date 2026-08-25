@@ -2,22 +2,41 @@ namespace prenex_qbf_translator.Language
 {
     public class Exists : Quantifier
     {
-        public override IEnumerable<Variable> QuantifiedVariables { get; }
-        public override IFormula Inner { get; }
+        private IEnumerable<Variable> quantifiedVariables;
+        private IFormula inner;
 
-        public Exists(IEnumerable<Variable> variables, IFormula inner)
+        public override IEnumerable<Variable> QuantifiedVariables
         {
-            ArgumentNullException.ThrowIfNull(variables);
-            ArgumentNullException.ThrowIfNull(inner);
-            if (!variables.Any())
+            get => quantifiedVariables;
+            set
             {
-                throw new ArgumentException("Exists must bind at least one variable.");
+                ArgumentNullException.ThrowIfNull(value);
+                var variables = value.ToArray();
+                if (variables.Length == 0)
+                {
+                    throw new ArgumentException("Quantifier must bind at least one variable.");
+                }
+                foreach (var variable in variables)
+                {
+                    ArgumentNullException.ThrowIfNull(variable);
+                }
+                quantifiedVariables = variables;
             }
-            foreach (var variable in variables)
+        }
+
+        public override IFormula Inner
+        {
+            get => inner;
+            set
             {
-                ArgumentNullException.ThrowIfNull(variable);
+                ArgumentNullException.ThrowIfNull(value);
+                inner = value;
             }
-            QuantifiedVariables = variables;
+        }
+
+        public Exists(IEnumerable<Variable> quantifiedVariables, IFormula inner)
+        {
+            QuantifiedVariables = quantifiedVariables;
             Inner = inner;
         }
 
@@ -25,7 +44,8 @@ namespace prenex_qbf_translator.Language
         public Exists(Variable x1, Variable x2, IFormula inner) : this([x1, x2], inner) { }
         public Exists(Variable x1, Variable x2, Variable x3, IFormula inner) : this([x1, x2, x3], inner) { }
 
-        
+
+
         public override string ToString()
         {
             string symb = "?";
@@ -37,3 +57,4 @@ namespace prenex_qbf_translator.Language
         }
     }
 }
+

@@ -1,42 +1,75 @@
+
+
 namespace prenex_qbf_translator.Language
 {
     public class IsImpliedBy : BooleanOperator
     {
-        public IFormula Left { get; private set; }
-        public IFormula Right { get; private set; }
+        private IFormula left;
+        private IFormula right;
 
-        public override IEnumerable<IFormula> Subformulas => [Left, Right];
+        public IFormula Left
+        {
+            get => left;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                left = value;
+            }
+        }
+
+        public IFormula Right
+        {
+            get => right;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                right = value;
+            }
+        }
+
+        public override IEnumerable<IFormula> Subformulas
+        {
+            get => [left, right];
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                var subformulas = value.ToArray();
+                if (subformulas.Length != 2) throw new ArgumentException("needs 2 subformulas");
+                Left = subformulas[0];
+                Right = subformulas[1];
+            }
+        }
 
 
         public IsImpliedBy(IFormula left, IFormula right)
         {
-            ArgumentNullException.ThrowIfNull(left);
-            ArgumentNullException.ThrowIfNull(right);
             Left = left;
             Right = right;
         }
 
-        public IsImpliedBy(IEnumerable<IFormula> subformulas)
+        public IsImpliedBy(IFormula first, IFormula second, params IFormula[] other)
         {
-            ArgumentNullException.ThrowIfNull(subformulas);
-            if (subformulas.Count() != 2)
-            {
-                throw new ArgumentException("'<-' must be instantiated with exactly 2 subformulas.");
-            }
-            var left = subformulas.ElementAt(0);
-            var right = subformulas.ElementAt(1);
-            ArgumentNullException.ThrowIfNull(left);
-            ArgumentNullException.ThrowIfNull(right);
-            Left = left;
-            Right = right;
+            ArgumentNullException.ThrowIfNull(other);
+
+            Left = first;
+            Right = other.Length == 0
+                ? second
+                : new IsImpliedBy(second, other[0], other[1..]);
+        }
+
+
+        public override IFormula DeepCopy()
+        {
+            return new IsImpliedBy(left.DeepCopy(), right.DeepCopy());
         }
 
 
         public override string ToString()
         {
-            List<IFormula> operands = [Left, Right];
-            return $"{string.Join(" <- ",
-                operands.Select(o => o is Equivalent ? $"({o})" : o.ToString()))}";
+            bool NeedsParentheses(IFormula o) => o is Equivalent || o is IsImpliedBy || o is IsImpliedBy;
+            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
+
+            return $"{Format(left)} <- {Format(right)}";
         }
     }
 }

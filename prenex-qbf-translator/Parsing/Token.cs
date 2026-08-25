@@ -53,7 +53,8 @@
                 Kind.RPar => ")",
                 Kind.Forall => "#",
                 Kind.Exists => "?",
-                Kind.Eof => "EOF"
+                Kind.Eof => "EOF",
+                _ => throw new NotImplementedException() // impossible case
             };
         }
 

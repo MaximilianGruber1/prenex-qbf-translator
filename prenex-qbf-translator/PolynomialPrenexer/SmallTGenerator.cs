@@ -45,7 +45,7 @@ namespace prenex_qbf_translator.Translator
                 return [];
             }
 
-            var decomp = decomposer.Decompose(formula, unavailableVariables);
+            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
             var unav = new List<Variable>(unavailableVariables);
             unav.AddRange(formula.Variables());
             unav = unav.Distinct().ToList();
@@ -62,7 +62,7 @@ namespace prenex_qbf_translator.Translator
                 return [];
             }
 
-            var decomp = decomposer.Decompose(formula, unavailableVariables);
+            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
             var unav = new List<Variable>(unavailableVariables);
             unav.AddRange(formula.Variables());
             unav = unav.Distinct().ToList();
@@ -83,19 +83,21 @@ namespace prenex_qbf_translator.Translator
             unav.AddRange(formula.Variables());
             unav = unav.Distinct().ToList();
 
-            var decomp = decomposer.Decompose(formula, unavailableVariables);
+            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
             var groups = ConstructGroups(decomp.Substitution, unav);
 
             IEnumerable<IFormula> parenthesis1 = GetParenthesis1(groups);
             IEnumerable<IFormula> parentheses2and3 = GetParentheses2And3(groups);
             if (isForall)
             {
-                return new And([.. parenthesis1, .. parentheses2and3, decomp.Beta]);
+                IFormula[] subs = [.. parenthesis1, .. parentheses2and3, decomp.Beta]; // the two parentheses lists have at least one element each
+                return new And(subs[0], subs[1], subs[2..]);
             }
             else // exists
             {
+                IFormula[] subs = [.. parenthesis1, .. parentheses2and3];
                 return new Implies(
-                        new And([.. parenthesis1, .. parentheses2and3]),
+                        new And(subs[0], subs[1], subs[2..]), // same here
                         decomp.Beta
                     );
             }
@@ -106,16 +108,14 @@ namespace prenex_qbf_translator.Translator
             List<Variable> unav = unavailableVariables.ToList();
             List<Group> groups = [];
 
-            foreach (var entry in unnamedSub.Dictionary)
+            foreach (var (from, to) in unnamedSub.Mappings)
             {
-                var from = entry.Key;
-                var to = (Quantifier)entry.Value;
-
+                var q = (Quantifier)to;
                 Group group = new();
                 group.P = from;
-                group.IsForall = entry.Value is Forall;
-                group.BoundVariables = to.QuantifiedVariables.ToList();
-                group.Phi = to.Inner;
+                group.IsForall = q is Forall;
+                group.BoundVariables = q.QuantifiedVariables.ToList();
+                group.Phi = q.Inner;
                 group.XPlus = [];
                 group.XMinus = [];
                 foreach (Variable v in group.BoundVariables)
@@ -141,16 +141,15 @@ namespace prenex_qbf_translator.Translator
 
         private IFormula GetParenthesis1Part(Group group)
         {
-            Dictionary<Variable, IFormula> sigmaDic = new();
+            Substitution sigma = new();
             for (int i = 0; i < group.BoundVariables.Count; i++)
             {
-                sigmaDic[group.BoundVariables[i]] = group.XPlus[i];
+                sigma.Add(group.BoundVariables[i], group.XPlus[i]);
             }
-            Substitution sigma = new(sigmaDic);
 
             return new Equivalent(
                 group.P,
-                group.Phi.ApplySubstitution(sigma)
+                sigma.ApplyTo(group.Phi)
                 );
         }
 
@@ -170,9 +169,9 @@ namespace prenex_qbf_translator.Translator
                 ));
             }
 
-            IFormula right = equivalences.Count() == 1 ?
+            IFormula right = equivalences.Count() == 1 ? // always at least 1
                 equivalences[0] :
-                new And(equivalences);
+                new And(equivalences[0], equivalences[1], equivalences[2..].ToArray());
             if (!group.IsForall) // Exists
             {
                 return

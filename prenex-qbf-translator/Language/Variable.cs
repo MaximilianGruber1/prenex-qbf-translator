@@ -17,23 +17,21 @@
             return [this];
         }
 
-        
-
-        public IFormula ApplySubstitution(Substitution substitution)
+        public IEnumerable<Variable> FreeVariables()
         {
-            foreach (var kvp in substitution.Dictionary)
-            {
-                if (this.Equals(kvp.Key))
-                {
-                    return kvp.Value;
-                }
-            }
-
-            return this;
+            return [this];
         }
 
 
+        public IFormula DeepCopy()
+        {
+            return this; // immutable, therefore fine
+        }
 
+        public bool IsBoolean()
+        {
+            return true;
+        }
 
         public override string ToString()
         {
@@ -53,16 +51,6 @@
         public override int GetHashCode()
         {
             return Name.GetHashCode();
-        }
-
-        public IFormula Clone()
-        {
-            return this; // immutable, therefore fine
-        }
-
-        public bool IsBoolean()
-        {
-            return true;
         }
     }
 }

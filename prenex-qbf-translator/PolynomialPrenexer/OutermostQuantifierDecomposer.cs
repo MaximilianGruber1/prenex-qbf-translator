@@ -17,21 +17,20 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables">variables that do not occur in the formula but still must not be used</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public Args Decompose(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public Args GetDecomposition(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
             unavailableVariables ??= [];
 
             if (formula == null)
                 throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
-            formula = formula.Clone();
+            formula = formula.DeepCopy();
             unavailableVariables = unavailableVariables.Concat(formula.Variables());
 
             if (formula is Quantifier)
             {
                 var p = variableGenerator.GetP(unavailableVariables);
-                var subDic = new Dictionary<Variable, IFormula>() { [p] = formula };
-                return new Args(p, new Substitution(subDic));
+                return new Args(p, new Substitution((p, formula)));
             }
             else if (formula is BooleanOperator b)
             {
@@ -39,7 +38,7 @@ namespace prenex_qbf_translator.Translator
             }
             else // variable
             {
-                return new Args(beta: formula, substitution: new Substitution([]));
+                return new Args(beta: formula, substitution: new Substitution());
             }
         }
 
@@ -48,7 +47,7 @@ namespace prenex_qbf_translator.Translator
             var subformulas = formula.Subformulas;
 
             List<IFormula> newSubformulas = new();
-            Dictionary<Variable, IFormula> substitutionDic = [];
+            Substitution substitution = new();
             foreach (var subformula in subformulas)
             {
                 if (subformula is Quantifier)
@@ -56,16 +55,13 @@ namespace prenex_qbf_translator.Translator
                     Variable p = variableGenerator.GetP(unavailableVariables);
                     unavailableVariables.Add(p);
                     newSubformulas.Add(p);
-                    substitutionDic.Add(p, subformula);
+                    substitution.Add(p, subformula);
                 }
                 else if (subformula is BooleanOperator b)
                 {
                     var args = DecomposeRecursive(b, unavailableVariables);
                     newSubformulas.Add(args.Beta);
-                    foreach (var kvp in args.Substitution.Dictionary)
-                    {
-                        substitutionDic.Add(kvp.Key, kvp.Value);
-                    }
+                    substitution.Add(args.Substitution);
                 }
                 else // variable
                 {
@@ -73,7 +69,8 @@ namespace prenex_qbf_translator.Translator
                 }
             }
 
-            return new Args(formula.CreateCopy(newSubformulas), new Substitution(substitutionDic));
+            formula.Subformulas = newSubformulas;
+            return new Args(formula, substitution);
         }
 
 

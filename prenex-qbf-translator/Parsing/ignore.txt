@@ -1,0 +1,29 @@
+TestAppliction(sub, "a", "a");
+            TestAppliction(sub, "!a", "!a");
+            TestAppliction(sub, "a&b", "a&b");
+            TestAppliction(sub, "a|b", "a|b");
+            TestAppliction(sub, "a ->b", "a ->b");
+            TestAppliction(sub, "a<-b", "a<-b");
+            TestAppliction(sub, "a<->b", "a<->b");
+            TestAppliction(sub, "?a a", "?a a");
+            TestAppliction(sub, "#a a", "#a a");
+            TestAppliction(sub,
+                "a|b|c -> ?a " +
+                "(" +
+                "    !a|!b|!c <- #b " +
+                "    (" +
+                "        a|b|c <-> #c " +
+                "        (a&b&c)" +
+                "    )" +
+                ")"
+                ,
+
+                "a|b|c -> ?a " +
+                "(" +
+                "    !a|!b|!c <- #b " +
+                "    (" +
+                "        a|b|c <-> #c " +
+                "        (a&b&c)" +
+                "    )" +
+                ")"
+                );

@@ -2,36 +2,72 @@
 {
     public class Or : BooleanOperator
     {
-        private readonly List<IFormula> operands;
+        private IFormula left;
+        private IFormula right;
 
-        public override IEnumerable<IFormula> Subformulas => operands;
-
-        public Or(IEnumerable<IFormula> operands)
+        public IFormula Left
         {
-            ArgumentNullException.ThrowIfNull(operands);
-            if (operands.Count() < 2)
+            get => left;
+            set
             {
-                throw new ArgumentException("'|' must have at least two operands.");
+                ArgumentNullException.ThrowIfNull(value);
+                left = value;
             }
-            foreach (var operand in operands)
+        }
+
+        public IFormula Right
+        {
+            get => right;
+            set
             {
-                ArgumentNullException.ThrowIfNull(operand);
+                ArgumentNullException.ThrowIfNull(value);
+                right = value;
             }
-            this.operands = operands.ToList();
+        }
+
+        public override IEnumerable<IFormula> Subformulas
+        {
+            get => [left, right];
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                var subformulas = value.ToArray();
+                if (subformulas.Length != 2) throw new ArgumentException("needs 2 subformulas");
+                Left = subformulas[0];
+                Right = subformulas[1];
+            }
         }
 
 
-        public Or(IFormula a, IFormula b) : this([a, b]) { }
+        public Or(IFormula left, IFormula right)
+        {
+            Left = left;
+            Right = right;
+        }
 
-        public Or(IFormula a, IFormula b, IFormula c) : this([a, b, c]) { }
+        public Or(IFormula first, IFormula second, params IFormula[] other)
+        {
+            ArgumentNullException.ThrowIfNull(other);
 
-        public Or(IFormula a, IFormula b, IFormula c, IFormula d) : this([a, b, c, d]) { }
+            Left = first;
+            Right = other.Length == 0
+                ? second
+                : new Or(second, other[0], other[1..]);
+        }
+
+
+        public override IFormula DeepCopy()
+        {
+            return new Or(left.DeepCopy(), right.DeepCopy());
+        }
 
 
         public override string ToString()
         {
-            return $"{string.Join(" | ",
-                operands.Select(o => o is Equivalent || o is Implies || o is IsImpliedBy ? $"({o})" : o.ToString()))}";
+            bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy;
+            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
+
+            return $"{Format(left)} | {Format(right)}";
         }
     }
 }

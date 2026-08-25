@@ -1,39 +1,75 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿
 
 namespace prenex_qbf_translator.Language
 {
     public class And : BooleanOperator
     {
-        private readonly List<IFormula> operands;
+        private IFormula left;
+        private IFormula right;
 
-        public override IEnumerable<IFormula> Subformulas => operands;
-        
-        public And(IEnumerable<IFormula> operands)
+        public IFormula Left
         {
-            ArgumentNullException.ThrowIfNull(operands);
-            if (operands.Count() < 2)
+            get => left;
+            set
             {
-                throw new ArgumentException("'&' must have at least two operands.");
+                ArgumentNullException.ThrowIfNull(value);
+                left = value;
             }
-            foreach (var operand in operands)
-            {
-                ArgumentNullException.ThrowIfNull(operand);
-            }
-            this.operands = operands.ToList();
         }
 
-        public And(IFormula a, IFormula b) : this([a, b]) { }
+        public IFormula Right
+        {
+            get => right;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                right = value;
+            }
+        }
 
-        public And(IFormula a, IFormula b, IFormula c) : this([a, b, c]) { }
+        public override IEnumerable<IFormula> Subformulas
+        {
+            get => [left, right];
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                var subformulas = value.ToArray();
+                if (subformulas.Length != 2) throw new ArgumentException("needs 2 subformulas");
+                Left = subformulas[0];
+                Right = subformulas[1];
+            }
+        }
 
-        public And(IFormula a, IFormula b, IFormula c, IFormula d) : this([a, b, c, d]) { }
 
+        public And(IFormula left, IFormula right)
+        {
+            Left = left;
+            Right = right;
+        }
+
+        public And(IFormula first, IFormula second, params IFormula[] other)
+        {
+            ArgumentNullException.ThrowIfNull(other);
+
+            Left = first;
+            Right = other.Length == 0
+                ? second
+                : new And(second, other[0], other[1..]);
+        }
+
+
+        public override IFormula DeepCopy()
+        {
+            return new And(left.DeepCopy(), right.DeepCopy());
+        }
 
 
         public override string ToString()
         {
-            return $"{string.Join(" & ", 
-                operands.Select(o => o is Equivalent || o is Implies || o is IsImpliedBy || o is Or ? $"({o})" : o.ToString()))}";
+            bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy || o is Or;
+            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
+
+            return $"{Format(left)} & {Format(right)}";
         }
     }
 }

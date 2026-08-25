@@ -2,26 +2,39 @@
 {
     public class Not : BooleanOperator
     {
-        public IFormula Inner { get; private set; }
+        private IFormula inner;
 
-        public override IEnumerable<IFormula> Subformulas => [Inner];
+        public IFormula Inner
+        {
+            get => inner;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                inner = value;
+            }
+        }
+
+        public override IEnumerable<IFormula> Subformulas
+        {
+            get => [inner];
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                var subformulas = value.ToArray();
+                if (subformulas.Length != 1) throw new ArgumentException("needs 1 subformula");
+                Inner = subformulas[0];
+            }
+        }
 
         public Not(IFormula inner)
         {
-            ArgumentNullException.ThrowIfNull(inner);
             Inner = inner;
         }
 
-        public Not(IEnumerable<IFormula> subformulas) // needed for Activator.CreateInstance call in BooleanOperator
+
+        public override IFormula DeepCopy()
         {
-            ArgumentNullException.ThrowIfNull(subformulas);
-            if (subformulas.Count() != 1)
-            {
-                throw new ArgumentException("'!' must have exactly one operand.");
-            }
-            var inner = subformulas.ElementAt(0);
-            ArgumentNullException.ThrowIfNull(inner);
-            Inner = inner;
+            return new Not(inner.DeepCopy());
         }
         
 
