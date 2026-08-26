@@ -13,83 +13,69 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         public IFormula Prenexed(IFormula f)
         {
             f = f.DeepCopy();
-            return PrenexedRecursive(f);
-        }
-        
-        private IFormula PrenexedRecursive(IFormula f)
-        {
-            if (f is Variable)
-            {
-                return f;
-            }
-            else if (f is Quantifier q)
-            {
-                q.Inner = PrenexedRecursive(q.Inner);
-                return q;
-            }
-            else if (f is BooleanOperator b)
-            {
-                b.Subformulas = b.Subformulas.Select(PrenexedRecursive);
-                return PrenexOneLayer(b);
-            }
-            else
-            {
-                throw new NotImplementedException("impossible case");
-            }
+            Wrapper w = new(f);
+            PrenexRecursive(w);
+            return w.Formula;
         }
 
-        private IFormula PrenexOneLayer(BooleanOperator b)
+        private void PrenexRecursive(Wrapper w)
         {
-            if (b is Not n) // e.g. '!?x phi' becomes '#x !phi'
+            if (w.Formula is Quantifier q)
             {
-                return PullQuantifiersOutOfNot(n);
+                var ww = new Wrapper(q.Inner);
+                PrenexRecursive(ww);
+                q.Inner = ww.Formula;
             }
-            else if (b is And a)
+            else if (w.Formula is BooleanOperator b)
             {
-                var l = a.Left;
-                var r = a.Right;
-                if (l is Quantifier)
+                b.Subformulas = b.Subformulas.Select(subf => // prenex subformulas
                 {
-                    if (r is Quantifier)
-                    {
-
-                    }
-                    else
-                    {
-                        
-                    }
-                }
-                else
-                {
-                    if (r is Quantifier)
-                    {
-
-                    }
-                    else
-                    {
-                        return b;
-                    }
-                }
-                
-                
+                    Wrapper w = new(subf);
+                    PrenexRecursive(w);
+                    return w.Formula;
+                });
+                PrenexOneLayer(w);
             }
-            throw new NotImplementedException();
         }
 
-
-        private IFormula PullQuantifiersOutOfNot(Not negatedPrenexedFormula)
+        /// <summary>
+        /// Prenexes boolean operator (inside a wrapper) with prexed subformulas
+        /// </summary>
+        /// <param name="w"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void PrenexOneLayer(Wrapper w)
         {
-            if (negatedPrenexedFormula.Inner is Quantifier q)
+            if (w.Formula is Not n) // e.g. '!?x phi' becomes '#x !phi'
             {
-                var n = new Not(q.Inner);
-                IFormula newInner = PullQuantifiersOutOfNot(n);
+                PullQuantifiersOutOfNot(w);
+            }
+            else if (w.Formula is And a)
+            {
+                PullQuantifiersOutOfAnd(w);
+
+            }
+        }
+
+        /// <summary>
+        /// Prenexes a Not with prenexed Inner
+        /// </summary>
+        /// <param name="w"></param>
+        private void PullQuantifiersOutOfNot(Wrapper w)
+        {
+            var not = (Not)w.Formula;
+            if (not.Inner is Quantifier q)
+            {
+                var ww = new Wrapper(new Not(q.Inner));
+                PullQuantifiersOutOfNot(ww);
+                var newInner = ww.Formula;
+
                 var newOuter = CreateDual(q);
                 newOuter.Inner = newInner;
-                return newOuter;
+                w.Formula = newOuter;
             }
             else // base case
             {
-                return SimplifyNotChain(negatedPrenexedFormula); // to avoid multiple negation
+                SimplifyNotChain(w); // to avoid multiple negation
             }
         }
 
@@ -105,16 +91,80 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             }
         }
 
-        private IFormula SimplifyNotChain(IFormula f)
+        private void SimplifyNotChain(Wrapper w)
         {
-            while (f is Not outerNot && outerNot.Inner is Not innerNot)
+            while (w.Formula is Not outerNot && outerNot.Inner is Not innerNot)
             {
-                f = innerNot.Inner;
+                w.Formula = innerNot.Inner;
             }
-            return f;
         }
 
-        
+
+
+        /// <summary>
+        /// Prenexes an And with prenexed subformulas
+        /// </summary>
+        /// <param name="w"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void PullQuantifiersOutOfAnd(Wrapper w)
+        {
+            var and = (And)w.Formula;
+            if (and.Left is Quantifier lq)
+            {
+                if (and.Right is Quantifier rq)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                if (and.Right is Quantifier rq)
+                {
+
+                }
+            }
+        }
+
+        private void RenameVariable(Wrapper w, string oldName, string newName)
+        {
+            if (w.Formula is Variable v)
+            {
+                if (v.Name == oldName)
+                    w.Formula = new Variable(newName);
+            }
+            else if (w.Formula is BooleanOperator b)
+            {
+                b.Subformulas = b.Subformulas.Select(subf => // prenex subformulas
+                {
+                    Wrapper w = new(subf);
+                    RenameVariable(w, oldName, newName);
+                    return w.Formula;
+                });
+            }
+            else if (w.Formula is Quantifier q)
+            {
+                q.QuantifiedVariables = q.QuantifiedVariables.Select(qvar => qvar.Name == oldName ? new Variable(newName) : qvar);
+                Wrapper ww = new(q.Inner);
+                RenameVariable(ww, oldName, newName);
+                q.Inner = ww.Formula;
+            }
+        }
+
+        private IFormula FindBooleanFormulaRoot(IFormula prenexedFormula)
+        {
+            IFormula cur = prenexedFormula;
+            while (cur is Quantifier q)
+            {
+                cur = q.Inner;
+            }
+            return cur;
+        }
+
+
 
         /// <summary>
         /// returns the first of v, vx, vx1, vx2, ... not appearing in unavailableVariables for a variable 'v' and some string 'ending'
@@ -147,6 +197,11 @@ namespace prenex_qbf_translator.ExponentialPrenexing
                 index++;
             }
             return vMinus;
+        }
+
+        private class Wrapper(IFormula formula)
+        {
+            public IFormula Formula { get; set; } = formula;
         }
     }
 }

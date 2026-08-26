@@ -22,6 +22,11 @@
             return [this];
         }
 
+        public IEnumerable<Variable> BoundVariables()
+        {
+            return [];
+        }
+
 
         public IFormula DeepCopy()
         {

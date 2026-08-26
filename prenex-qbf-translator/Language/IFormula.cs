@@ -16,6 +16,8 @@ namespace prenex_qbf_translator.Language
 
         IEnumerable<Variable> FreeVariables();
 
+        IEnumerable<Variable> BoundVariables();
+
         /// <summary>
         /// Checks if the formula does not contain any quantifiers
         /// </summary>

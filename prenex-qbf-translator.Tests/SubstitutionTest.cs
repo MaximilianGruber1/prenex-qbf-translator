@@ -6,7 +6,7 @@ using prenex_qbf_translator.Parsing;
 
 namespace prenex_qbf_translator.Tests
 {
-    public class SubstitutionTests
+    public class SubstitutionTest
     {
         private void TestAppliction(Substitution sub, string formula, string result)
         {
@@ -357,6 +357,5 @@ namespace prenex_qbf_translator.Tests
                 "?a ?b (a|b|a)"
                 );
         }
-
     }
 }

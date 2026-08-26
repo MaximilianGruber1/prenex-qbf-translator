@@ -13,17 +13,22 @@ namespace prenex_qbf_translator.Language
 
         public IFormula DeepCopy()
         {
-            return (IFormula)Activator.CreateInstance(GetType(), QuantifiedVariables.ToList(), Inner.DeepCopy())!;
+            return (IFormula)Activator.CreateInstance(GetType(), QuantifiedVariables.ToArray(), Inner.DeepCopy())!;
         }
 
         public IEnumerable<Variable> Variables()
         {
-            return Inner.Variables().Concat(QuantifiedVariables).Distinct();
+            return QuantifiedVariables.Concat(Inner.Variables()).Distinct();
         }
 
         public IEnumerable<Variable> FreeVariables()
         {
             return Inner.FreeVariables().Except(QuantifiedVariables);
+        }
+
+        public IEnumerable<Variable> BoundVariables()
+        {
+            return QuantifiedVariables.Concat(Inner.BoundVariables()).Distinct();
         }
 
         public bool IsBoolean()

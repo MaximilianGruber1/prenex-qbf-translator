@@ -20,6 +20,11 @@
             return Subformulas.SelectMany(s => s.FreeVariables());
         }
 
+        public IEnumerable<Variable> BoundVariables()
+        {
+            return Subformulas.SelectMany(s => s.BoundVariables());
+        }
+
         public bool IsBoolean()
         {
             return Subformulas.All(f => f.IsBoolean());
