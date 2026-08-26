@@ -40,6 +40,9 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void Not()
         {
+            TestFormula("?a !a", "?a !a");
+            TestFormula("#a !a", "#a !a");
+
             TestFormula("!?a a", "#a !a");
             TestFormula("!#a a", "?a !a");
 
@@ -71,6 +74,9 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void And_2operands()
         {
+            TestFormula("?a (a & b)", "?a (a & b)");
+            TestFormula("#a (a & b)", "#a (a & b)");
+
             TestFormula("?a a & b", "?a (a & b)");
             TestFormula("#a a & b", "#a (a & b)");
             TestFormula("a & ?b b", "?b (a & b)");
@@ -91,7 +97,7 @@ namespace prenex_qbf_translator.Tests
             TestFormula("?a a & ?b b & c",  "?a ?b (a & b & c)");
             TestFormula("?a a & b & ?c c",  "?a ?c (a & b & c)");
             TestFormula("a & ?b b & ?c c",  "?b ?c (a & b & c)");
-            TestFormula("?a a ?b b ?c c",  "?a ?b ?c (a & b & c)");
+            TestFormula("?a a & ?b b & ?c c",  "?a ?b ?c (a & b & c)");
         }
 
         [Fact]
@@ -103,7 +109,7 @@ namespace prenex_qbf_translator.Tests
             TestFormula("#a a & #b b & c",  "#a #b (a & b & c)");
             TestFormula("#a a & b & #c c",  "#a #c (a & b & c)");
             TestFormula("a & #b b & #c c",  "#b #c (a & b & c)");
-            TestFormula("#a a & #b b #c c",  "#a #b #c (a & b & c)");
+            TestFormula("#a a & #b b & #c c",  "#a #b #c (a & b & c)");
         }
 
         [Fact]
@@ -117,7 +123,7 @@ namespace prenex_qbf_translator.Tests
             TestFormula("#a a & b & ?c c",  "#a ?c (a & b & c)");
             TestFormula("a & #b b & ?c c",  "#b ?c (a & b & c)");
 
-            TestFormula("?a a & ?b b & #c c",  "?a #b ?c (a & b & c)");
+            TestFormula("?a a & ?b b & #c c",  "?a ?b #c (a & b & c)");
             TestFormula("?a a & #b b & ?c c",  "?a #b ?c (a & b & c)");
             TestFormula("?a a & #b b & #c c",  "?a #b #c (a & b & c)");
             TestFormula("#a a & ?b b & ?c c",  "#a ?b ?c (a & b & c)");
@@ -128,7 +134,105 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void And_ReoccurringVariables()
         {
-            TestFormula("?a a & a",  "?ap (ap & a)");
+            TestFormula("?a a & a", "?ap (ap & a)");
+            TestFormula("#a a & a", "#ap (ap & a)");
+            TestFormula("a & ?a a", "?ap (a & ap)");
+            TestFormula("a & #a a", "#ap (a & ap)");
+            TestFormula("?a a & ?a a", "?ap ?a (ap & a)");
+            TestFormula("#a a & #a a", "#ap #a (ap & a)");
+            TestFormula("?a a & #a a", "?ap #a (ap & a)");
+            TestFormula("#a a & ?a a", "#ap ?a (ap & a)");
+            TestFormula("?a a & ?a a & ?a a", "?ap1 ?ap ?a (ap1 & ap & a)");
+            TestFormula("#a a & #a a & #a a", "#ap1 #ap #a (ap1 & ap & a)");
+            TestFormula("?a a & ?a a & ?a a & ?a a & ?a a & ?a a", "?ap4 ?ap3 ?ap2 ?ap1 ?ap ?a (ap4 & ap3 & ap2 & ap1 & ap & a)");
+            TestFormula("#a a & #a a & #a a & #a a & #a a & #a a", "#ap4 #ap3 #ap2 #ap1 #ap #a (ap4 & ap3 & ap2 & ap1 & ap & a)");
+            TestFormula("?a a & #a a & #a a & ?a a & ?a a & #a a", "?ap4 #ap3 #ap2 ?ap1 ?ap #a (ap4 & ap3 & ap2 & ap1 & ap & a)");
+
+            TestFormula("a & #a ?a (a & #a ?a (a & #a ?a a))", "#ap2 ?ap2 #ap1 ?ap1 #ap ?ap (a & ap2 & ap1 &ap)");
+            TestFormula("a & #a ((a & ?a a) & (a& #a a))", "#ap1 ?app #ap (a & ap1 & app & ap1 & ap)");
+        }
+
+
+
+        [Fact]
+        public void Or_2operands()
+        {
+            TestFormula("?a (a | b)", "?a (a | b)");
+            TestFormula("#a (a | b)", "#a (a | b)");
+
+            TestFormula("?a a | b", "?a (a | b)");
+            TestFormula("#a a | b", "#a (a | b)");
+            TestFormula("a | ?b b", "?b (a | b)");
+            TestFormula("a | #b b", "#b (a | b)");
+            TestFormula("?a a | ?b b", "?a ?b (a | b)");
+            TestFormula("?a a | #b b", "?a #b (a | b)");
+            TestFormula("#a a | ?b b", "#a ?b (a | b)");
+            TestFormula("#a a | #b b", "#a #b (a | b)");
+
+        }
+
+        [Fact]
+        public void Or_3operandsExists()
+        {
+            TestFormula("?a a | b | c", "?a (a | b | c)");
+            TestFormula("a | ?b b | c", "?b (a | b | c)");
+            TestFormula("a | b | ? c c", "?c (a | b | c)");
+            TestFormula("?a a | ?b b | c", "?a ?b (a | b | c)");
+            TestFormula("?a a | b | ?c c", "?a ?c (a | b | c)");
+            TestFormula("a | ?b b | ?c c", "?b ?c (a | b | c)");
+            TestFormula("?a a | ?b b | ?c c", "?a ?b ?c (a | b | c)");
+        }
+
+        [Fact]
+        public void Or_3operandsForall()
+        {
+            TestFormula("#a a | b | c", "#a (a | b | c)");
+            TestFormula("a | #b b | c", "#b (a | b | c)");
+            TestFormula("a | b | # c c", "#c (a | b | c)");
+            TestFormula("#a a | #b b | c", "#a #b (a | b | c)");
+            TestFormula("#a a | b | #c c", "#a #c (a | b | c)");
+            TestFormula("a | #b b | #c c", "#b #c (a | b | c)");
+            TestFormula("#a a | #b b | #c c", "#a #b #c (a | b | c)");
+        }
+
+        [Fact]
+        public void Or_3operandsMixed()
+        {
+            TestFormula("?a a | #b b | c", "?a #b (a | b | c)");
+            TestFormula("?a a | b | #c c", "?a #c (a | b | c)");
+            TestFormula("a | ?b b | #c c", "?b #c (a | b | c)");
+
+            TestFormula("#a a | ?b b | c", "#a ?b (a | b | c)");
+            TestFormula("#a a | b | ?c c", "#a ?c (a | b | c)");
+            TestFormula("a | #b b | ?c c", "#b ?c (a | b | c)");
+
+            TestFormula("?a a | ?b b | #c c", "?a ?b #c (a | b | c)");
+            TestFormula("?a a | #b b | ?c c", "?a #b ?c (a | b | c)");
+            TestFormula("?a a | #b b | #c c", "?a #b #c (a | b | c)");
+            TestFormula("#a a | ?b b | ?c c", "#a ?b ?c (a | b | c)");
+            TestFormula("#a a | ?b b | #c c", "#a ?b #c (a | b | c)");
+            TestFormula("#a a | #b b | ?c c", "#a #b ?c (a | b | c)");
+        }
+
+        [Fact]
+        public void Or_ReoccurringVariables()
+        {
+            TestFormula("?a a | a", "?ap (ap | a)");
+            TestFormula("#a a | a", "#ap (ap | a)");
+            TestFormula("a | ?a a", "?ap (a | ap)");
+            TestFormula("a | #a a", "#ap (a | ap)");
+            TestFormula("?a a | ?a a", "?ap ?a (ap | a)");
+            TestFormula("#a a | #a a", "#ap #a (ap | a)");
+            TestFormula("?a a | #a a", "?ap #a (ap | a)");
+            TestFormula("#a a | ?a a", "#ap ?a (ap | a)");
+            TestFormula("?a a | ?a a | ?a a", "?ap1 ?ap ?a (ap1 | ap | a)");
+            TestFormula("#a a | #a a | #a a", "#ap1 #ap #a (ap1 | ap | a)");
+            TestFormula("?a a | ?a a | ?a a | ?a a | ?a a | ?a a", "?ap4 ?ap3 ?ap2 ?ap1 ?ap ?a (ap4 | ap3 | ap2 | ap1 | ap | a)");
+            TestFormula("#a a | #a a | #a a | #a a | #a a | #a a", "#ap4 #ap3 #ap2 #ap1 #ap #a (ap4 | ap3 | ap2 | ap1 | ap | a)");
+            TestFormula("?a a | #a a | #a a | ?a a | ?a a | #a a", "?ap4 #ap3 #ap2 ?ap1 ?ap #a (ap4 | ap3 | ap2 | ap1 | ap | a)");
+
+            TestFormula("a | #a ?a (a | #a ?a (a | #a ?a a))", "#ap2 ?ap2 #ap1 ?ap1 #ap ?ap (a | ap2 | ap1 |ap)");
+            TestFormula("a | #a ((a | ?a a) | (a| #a a))", "#ap1 ?app #ap (a | ap1 | app | ap1 | ap)");
         }
     }
 }

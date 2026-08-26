@@ -54,6 +54,10 @@ namespace prenex_qbf_translator.ExponentialPrenexing
                 PullQuantifiersOutOfAnd(w);
 
             }
+            else if (w.Formula is Or or)
+            {
+                PullQuantifiersOutOfOr(w);
+            }
         }
 
         /// <summary>
@@ -109,65 +113,139 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private void PullQuantifiersOutOfAnd(Wrapper w)
         {
             var and = (And)w.Formula;
+
+            // rename all bound variables of Left that occur in Right
+            var lBound = and.Left.BoundVariables(); 
+            var rFree = and.Right.Variables();
+            foreach (var v in rFree)
+            {
+                if (lBound.Contains(v))
+                {
+                    Variable freshVar = GetAvailableVariable(v, unav: and.Variables());
+                    Wrapper ww = new(and.Left);
+                    RenameVariable(ww, v, freshVar);
+                    and.Left = ww.Formula;
+                }
+            }
+
+            // rename all bound variables of Right that occur in Left
+            var rBound = and.Right.BoundVariables(); 
+            var lFree = and.Left.Variables();
+            foreach (var v in lFree)
+            {
+                if (rBound.Contains(v))
+                {
+                    Variable freshVar = GetAvailableVariable(v, unav: and.Variables());
+                    Wrapper ww = new(and.Right);
+                    RenameVariable(ww, v, freshVar);
+                    and.Right = ww.Formula;
+                }
+            }
+
+            // rearrange formula tree
             if (and.Left is Quantifier lq)
             {
                 if (and.Right is Quantifier rq)
                 {
+                    var lInnermostQ = FindInnermostQuantifier(lq);
+                    var rInnermostQ = FindInnermostQuantifier(rq);
+                    var lBooleanFormula = lInnermostQ.Inner;
+                    var rBooleanFormula = rInnermostQ.Inner;
 
+                    and.Left = lBooleanFormula;
+                    and.Right = rBooleanFormula;
+                    rInnermostQ.Inner = and;
+                    lInnermostQ.Inner = rq;
+                    w.Formula = lq;
                 }
                 else
                 {
+                    var lInnermostQ = FindInnermostQuantifier(lq);
+                    var lBooleanFormula = lInnermostQ.Inner;
 
+                    and.Left = lBooleanFormula;
+                    lInnermostQ.Inner = and;
+                    w.Formula = lq;
                 }
             }
             else
             {
                 if (and.Right is Quantifier rq)
                 {
+                    var rInnermostQ = FindInnermostQuantifier(rq);
+                    var rBooleanFormula = rInnermostQ.Inner;
 
+                    and.Right = rBooleanFormula;
+                    rInnermostQ.Inner = and;
+                    w.Formula = rq;
+                }
+                else
+                {
+                    // no quantifiers, therefore no prenexing needed
                 }
             }
         }
 
-        private void RenameVariable(Wrapper w, string oldName, string newName)
+        private void RenameVariable(Wrapper w, Variable oldVar, Variable newVar)
         {
             if (w.Formula is Variable v)
             {
-                if (v.Name == oldName)
-                    w.Formula = new Variable(newName);
+                if (v.Equals(oldVar))
+                    w.Formula = newVar;
             }
             else if (w.Formula is BooleanOperator b)
             {
                 b.Subformulas = b.Subformulas.Select(subf => // prenex subformulas
                 {
                     Wrapper w = new(subf);
-                    RenameVariable(w, oldName, newName);
+                    RenameVariable(w, oldVar, newVar);
                     return w.Formula;
                 });
             }
             else if (w.Formula is Quantifier q)
             {
-                q.QuantifiedVariables = q.QuantifiedVariables.Select(qvar => qvar.Name == oldName ? new Variable(newName) : qvar);
+                q.QuantifiedVariables = q.QuantifiedVariables.Select(qvar => qvar.Equals(oldVar) ? newVar : qvar);
                 Wrapper ww = new(q.Inner);
-                RenameVariable(ww, oldName, newName);
+                RenameVariable(ww, oldVar, newVar);
                 q.Inner = ww.Formula;
             }
         }
 
-        private IFormula FindBooleanFormulaRoot(IFormula prenexedFormula)
+        private Quantifier FindInnermostQuantifier(Quantifier prenexedFormula)
         {
-            IFormula cur = prenexedFormula;
-            while (cur is Quantifier q)
+            var cur = prenexedFormula;
+            while (cur.Inner is Quantifier q)
             {
-                cur = q.Inner;
+                cur = q;
             }
             return cur;
+        }
+
+        // treat the same as And
+        private void PullQuantifiersOutOfOr(Wrapper w)
+        {
+            var or = (Or)w.Formula;
+            var and = new And(or.Left, or.Right);
+
+            Wrapper ww = new(and);
+            PullQuantifiersOutOfAnd(ww);
+            var prenexedAnd = ww.Formula;
+
+            if (prenexedAnd is Quantifier q) // if there is at least one quantifier; otherwise do nothing
+            {
+                var innermostQ = FindInnermostQuantifier(q);
+                var booleanAnd = (And)innermostQ.Inner;
+                var booleanOr = new Or(booleanAnd.Left, booleanAnd.Right);
+                innermostQ.Inner = booleanOr;
+
+                w.Formula = q;
+            }
         }
 
 
 
         /// <summary>
-        /// returns the first of v, vx, vx1, vx2, ... not appearing in unavailableVariables for a variable 'v' and some string 'ending'
+        /// returns the first of "vp", "vp1", "vp2", ... not appearing in unavailableVariables for a variable "v"
         /// </summary>
         /// <param name="v"></param>
         /// <param name="unav"></param>
