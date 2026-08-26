@@ -22,9 +22,9 @@ namespace prenex_qbf_translator.Parsing
 
         private readonly Scanner scanner;
 
-        public Parser(Scanner scanner)
+        public Parser(string formula)
         {
-            this.scanner = scanner;
+            scanner = new Scanner(formula);
         }
 
         public IFormula Parse()

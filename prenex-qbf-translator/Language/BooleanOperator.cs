@@ -12,17 +12,17 @@
 
         public IEnumerable<Variable> Variables()
         {
-            return Subformulas.SelectMany(s => s.Variables());
+            return Subformulas.SelectMany(s => s.Variables()).Distinct();
         }
 
         public IEnumerable<Variable> FreeVariables()
         {
-            return Subformulas.SelectMany(s => s.FreeVariables());
+            return Subformulas.SelectMany(s => s.FreeVariables()).Distinct();
         }
 
         public IEnumerable<Variable> BoundVariables()
         {
-            return Subformulas.SelectMany(s => s.BoundVariables());
+            return Subformulas.SelectMany(s => s.BoundVariables()).Distinct();
         }
 
         public bool IsBoolean()

@@ -32,7 +32,7 @@ public class Program
 
     private static IFormula ParseFormula(string s)
     {
-        return new Parser(new Scanner(s)).Parse();
+        return new Parser(s).Parse();
     }
 
 }

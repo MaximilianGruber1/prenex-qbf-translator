@@ -19,14 +19,14 @@ namespace prenex_qbf_translator.Tests
 
         private void TestFailure(string formula)
         {
-            Parser parser = new(new Scanner(formula));
+            Parser parser = new(formula);
             Assert.Throws<Exception>(parser.Parse);
         }
 
-        private void TestEqual(string formula2, string formula1)
+        private void TestEqual(string formula1, string formula2)
         {
-            Parser p1 = new(new Scanner(formula2));
-            Parser p2 = new(new Scanner(formula1));
+            Parser p1 = new(formula1);
+            Parser p2 = new(formula2);
             string w = p1.Parse().ToString();
             string wo = p2.Parse().ToString();
             Assert.Equal(wo, w);

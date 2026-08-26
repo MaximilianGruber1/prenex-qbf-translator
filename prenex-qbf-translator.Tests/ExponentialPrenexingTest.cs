@@ -10,9 +10,9 @@ namespace prenex_qbf_translator.Tests
     {
         private void TestFormula(string formula, string prenexedFormula)
         {
-            string expected = new Parser(new Scanner(prenexedFormula)).Parse().ToString(); // to standardize (whitespace and parentheses)
+            string expected = new Parser(prenexedFormula).Parse().ToString(); // to standardize (whitespace and parentheses)
 
-            Parser p = new(new Scanner(formula));
+            Parser p = new(formula);
             IFormula f = p.Parse();
             IFormula prenexed = new ExponentialPrenexer().Prenexed(f);
             string actual = prenexed.ToString();
