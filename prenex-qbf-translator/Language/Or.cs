@@ -1,11 +1,11 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Or : BooleanOperator
+    public class Or : BinaryOperator
     {
         private IFormula left;
         private IFormula right;
 
-        public IFormula Left
+        public override IFormula Left
         {
             get => left;
             set
@@ -15,7 +15,7 @@
             }
         }
 
-        public IFormula Right
+        public override IFormula Right
         {
             get => right;
             set
@@ -56,7 +56,7 @@
         }
 
 
-        public override IFormula DeepCopy()
+        public override Or DeepCopy()
         {
             return new Or(left.DeepCopy(), right.DeepCopy());
         }

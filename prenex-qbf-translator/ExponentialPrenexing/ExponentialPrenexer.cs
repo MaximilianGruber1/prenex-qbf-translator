@@ -3,249 +3,249 @@ using prenex_qbf_translator.Translator;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace prenex_qbf_translator.ExponentialPrenexing
 {
     public class ExponentialPrenexer
     {
-        private readonly FreshVariableGenerator variableGenerator = new();
-
+        
         public IFormula Prenexed(IFormula f)
         {
             f = f.DeepCopy();
-            Wrapper w = new(f);
-            PrenexRecursive(w);
-            return w.Formula;
+            return PrenexRecursive(f).Formula;
         }
 
-        private void PrenexRecursive(Wrapper w)
+        /// <summary>
+        /// No deep copy for performance, breaks f.
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private PrenexFormula PrenexRecursive(IFormula f)
         {
-            if (w.Formula is Quantifier q)
+            if (f is Variable v)
             {
-                var ww = new Wrapper(q.Inner);
-                PrenexRecursive(ww);
-                q.Inner = ww.Formula;
+                return new PrenexFormula(v);
             }
-            else if (w.Formula is BooleanOperator b)
+            else if (f is Quantifier q)
             {
-                b.Subformulas = b.Subformulas.Select(subf => // prenex subformulas
+                PrenexFormula prenexInner = PrenexRecursive(q.Inner);
+                q.Inner = prenexInner.Formula; // prenex inner
+                return new PrenexFormula(q);
+            }
+            if (f is Not n)
+            {
+                PrenexFormula prenexInner = PrenexRecursive(n.Inner);
+                return PrenexNot(prenexInner);
+            }
+            else if (f is BinaryOperator bo)
+            {
+                PrenexFormula prenexLeft = PrenexRecursive(bo.Left);
+                PrenexFormula prenexRight = PrenexRecursive(bo.Right);
+
+                if (bo is And a)
                 {
-                    Wrapper w = new(subf);
-                    PrenexRecursive(w);
-                    return w.Formula;
-                });
-                PrenexOneLayer(w);
-            }
-        }
-
-        /// <summary>
-        /// Prenexes boolean operator (inside a wrapper) with prexed subformulas
-        /// </summary>
-        /// <param name="w"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        private void PrenexOneLayer(Wrapper w)
-        {
-            if (w.Formula is Not n) // e.g. '!?x phi' becomes '#x !phi'
-            {
-                PullQuantifiersOutOfNot(w);
-            }
-            else if (w.Formula is And a)
-            {
-                PullQuantifiersOutOfAnd(w);
-
-            }
-            else if (w.Formula is Or or)
-            {
-                PullQuantifiersOutOfOr(w);
-            }
-        }
-
-        /// <summary>
-        /// Prenexes a Not with prenexed Inner
-        /// </summary>
-        /// <param name="w"></param>
-        private void PullQuantifiersOutOfNot(Wrapper w)
-        {
-            var not = (Not)w.Formula;
-            if (not.Inner is Quantifier q)
-            {
-                var ww = new Wrapper(new Not(q.Inner));
-                PullQuantifiersOutOfNot(ww);
-                var newInner = ww.Formula;
-
-                var newOuter = CreateDual(q);
-                newOuter.Inner = newInner;
-                w.Formula = newOuter;
-            }
-            else // base case
-            {
-                SimplifyNotChain(w); // to avoid multiple negation
-            }
-        }
-
-        private Quantifier CreateDual(Quantifier q)
-        {
-            if (q is Forall)
-            {
-                return new Exists(q.QuantifiedVariables, q.Inner);
+                    return PrenexAnd(prenexLeft, prenexRight);
+                }
+                else if (bo is Or o)
+                {
+                    return PrenexOr(prenexLeft, prenexRight);
+                }
+                else if (bo is Implies i)
+                {
+                    return PrenexImplies(prenexLeft, prenexRight);
+                }
+                else if (bo is IsImpliedBy iib)
+                {
+                    return PrenexIsImpliedBy(prenexLeft, prenexRight);
+                }
+                else if (bo is Equivalent e)
+                {
+                    return PrenexEquivalent(prenexLeft, prenexRight);
+                }
+                else
+                {
+                    throw new Exception("impossible case");
+                }
             }
             else
             {
-                return new Forall(q.QuantifiedVariables, q.Inner);
-            }
-        }
-
-        private void SimplifyNotChain(Wrapper w)
-        {
-            while (w.Formula is Not outerNot && outerNot.Inner is Not innerNot)
-            {
-                w.Formula = innerNot.Inner;
+                throw new Exception("impossible case");
             }
         }
 
 
 
         /// <summary>
-        /// Prenexes an And with prenexed subformulas
+        /// Prenexes the formula '!inner'.
         /// </summary>
-        /// <param name="w"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        private void PullQuantifiersOutOfAnd(Wrapper w)
+        /// <param name="inner"></param>
+        private PrenexFormula PrenexNot(PrenexFormula inner)
         {
-            var and = (And)w.Formula;
+            inner.SetToDual();
+            var oldMatrix = inner.GetMatrix();
+            PrenexFormula newMatrix = new(
+                oldMatrix is Not n ?
+                n.Inner :
+                new Not(inner.GetMatrix()));
+            inner.ReplaceMatrix(newMatrix);
+            return inner;
+        }
 
-            // rename all bound variables of Left that occur in Right
-            var lBound = and.Left.BoundVariables(); 
-            var rFree = and.Right.Variables();
-            foreach (var v in rFree)
+        /// <summary>
+        /// Prenexes the formula 'left & right'.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        private PrenexFormula PrenexAnd(PrenexFormula left, PrenexFormula right)
+        {
+            RenameVariables(left, right);
+
+            PrenexFormula newMatrix = new(new And(left.GetMatrix(), right.GetMatrix()));
+            right.ReplaceMatrix(newMatrix);
+            left.ReplaceMatrix(right);
+            return left;
+        }
+
+        /// <summary>
+        /// Prenexes the formula 'left | right'.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private PrenexFormula PrenexOr(PrenexFormula left, PrenexFormula right)
+        {
+            RenameVariables(left, right);
+
+            PrenexFormula newMatrix = new(new Or(left.GetMatrix(), right.GetMatrix()));
+            right.ReplaceMatrix(newMatrix);
+            left.ReplaceMatrix(right);
+            return left;
+        }
+
+        /// <summary>
+        /// Prenexes the formula 'left -> right'.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private PrenexFormula PrenexImplies(PrenexFormula left, PrenexFormula right)
+        {
+            RenameVariables(left, right);
+
+            left.SetToDual();
+            PrenexFormula newMatrix = new(new Implies(left.GetMatrix(), right.GetMatrix()));
+            right.ReplaceMatrix(newMatrix);
+            left.ReplaceMatrix(right);
+            return left;
+        }
+
+        /// <summary>
+        /// Prenexes the formula 'left <- right'.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private PrenexFormula PrenexIsImpliedBy(PrenexFormula left, PrenexFormula right)
+        {
+
+            RenameVariables(left, right);
+
+            right.SetToDual();
+            PrenexFormula newMatrix = new(new IsImpliedBy(left.GetMatrix(), right.GetMatrix()));
+            right.ReplaceMatrix(newMatrix);
+            left.ReplaceMatrix(right);
+            return left;
+        }
+
+        /// <summary>
+        /// Prenexes the formula 'left <-> right' by transforming it to 'left & right | !left & !right.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private PrenexFormula PrenexEquivalent(PrenexFormula left, PrenexFormula right)
+        {
+            if (left.IsBoolean() && right.IsBoolean())
+                return new(new Equivalent(left.Formula, right.Formula));
+
+            PrenexFormula p1 = left;
+            PrenexFormula p2 = right;
+            PrenexFormula p3 = left.DeepCopy();
+            PrenexFormula p4 = right.DeepCopy();
+
+            PrenexFormula and12 = PrenexAnd(p1, p2);
+            PrenexFormula not3 = PrenexNot(p3);
+            PrenexFormula not4 = PrenexNot(p4);
+            PrenexFormula and34 = PrenexAnd(not3, not4);
+            PrenexFormula or = PrenexOr(and12, and34);
+
+            return or;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        private void RenameVariables(PrenexFormula left, PrenexFormula right)
+        {
+            // rename all variables of 'Right' that are bound in 'Left'
+            var lBound = left.BoundVariables();
+            var rvar = right.Variables();
+            foreach (var v in rvar)
             {
                 if (lBound.Contains(v))
                 {
-                    Variable freshVar = GetAvailableVariable(v, unav: and.Variables());
-                    Wrapper ww = new(and.Left);
-                    RenameVariable(ww, v, freshVar);
-                    and.Left = ww.Formula;
+                    var allVariables = left.Variables().Concat(right.Variables()).Distinct();
+                    Variable freshVar = GetAvailableVariable(v, unav: allVariables);
+                    RenameVariable(right, v, freshVar);
                 }
             }
 
             // rename all bound variables of Right that occur in Left
-            var rBound = and.Right.BoundVariables(); 
-            var lFree = and.Left.Variables();
-            foreach (var v in lFree)
+            var rBound = right.BoundVariables();
+            var lvar = left.Variables();
+            foreach (var v in lvar)
             {
                 if (rBound.Contains(v))
                 {
-                    Variable freshVar = GetAvailableVariable(v, unav: and.Variables());
-                    Wrapper ww = new(and.Right);
-                    RenameVariable(ww, v, freshVar);
-                    and.Right = ww.Formula;
-                }
-            }
-
-            // rearrange formula tree
-            if (and.Left is Quantifier lq)
-            {
-                if (and.Right is Quantifier rq)
-                {
-                    var lInnermostQ = FindInnermostQuantifier(lq);
-                    var rInnermostQ = FindInnermostQuantifier(rq);
-                    var lBooleanFormula = lInnermostQ.Inner;
-                    var rBooleanFormula = rInnermostQ.Inner;
-
-                    and.Left = lBooleanFormula;
-                    and.Right = rBooleanFormula;
-                    rInnermostQ.Inner = and;
-                    lInnermostQ.Inner = rq;
-                    w.Formula = lq;
-                }
-                else
-                {
-                    var lInnermostQ = FindInnermostQuantifier(lq);
-                    var lBooleanFormula = lInnermostQ.Inner;
-
-                    and.Left = lBooleanFormula;
-                    lInnermostQ.Inner = and;
-                    w.Formula = lq;
-                }
-            }
-            else
-            {
-                if (and.Right is Quantifier rq)
-                {
-                    var rInnermostQ = FindInnermostQuantifier(rq);
-                    var rBooleanFormula = rInnermostQ.Inner;
-
-                    and.Right = rBooleanFormula;
-                    rInnermostQ.Inner = and;
-                    w.Formula = rq;
-                }
-                else
-                {
-                    // no quantifiers, therefore no prenexing needed
+                    var allVariables = left.Variables().Concat(right.Variables()).Distinct();
+                    Variable freshVar = GetAvailableVariable(v, unav: allVariables);
+                    RenameVariable(right, v, freshVar);
                 }
             }
         }
 
-        private void RenameVariable(Wrapper w, Variable oldVar, Variable newVar)
+        private void RenameVariable(PrenexFormula p, Variable oldVar, Variable newVar)
         {
-            if (w.Formula is Variable v)
+            if (p.Formula is Variable v)
             {
                 if (v.Equals(oldVar))
-                    w.Formula = newVar;
+                    p.Formula = newVar;
             }
-            else if (w.Formula is BooleanOperator b)
+            else if (p.Formula is BooleanOperator b)
             {
                 b.Subformulas = b.Subformulas.Select(subf => // prenex subformulas
                 {
-                    Wrapper w = new(subf);
-                    RenameVariable(w, oldVar, newVar);
-                    return w.Formula;
+                    PrenexFormula pp = new(subf);
+                    RenameVariable(pp, oldVar, newVar);
+                    return pp.Formula;
                 });
             }
-            else if (w.Formula is Quantifier q)
+            else if (p.Formula is Quantifier q)
             {
                 q.QuantifiedVariables = q.QuantifiedVariables.Select(qvar => qvar.Equals(oldVar) ? newVar : qvar);
-                Wrapper ww = new(q.Inner);
+                PrenexFormula ww = new(q.Inner);
                 RenameVariable(ww, oldVar, newVar);
                 q.Inner = ww.Formula;
             }
         }
 
-        private Quantifier FindInnermostQuantifier(Quantifier prenexedFormula)
-        {
-            var cur = prenexedFormula;
-            while (cur.Inner is Quantifier q)
-            {
-                cur = q;
-            }
-            return cur;
-        }
-
-        // treat the same as And
-        private void PullQuantifiersOutOfOr(Wrapper w)
-        {
-            var or = (Or)w.Formula;
-            var and = new And(or.Left, or.Right);
-
-            Wrapper ww = new(and);
-            PullQuantifiersOutOfAnd(ww);
-            var prenexedAnd = ww.Formula;
-
-            if (prenexedAnd is Quantifier q) // if there is at least one quantifier; otherwise do nothing
-            {
-                var innermostQ = FindInnermostQuantifier(q);
-                var booleanAnd = (And)innermostQ.Inner;
-                var booleanOr = new Or(booleanAnd.Left, booleanAnd.Right);
-                innermostQ.Inner = booleanOr;
-
-                w.Formula = q;
-            }
-        }
-
-
-
         /// <summary>
-        /// returns the first of "vp", "vp1", "vp2", ... not appearing in unavailableVariables for a variable "v"
+        /// Returns the first of "vp", "vp1", "vp2", ... not appearing in unavailableVariables for a variable "v".
         /// </summary>
         /// <param name="v"></param>
         /// <param name="unav"></param>
@@ -275,11 +275,6 @@ namespace prenex_qbf_translator.ExponentialPrenexing
                 index++;
             }
             return vMinus;
-        }
-
-        private class Wrapper(IFormula formula)
-        {
-            public IFormula Formula { get; set; } = formula;
         }
     }
 }

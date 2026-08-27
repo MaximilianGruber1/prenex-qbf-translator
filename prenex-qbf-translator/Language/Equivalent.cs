@@ -2,12 +2,12 @@
 
 namespace prenex_qbf_translator.Language
 {
-    public class Equivalent : BooleanOperator
+    public class Equivalent : BinaryOperator
     {
         private IFormula left;
         private IFormula right;
 
-        public IFormula Left
+        public override IFormula Left
         {
             get => left;
             set
@@ -17,7 +17,7 @@ namespace prenex_qbf_translator.Language
             }
         }
 
-        public IFormula Right
+        public override IFormula Right
         {
             get => right;
             set
@@ -58,7 +58,7 @@ namespace prenex_qbf_translator.Language
         }
 
 
-        public override IFormula DeepCopy()
+        public override Equivalent DeepCopy()
         {
             return new Equivalent(left.DeepCopy(), right.DeepCopy());
         }
