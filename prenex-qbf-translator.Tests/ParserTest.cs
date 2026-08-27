@@ -776,22 +776,5 @@ namespace prenex_qbf_translator.Tests
             TestEqual("?a a <- b", "(?a a) <- b");
             TestEqual("?a a <-> b", "(?a a) <-> b");
         }
-
-        [Fact]
-        public void QuantifierDuplicateVariableRemoval()
-        {
-            TestEqual("#a #a a", "#a a");
-            TestEqual("?a ?a a", "?a a");
-            TestEqual("#a ?a a", "#a ?a a");
-            TestEqual("?a #a a", "?a #a a");
-
-            TestEqual("#a #b #a a", "#b #a a");
-            TestEqual("?a ?b ?a a", "?b ?a a");
-            TestEqual("#a ?b #a a", "#a ?b #a a");
-            TestEqual("?a #b ?a a", "?a #b ?a a");
-
-            TestEqual("#a #b #a #c #a a", "#b #c #a a");
-            TestEqual("?a ?b ?a ?c ?a a", "?b ?c ?a a");
-        }
     }
 }

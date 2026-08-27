@@ -237,7 +237,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             }
             else if (p.Formula is Quantifier q)
             {
-                q.QuantifiedVariables = q.QuantifiedVariables.Select(qvar => qvar.Equals(oldVar) ? newVar : qvar);
+                if (q.QuantifiedVariable.Equals(oldVar))
+                    q.QuantifiedVariable = newVar;
                 PrenexFormula ww = new(q.Inner);
                 RenameVariable(ww, oldVar, newVar);
                 q.Inner = ww.Formula;

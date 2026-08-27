@@ -7,28 +7,28 @@ namespace prenex_qbf_translator.Language
     /// </summary>
     public abstract class Quantifier : IFormula
     {
-        public abstract IEnumerable<Variable> QuantifiedVariables { get; set; }
+        public abstract Variable QuantifiedVariable { get; set; }
         public abstract IFormula Inner { get; set; }
 
 
         public IFormula DeepCopy()
         {
-            return (IFormula)Activator.CreateInstance(GetType(), QuantifiedVariables.ToArray(), Inner.DeepCopy())!;
+            return (IFormula)Activator.CreateInstance(GetType(), QuantifiedVariable.DeepCopy(), Inner.DeepCopy())!;
         }
 
         public IEnumerable<Variable> Variables()
         {
-            return QuantifiedVariables.Concat(Inner.Variables()).Distinct();
+            return Inner.Variables().Prepend(QuantifiedVariable).Distinct();
         }
 
         public IEnumerable<Variable> FreeVariables()
         {
-            return Inner.FreeVariables().Except(QuantifiedVariables);
+            return Inner.FreeVariables().Where(v => !v.Equals(QuantifiedVariable));
         }
 
         public IEnumerable<Variable> BoundVariables()
         {
-            return QuantifiedVariables.Concat(Inner.BoundVariables()).Distinct();
+            return Inner.BoundVariables().Prepend(QuantifiedVariable).Distinct();
         }
 
         public bool IsBoolean()

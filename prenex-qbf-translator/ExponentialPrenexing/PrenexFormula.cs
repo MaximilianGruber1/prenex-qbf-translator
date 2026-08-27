@@ -93,9 +93,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private Quantifier GetDual(Quantifier q)
         {
             if (q is Forall)
-                return new Exists(q.QuantifiedVariables, q.Inner);
+                return new Exists(q.QuantifiedVariable, q.Inner);
             else
-                return new Forall(q.QuantifiedVariables, q.Inner);
+                return new Forall(q.QuantifiedVariable, q.Inner);
         }
 
         public override string ToString()

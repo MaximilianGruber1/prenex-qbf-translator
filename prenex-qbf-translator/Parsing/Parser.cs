@@ -158,21 +158,7 @@ namespace prenex_qbf_translator.Parsing
                 Check(Token.Kind.Variable);
                 Variable v = new(t.Name);
                 IFormula inner = Unary();
-                if (inner is Forall f) // combine multiple forall to one forall
-                {
-                    var vars = f.QuantifiedVariables;
-                    if (!vars.Contains(v))
-                    {
-                        vars = vars.Prepend(v);
-                    }
-
-                    var newInner = f.Inner;
-                    return new Forall(vars, newInner);
-                }
-                else
-                {
-                    return new Forall(v, inner);
-                }
+                return new Forall(v, inner);
             }
             else if (sym == Token.Kind.Exists)
             {
@@ -180,21 +166,7 @@ namespace prenex_qbf_translator.Parsing
                 Check(Token.Kind.Variable);
                 Variable v = new(t.Name);
                 IFormula inner = Unary();
-                if (inner is Exists e) // combine multiple exists to one exists
-                {
-                    var vars = e.QuantifiedVariables;
-                    if (!vars.Contains(v))
-                    {
-                        vars = vars.Prepend(v);
-                    }
-
-                    var newInner = e.Inner;
-                    return new Exists(vars, newInner);
-                }
-                else
-                {
-                    return new Exists(v, inner);
-                }
+                return new Exists(v, inner);
             }
             else
             {

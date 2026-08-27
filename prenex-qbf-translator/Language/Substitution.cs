@@ -61,14 +61,6 @@ namespace prenex_qbf_translator.Language
         {
             mappings.Remove(v);
         }
-
-        public void Remove(IEnumerable<Variable> vars)
-        {
-            foreach (var v in vars)
-            {
-                mappings.Remove(v);
-            }
-        }
         
 
         public IFormula ApplyTo(IFormula f)
@@ -98,7 +90,7 @@ namespace prenex_qbf_translator.Language
             else if (f is Quantifier q)
             {
                 Substitution newSubst = new(subst);
-                newSubst.Remove(q.QuantifiedVariables);
+                newSubst.Remove(q.QuantifiedVariable);
                 q.Inner = ApplyToRecursive(newSubst, q.Inner);
                 return q;
             }

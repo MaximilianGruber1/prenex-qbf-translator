@@ -19,10 +19,8 @@ namespace prenex_qbf_translator.Translator
         /// <exception cref="ArgumentException"></exception>
         public Args GetDecomposition(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
         {
+            ArgumentNullException.ThrowIfNull(formula);
             unavailableVariables ??= [];
-
-            if (formula == null)
-                throw new ArgumentException("Formula cannot be null.", nameof(formula));
 
             formula = formula.DeepCopy();
             unavailableVariables = unavailableVariables.Concat(formula.Variables());
@@ -72,9 +70,6 @@ namespace prenex_qbf_translator.Translator
             formula.Subformulas = newSubformulas;
             return new Args(formula, substitution);
         }
-
-
-
 
 
 

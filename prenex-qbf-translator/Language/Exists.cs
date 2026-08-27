@@ -2,25 +2,16 @@ namespace prenex_qbf_translator.Language
 {
     public class Exists : Quantifier
     {
-        private IEnumerable<Variable> quantifiedVariables;
+        private Variable quantifiedVariable;
         private IFormula inner;
 
-        public override IEnumerable<Variable> QuantifiedVariables
+        public override Variable QuantifiedVariable
         {
-            get => quantifiedVariables;
+            get => quantifiedVariable;
             set
             {
                 ArgumentNullException.ThrowIfNull(value);
-                var variables = value.ToArray();
-                if (variables.Length == 0)
-                {
-                    throw new ArgumentException("Quantifier must bind at least one variable.");
-                }
-                foreach (var variable in variables)
-                {
-                    ArgumentNullException.ThrowIfNull(variable);
-                }
-                quantifiedVariables = variables;
+                quantifiedVariable = value;
             }
         }
 
@@ -34,26 +25,32 @@ namespace prenex_qbf_translator.Language
             }
         }
 
-        public Exists(IEnumerable<Variable> quantifiedVariables, IFormula inner)
+        public Exists(Variable quantifiedVariable, IFormula inner)
         {
-            QuantifiedVariables = quantifiedVariables;
+            QuantifiedVariable = quantifiedVariable;
             Inner = inner;
         }
 
-        public Exists(Variable x, IFormula inner) : this([x], inner) { }
-        public Exists(Variable x1, Variable x2, IFormula inner) : this([x1, x2], inner) { }
-        public Exists(Variable x1, Variable x2, Variable x3, IFormula inner) : this([x1, x2, x3], inner) { }
+        public Exists(IEnumerable<Variable> quantifiedVariables, IFormula inner)
+        {
+            ArgumentNullException.ThrowIfNull(quantifiedVariables);
+            var qvars = quantifiedVariables.ToArray();
+            if (qvars.Length == 0)
+                throw new ArgumentException("quantifier requires at least one quantified variable");
 
+            QuantifiedVariable = qvars[0];
+            Inner = qvars.Length == 1 ? 
+                inner : 
+                new Exists(qvars[1..], inner);
+        }
 
 
         public override string ToString()
         {
-            string symb = "?";
-            string variables = string.Join(" ", QuantifiedVariables.Select(v => symb + v.Name));
             string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?
                     $"({Inner})" :
                     $"{Inner}";
-            return $"{variables} {subformula}";
+            return $"?{QuantifiedVariable} {subformula}";
         }
     }
 }

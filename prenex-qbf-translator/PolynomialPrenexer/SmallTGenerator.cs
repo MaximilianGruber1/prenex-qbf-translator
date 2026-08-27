@@ -18,7 +18,7 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
             return GenerateSmallT(formula, true, unavailableVariables);
         }
@@ -31,14 +31,14 @@ namespace prenex_qbf_translator.Translator
         /// <param name="unavailableVariables0"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
             return GenerateSmallT(formula, false, unavailableVariables);
         }
 
-        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable>unavailableVariables)
         {
-            unavailableVariables ??= [];
+            ArgumentNullException.ThrowIfNull(unavailableVariables);
 
             if (formula.IsBoolean())
             {
@@ -46,16 +46,13 @@ namespace prenex_qbf_translator.Translator
             }
 
             var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
-            var unav = new List<Variable>(unavailableVariables);
-            unav.AddRange(formula.Variables());
-            unav = unav.Distinct().ToList();
-            var groups = ConstructGroups(decomp.Substitution, unav);
+            var groups = ConstructGroups(decomp.Substitution, unavailableVariables);
             return groups.SelectMany(g => g.XPlus).Concat(groups.Select(g => g.P));
         }
 
-        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable> unavailableVariables)
         {
-            unavailableVariables ??= [];
+            ArgumentNullException.ThrowIfNull(unavailableVariables);
 
             if (formula.IsBoolean())
             {
@@ -63,17 +60,14 @@ namespace prenex_qbf_translator.Translator
             }
 
             var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
-            var unav = new List<Variable>(unavailableVariables);
-            unav.AddRange(formula.Variables());
-            unav = unav.Distinct().ToList();
-            var groups = ConstructGroups(decomp.Substitution, unav);
+            var groups = ConstructGroups(decomp.Substitution, unavailableVariables);
             return groups.SelectMany(g => g.XMinus);
         }
 
 
-        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable>? unavailableVariables = null)
+        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
         {
-            unavailableVariables ??= [];
+            ArgumentNullException.ThrowIfNull(unavailableVariables);
 
             if (formula.IsBoolean())
             {
@@ -111,14 +105,16 @@ namespace prenex_qbf_translator.Translator
             foreach (var (from, to) in unnamedSub.Mappings)
             {
                 var q = (Quantifier)to;
-                Group group = new();
-                group.P = from;
-                group.IsForall = q is Forall;
-                group.BoundVariables = q.QuantifiedVariables.ToList();
-                group.Phi = q.Inner;
-                group.XPlus = [];
-                group.XMinus = [];
-                foreach (Variable v in group.BoundVariables)
+                Group group = new()
+                {
+                    P = from,
+                    IsForall = q is Forall,
+                    QuantifiedVariables = GetQuantifiedVariablesForGroup(q),
+                    Phi = GetPhiForGroup(q),
+                    XPlus = [],
+                    XMinus = []
+                };
+                foreach (Variable v in group.QuantifiedVariables)
                 {
                     var args = variableGenerator.GetPositiveAndNegative(v, unav);
                     group.XPlus.Add(args.P);
@@ -133,7 +129,6 @@ namespace prenex_qbf_translator.Translator
         }
 
 
-        // of course assuming all lists have equal length, and that the lists are ordered in the same way as the entries of the substitution
         private IEnumerable<IFormula> GetParenthesis1(IEnumerable<Group> groups)
         {
             return groups.Select(GetParenthesis1Part);
@@ -142,9 +137,9 @@ namespace prenex_qbf_translator.Translator
         private IFormula GetParenthesis1Part(Group group)
         {
             Substitution sigma = new();
-            for (int i = 0; i < group.BoundVariables.Count; i++)
+            for (int i = 0; i < group.QuantifiedVariables.Count; i++)
             {
-                sigma.Add(group.BoundVariables[i], group.XPlus[i]);
+                sigma.Add(group.QuantifiedVariables[i], group.XPlus[i]);
             }
 
             return new Equivalent(
@@ -161,7 +156,7 @@ namespace prenex_qbf_translator.Translator
         private IFormula GetParentheses2And3Part(Group group)
         {
             List<IFormula> equivalences = [];
-            for (int i = 0; i < group.BoundVariables.Count; i++)
+            for (int i = 0; i < group.QuantifiedVariables.Count; i++)
             {
                 equivalences.Add(new Equivalent(
                     group.XPlus[i],
@@ -190,13 +185,68 @@ namespace prenex_qbf_translator.Translator
             }
         }
 
+        /// <summary>
+        /// Returns a list of the quantified variables of consecutive quantifiers of the same type, e.g. #a#b#c?d?e#f some_formula --> [a,b,c].
+        /// </summary>
+        /// <param name="q"></param>
+        /// <returns></returns>
+        private List<Variable> GetQuantifiedVariablesForGroup(Quantifier q)
+        {
+            List<Variable> vars = [q.QuantifiedVariable];
 
+            if (q is Exists)
+            {
+                while (q.Inner is Exists e)
+                {
+                    vars.Add(e.QuantifiedVariable);
+                    q = e;
+                }
 
+            }
+            else
+            {
+                while (q.Inner is Forall f)
+                {
+                    vars.Add(f.QuantifiedVariable);
+                    q = f;
+                }
+            }
+
+            return vars;
+        }
+
+        /// <summary>
+        /// Returns the formula inside consecutive quantifiers of the same type, e.g. #a#b#c?d?e#f some_formula --> ?d?e#f some_formula
+        /// </summary>
+        /// <param name="q"></param>
+        /// <returns></returns>
+        private IFormula GetPhiForGroup(Quantifier q)
+        {
+            if (q is Exists e)
+            {
+                while (q.Inner is Exists ee)
+                {
+                    q = ee;
+                }
+            }
+            else if (q is Forall f)
+            {
+                while (q.Inner is Forall ff)
+                {
+                    q = ff;
+                }
+            }
+            return q.Inner;
+        }
+
+        /// <summary>
+        /// Represents a mapping (p_i / Q_i X_i phi_i) of the unnamed substitution and the corresponding sigma_i in Fact 4.
+        /// </summary>
         private class Group
         {
             public Variable P { get; set; }
             public bool IsForall { get; set; }
-            public List<Variable> BoundVariables { get; set; }
+            public List<Variable> QuantifiedVariables { get; set; }
             public IFormula Phi { get; set; }
             public List<Variable> XPlus { get; set; }
             public List<Variable> XMinus { get; set; }
