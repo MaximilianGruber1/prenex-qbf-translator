@@ -32,7 +32,20 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Not_Simple()
+        public void AlreadyPrenexed()
+        {
+            TestFormula("?a a", "?a a");
+            TestFormula("#a !a", "#a !a");
+            TestFormula("?a ?b (a & b)", "?a ?b (a & b)");
+            TestFormula("?a #b (a | b)", "?a #b (a | b)");
+            TestFormula("#a ?b (a -> b)", "#a ?b (a -> b)");
+            TestFormula("#a #b (a <- b)", "#a #b (a <- b)");
+            TestFormula("#a #b (a <-> b)", "#a #b (a <-> b)");
+            TestFormula("#a #b #c ?d ?e #f (a & b <- c <-> d -> e | f)", "#a #b #c ?d ?e #f (a & b <- c <-> d -> e | f)");
+        }
+
+        [Fact]
+        public void Not()
         {
             TestFormula("!a", "!a");
 
@@ -44,7 +57,7 @@ namespace prenex_qbf_translator.Tests
         }
             
         [Fact]
-        public void And_Simple()
+        public void And()
         {
             TestFormula("a & b", "a & b");
             TestFormula("a & b", "a & b");
@@ -61,7 +74,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Or_Simple()
+        public void Or()
         {
             TestFormula("a | b", "a | b");
             TestFormula("a | b", "a | b");
@@ -78,7 +91,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Implies_Simple()
+        public void Implies()
         {
             TestFormula("a -> b", "a -> b");
             TestFormula("a -> b", "a -> b");
@@ -94,7 +107,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void IsImpliedBy_Simple()
+        public void IsImpliedBy()
         {
             TestFormula("a <- b", "a <- b");
             TestFormula("a <- b", "a <- b");
@@ -110,7 +123,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Equivalent_Simple()
+        public void Equivalent()
         {
             TestFormula("a <-> b", "a <-> b");
             TestFormula("a <-> b", "a <-> b");
@@ -126,31 +139,59 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void ReoccuringVariables()
+        public void NestedQuantifiers()
         {
+            TestFormula("!?a ?b #c #d ?e (a <- b <-> c -> (d & e))", "#a #b ?c ?d #e !(a <- b <-> c -> (d & e))");
+            TestFormula("(#a #b #c (a&b&c) | ?d ?e ?f ?g (d&e&f&g))", "#a#b#c?d?e?f?g (a&b&c|d&e&f&g)");
+            TestFormula("(#a ?b ?c (a&b&c) | ?d ?e #f #g (d&e&f&g))", "#a?b?c?d?e#f#g (a&b&c|d&e&f&g)");
+            TestFormula("(#a ?b ?c (a&b&c) -> ?d ?e #f #g (d&e&f&g))", "?a#b#c?d?e#f#g (a&b&c -> d&e&f&g)");
+            TestFormula("(#a ?b ?c (a&b&c) <- ?d ?e #f #g (d&e&f&g))", "#a?b?c#d#e?f?g (a&b&c <- d&e&f&g)");
+            TestFormula("(#a ?b ?c (a|b|c) <-> ?d ?e #f #g (d|e|f|g))", "#a ?b ?c ?d ?e #f #g  ?ap #bp #cp #dp #ep ?fp ?gp  ((a|b|c) & (d|e|f|g) | !(ap|bp|cp) & !(dp|ep|fp|gp))");
+        }
+
+        [Fact]
+        public void VariableRenaming()
+        {
+            TestFormula("?a a & ?a a", "?a ?ap (a & ap)");
+            TestFormula("?v1 v1 | #v1 v1", "?v1 #v1p (v1 | v1p)");
+            TestFormula("#a a -> ?a a", "?a ?ap (a -> ap)");
+            TestFormula("#a a <- #a a", "#a ?ap (a <- ap)");
             TestFormula("?a a <-> ?a a", "?a ?ap #ap1 #app (a & ap | !ap1 & !app)");
+
+            TestFormula("((#a a  &  #a a)  &  #a a)  &  #a a", "#a #ap #ap1 #ap2 (a & ap & ap1 &ap2)");
+
             TestFormula("?a?b?e (a&b&c&d&e) | #b#c#f (a&b&c&d&f)", "?a ?b ?e #bp #cp #f (a & b & c & d & e | ap & bp & cp & d & f)");
         }
 
         [Fact]
-        public void And_ReoccurringVariables()//some are broken cus renaming changes, change!!!
+        public void ComplexFormulas()
         {
-            TestFormula("?a a & a", "?ap (ap & a)");
-            TestFormula("#a a & a", "#ap (ap & a)");
-            TestFormula("a & ?a a", "?ap (a & ap)");
-            TestFormula("a & #a a", "#ap (a & ap)");
-            TestFormula("?a a & ?a a", "?ap ?a (ap & a)");
-            TestFormula("#a a & #a a", "#ap #a (ap & a)");
-            TestFormula("?a a & #a a", "?ap #a (ap & a)");
-            TestFormula("#a a & ?a a", "#ap ?a (ap & a)");
-            TestFormula("?a a & ?a a & ?a a", "?ap1 ?ap ?a (ap1 & ap & a)");
-            TestFormula("#a a & #a a & #a a", "#ap1 #ap #a (ap1 & ap & a)");
-            TestFormula("?a a & ?a a & ?a a & ?a a & ?a a & ?a a", "?ap4 ?ap3 ?ap2 ?ap1 ?ap ?a (ap4 & ap3 & ap2 & ap1 & ap & a)");
-            TestFormula("#a a & #a a & #a a & #a a & #a a & #a a", "#ap4 #ap3 #ap2 #ap1 #ap #a (ap4 & ap3 & ap2 & ap1 & ap & a)");
-            TestFormula("?a a & #a a & #a a & ?a a & ?a a & #a a", "?ap4 #ap3 #ap2 ?ap1 ?ap #a (ap4 & ap3 & ap2 & ap1 & ap & a)");
+            TestFormula("#x (a & !#b (!b -> (c | ?d d))  <-  (!c | a | ?f b))",    "#x ?b #d #f ((a & !(!b -> c | d))  <-  (!c | a | bp))");
+        }
 
-            TestFormula("a & #a ?a (a & #a ?a (a & #a ?a a))", "#ap2 ?ap2 #ap1 ?ap1 #ap ?ap (a & ap2 & ap1 &ap)");
-            TestFormula("a & #a ((a & ?a a) & (a& #a a))", "#ap1 ?app #ap (a & ap1 & app & ap1 & ap)");
+        [Fact]
+        public void NestedEquivalences()
+        {
+            TestFormula(
+                "(?a a <-> ?b b) <-> ?c c"
+                ,
+                "?a ?b #ap #bp ?c  #ap1 #bp1 ?app ?bpp #cp" +
+                "(" +
+                "  (a & b | !ap & !bp) & c" +
+                "  |" +
+                "  !(ap1 & bp1 | !app & !bpp) & !cp" +
+                ")"
+                );
+            TestFormula(
+                "?a a <-> (?b b <-> ?c c)"
+                ,
+                "?a ?b ?c #bp #cp  #ap #bp1 #cp1 ?bpp ?cpp" +
+                "(" +
+                "  a & (b & c | !bp & !cp) " +
+                "  |" +
+                "  !ap & !(bp1 & cp1 | !bpp & !cpp)" +
+                ")"
+                );
         }
     }
 }
