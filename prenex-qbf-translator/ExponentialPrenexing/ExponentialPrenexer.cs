@@ -9,7 +9,11 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 {
     public class ExponentialPrenexer
     {
-        
+        /// <summary>
+        /// Prenexes a formula by shifting quantifiers, renaming variables and replacing 'a <-> b' by 'a & b | !a & !b'.
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
         public IFormula Prenexed(IFormula f)
         {
             f = f.DeepCopy();
@@ -160,7 +164,7 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         }
 
         /// <summary>
-        /// Prenexes the formula 'left <-> right' by transforming it to 'left & right | !left & !right.
+        /// Prenexes the formula 'left <-> right' using the fact that it is equivalent to 'left & right | !left & !right'.
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
@@ -186,7 +190,7 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
 
         /// <summary>
-        /// 
+        /// Renames variables for prenexing binary operators. Renames all variables that are bound in one formula and occur in the other. Only variables of the right formula are renamed.
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
@@ -219,6 +223,12 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             }
         }
 
+        /// <summary>
+        /// Recursively replaces all occurences of a variable by a new variable.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="oldVar"></param>
+        /// <param name="newVar"></param>
         private void RenameVariable(PrenexFormula p, Variable oldVar, Variable newVar)
         {
             if (p.Formula is Variable v)

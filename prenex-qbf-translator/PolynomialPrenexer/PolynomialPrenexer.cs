@@ -3,39 +3,26 @@
 namespace prenex_qbf_translator.Translator
 {
     /// <summary>
-    /// Implements the polynomial prenexing approach described in the paper. Use GenerateBigTExists to prenex a formula for Limboole.
+    /// Implements the polynomial prenexing approach described in the paper.
     /// </summary>
-    public class BigTGenerator
+    public class PolynomialPrenexer
     {
         private readonly SmallTGenerator smallTGenerator = new();
 
         /// <summary>
-        /// Generates T_exists according to Definition 5.
+        /// Generates T_exists according to Definition 5. This method is used to prenex a formula for Limboole.
         /// </summary>
         /// <param name="formula"></param>
         /// <returns></returns>
-        public IFormula GenerateBigTExists(IFormula formula)
+        public IFormula Prenexed(IFormula formula)
         {
-            return GenerateBigT(formula, false);
-        }
+            formula = formula.DeepCopy();
 
-        /// <summary>
-        /// Generates T_forall according to Definition 5.
-        /// </summary>
-        /// <param name="formula"></param>
-        /// <returns></returns>
-        public IFormula GenerateBigTForall(IFormula formula)
-        {
-            return GenerateBigT(formula, true);
-        }
-
-
-        public IFormula GenerateBigT(IFormula formula, bool forall)
-        {
             var unav = formula.Variables().ToList();
 
-            return GenerateBigTRecursive(formula, forall, unav);
+            return GenerateBigTRecursive(formula, forall: false, unav);
         }
+
 
         private IFormula GenerateBigTRecursive(IFormula phi, bool forall, List<Variable> unavailableVariables)
         {

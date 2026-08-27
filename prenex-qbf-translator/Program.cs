@@ -26,7 +26,7 @@ public class Program
         Console.WriteLine("tForall: " + new SmallTGenerator().GenerateSmallTForall(phi, []));
         Console.WriteLine("P: " + string.Join(", ", new SmallTGenerator().GetP(phi, [])));
         Console.WriteLine("N: " + string.Join(", ", new SmallTGenerator().GetN(phi, [])));
-        IFormula TExists = new BigTGenerator().GenerateBigTExists(phi);
+        IFormula TExists = new PolynomialPrenexer().Prenexed(phi);
         Console.WriteLine("TExists: " + TExists);
         Console.WriteLine("-----------------------------------------------------------");
     }
