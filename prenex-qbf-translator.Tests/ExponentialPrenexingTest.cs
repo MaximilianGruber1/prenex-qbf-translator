@@ -170,7 +170,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void NestedEquivalences()
+        public void TwoNestedEquivalences()
         {
             TestFormula(
                 "(?a a <-> ?b b) <-> ?c c"
@@ -190,6 +190,51 @@ namespace prenex_qbf_translator.Tests
                 "  a & (b & c | !bp & !cp) " +
                 "  |" +
                 "  !ap & !(bp1 & cp1 | !bpp & !cpp)" +
+                ")"
+                );
+        }
+
+        [Fact]
+        public void ThreeNestedEquivalences()
+        {
+            TestFormula(
+                "(?a a <-> ?b b) <-> (?c c <-> ?d d)"
+                ,
+
+                "?a ?b #ap #bp ?c ?d #cp #dp  #ap1 #bp1 ?app ?bpp #cp1 #dp1 ?cpp ?dpp" +
+                "(" +
+                "  (a & b | !ap & !bp) &" +
+                "  (c & d | !cp & !dp) |" +
+                "  !(ap1 & bp1 | !app & !bpp) &" +
+                "  !(cp1 & dp1 | !cpp & !dpp)" +
+                ")"
+                );
+
+            TestFormula(
+                "((?a a <-> ?b b) <-> ?c c) <-> ?d d"
+                ,
+
+                "?a ?b #ap #bp ?c  " +
+                "#ap1 #bp1 ?app ?bpp #cp" +
+                "?d" +
+                "#ap2 #bp2 ?app1 ?bpp1 #cp1" +
+                "?ap1p ?bp1p #appp #bppp ?cpp" +
+                "#dp" +
+                "(" +
+                "  (" +
+                "    (a & b | !ap & !bp) & c |" +
+                "    !(ap1 & bp1 | !app & !bpp) & !cp" +
+                "  )" +
+                "  &" +
+                "  d" +
+                "  |" +
+                "  !" +
+                "  (" +
+                "    (ap2 & bp2 | !app1 & !bpp1) & cp1 |" +
+                "    !(ap1p & bp1p | !appp & !bppp) & !cpp" +
+                "  )" +
+                "  &" +
+                "  !dp" +
                 ")"
                 );
         }
