@@ -14,7 +14,7 @@
             }
         }
 
-        public override IEnumerable<IFormula> Subformulas
+        public IEnumerable<IFormula> Subformulas
         {
             get => [inner];
             set
@@ -32,7 +32,9 @@
         }
 
 
-        public override IFormula DeepCopy()
+
+
+        public IFormula DeepCopy()
         {
             return new Not(inner.DeepCopy());
         }
@@ -43,6 +45,26 @@
             return Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And ? 
                 $"!({Inner})" : 
                 $"!{Inner}";
+        }
+
+        public HashSet<Variable> Variables()
+        {
+            return Inner.Variables();
+        }
+
+        public HashSet<Variable> FreeVariables()
+        {
+            return Inner.FreeVariables();
+        }
+
+        public HashSet<Variable> BoundVariables()
+        {
+            return Inner.BoundVariables();
+        }
+
+        public bool IsBoolean()
+        {
+            return Inner.IsBoolean();
         }
     }
 }

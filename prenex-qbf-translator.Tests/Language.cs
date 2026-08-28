@@ -1,13 +1,29 @@
 
 using prenex_qbf_translator.Language;
 using prenex_qbf_translator.Parsing;
+using System.Linq;
 using Xunit;
 
 namespace prenex_qbf_translator.Tests
 {
-    public class LanguageTest
+    public class Language
     {
+        private void Test(string formula, string vars, string boundVars, string freeVars)
+        {
+            IFormula f = new Parser(formula).Parse();
 
+            var actualVars = f.Variables();
+            string actualVarsString = string.Join("", actualVars.OrderBy(v => v.Name));
+            Assert.Equal(vars, actualVarsString);
+
+            var actualBoundVars = f.BoundVariables();
+            string actualBoundVarsString = string.Join("", actualBoundVars.OrderBy(v => v.Name));
+            Assert.Equal(boundVars, actualBoundVarsString);
+
+            var actualFreeVars = f.FreeVariables();
+            string actualFreeVarsString = string.Join("", actualFreeVars.OrderBy(v => v.Name));
+            Assert.Equal(freeVars, actualFreeVarsString);
+        }
 
         [Fact]
         public void NoBoundVariables()
@@ -18,11 +34,7 @@ namespace prenex_qbf_translator.Tests
                 "  d -> e | !f" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abcdef", string.Join("", f.Variables()));
-            Assert.Equal("", string.Join("", f.BoundVariables()));
-            Assert.Equal("abcdef", string.Join("", f.FreeVariables()));
+            Test(s, "abcdef", "", "abcdef");
         }
 
         [Fact]
@@ -34,11 +46,7 @@ namespace prenex_qbf_translator.Tests
                 "  a -> b | c" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abc", string.Join("", f.Variables()));
-            Assert.Equal("a", string.Join("", f.BoundVariables()));
-            Assert.Equal("bc", string.Join("", f.FreeVariables()));
+            Test(s, "abc", "a", "bc");
         }
 
         [Fact]
@@ -53,11 +61,7 @@ namespace prenex_qbf_translator.Tests
                 "  )" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("xab", string.Join("", f.Variables()));
-            Assert.Equal("a", string.Join("", f.BoundVariables()));
-            Assert.Equal("xb", string.Join("", f.FreeVariables()));
+            Test(s, "abx", "a", "bx");
         }
 
         [Fact]
@@ -72,11 +76,7 @@ namespace prenex_qbf_translator.Tests
                 "  )" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("ab", string.Join("", f.Variables()));
-            Assert.Equal("a", string.Join("", f.BoundVariables()));
-            Assert.Equal("ab", string.Join("", f.FreeVariables()));
+            Test(s, "ab", "a", "ab");
         }
 
         [Fact]
@@ -97,11 +97,7 @@ namespace prenex_qbf_translator.Tests
                 "  )" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("xabc", string.Join("", f.Variables()));
-            Assert.Equal("ab", string.Join("", f.BoundVariables()));
-            Assert.Equal("xbc", string.Join("", f.FreeVariables()));
+            Test(s, "abcx", "ab", "bcx");
         }
 
         [Fact]
@@ -116,11 +112,7 @@ namespace prenex_qbf_translator.Tests
                 "  )" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("ab", string.Join("", f.Variables()));
-            Assert.Equal("b", string.Join("", f.BoundVariables()));
-            Assert.Equal("a", string.Join("", f.FreeVariables()));
+            Test(s, "ab", "b", "a");
         }
 
         [Fact]
@@ -136,11 +128,7 @@ namespace prenex_qbf_translator.Tests
                 ")" +
                 "&b";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abc", string.Join("", f.Variables()));
-            Assert.Equal("b", string.Join("", f.BoundVariables()));
-            Assert.Equal("acb", string.Join("", f.FreeVariables()));
+            Test(s, "abc", "b", "abc");
         }
 
         [Fact]
@@ -152,11 +140,7 @@ namespace prenex_qbf_translator.Tests
                 "  a -> b | !a <-> c <- a" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abc", string.Join("", f.Variables()));
-            Assert.Equal("a", string.Join("", f.BoundVariables()));
-            Assert.Equal("bc", string.Join("", f.FreeVariables()));
+            Test(s, "abc", "a", "bc");
         }
 
         [Fact]
@@ -168,11 +152,7 @@ namespace prenex_qbf_translator.Tests
                 "  a & b & c & d" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abcd", string.Join("", f.Variables()));
-            Assert.Equal("abc", string.Join("", f.BoundVariables()));
-            Assert.Equal("d", string.Join("", f.FreeVariables()));
+            Test(s, "abcd", "abc", "d");
         }
 
         [Fact]
@@ -184,11 +164,7 @@ namespace prenex_qbf_translator.Tests
                 "  b & c" +
                 ")";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("abc", string.Join("", f.Variables()));
-            Assert.Equal("a", string.Join("", f.BoundVariables()));
-            Assert.Equal("bc", string.Join("", f.FreeVariables()));
+            Test(s, "abc", "a", "bc");
         }
 
         [Fact]
@@ -210,11 +186,7 @@ namespace prenex_qbf_translator.Tests
                 ")" +
                 "&z";
 
-            IFormula f = new Parser(s).Parse();
-
-            Assert.Equal("xyabcdz", string.Join("", f.Variables()));
-            Assert.Equal("ac", string.Join("", f.BoundVariables()));
-            Assert.Equal("xybdz", string.Join("", f.FreeVariables()));
+            Test(s, "abcdxyz", "ac", "bdxyz");
         }
         [Fact]
 
@@ -228,10 +200,8 @@ namespace prenex_qbf_translator.Tests
                 "    a -> b | !c <-> e <- f" +
                 "  )" +
                 ")";
-            IFormula f = new Parser(s).Parse();
-            Assert.Equal("axyzcbdef", string.Join("", f.Variables()));
-            Assert.Equal("abcd", string.Join("", f.BoundVariables()));
-            Assert.Equal("axyzcdef", string.Join("", f.FreeVariables()));
+
+            Test(s, "abcdefxyz", "abcd", "acdefxyz");
         }
     }
 }

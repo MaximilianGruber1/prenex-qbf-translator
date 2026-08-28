@@ -12,11 +12,11 @@ namespace prenex_qbf_translator.Language
         /// <returns></returns>
         IFormula DeepCopy();
 
-        IEnumerable<Variable> Variables();
+        HashSet<Variable> Variables();
 
-        IEnumerable<Variable> FreeVariables();
+        HashSet<Variable> FreeVariables();
 
-        IEnumerable<Variable> BoundVariables();
+        HashSet<Variable> BoundVariables();
 
         /// <summary>
         /// Checks if the formula does not contain any quantifiers

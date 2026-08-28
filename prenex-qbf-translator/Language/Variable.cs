@@ -12,17 +12,17 @@
             }
         }
 
-        public IEnumerable<Variable> Variables()
+        public HashSet<Variable> Variables()
         {
             return [this];
         }
 
-        public IEnumerable<Variable> FreeVariables()
+        public HashSet<Variable> FreeVariables()
         {
             return [this];
         }
 
-        public IEnumerable<Variable> BoundVariables()
+        public HashSet<Variable> BoundVariables()
         {
             return [];
         }

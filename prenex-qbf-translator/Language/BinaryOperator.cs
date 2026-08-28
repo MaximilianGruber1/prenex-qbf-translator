@@ -25,7 +25,7 @@
             }
         }
 
-        public override IEnumerable<IFormula> Subformulas
+        public IEnumerable<IFormula> Subformulas
         {
             get => [left, right];
             set
@@ -37,5 +37,35 @@
                 Right = subformulas[1];
             }
         }
+
+
+        public HashSet<Variable> Variables()
+        {
+            var vars = new HashSet<Variable>(Left.Variables());
+            vars.UnionWith(Right.Variables());
+            return vars;
+        }
+
+        public HashSet<Variable> FreeVariables()
+        {
+            var vars = new HashSet<Variable>(Left.FreeVariables());
+            vars.UnionWith(Right.FreeVariables());
+            return vars;
+        }
+
+        public HashSet<Variable> BoundVariables()
+        {
+            var vars = new HashSet<Variable>(Left.BoundVariables());
+            vars.UnionWith(Right.BoundVariables());
+            return vars;
+        }
+
+        public bool IsBoolean()
+        {
+            return Left.IsBoolean() && Right.IsBoolean();
+        }
+
+        public abstract IFormula DeepCopy();
+
     }
 }

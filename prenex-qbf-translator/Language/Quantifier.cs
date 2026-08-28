@@ -12,19 +12,27 @@ namespace prenex_qbf_translator.Language
 
         public abstract IFormula DeepCopy();
 
-        public IEnumerable<Variable> Variables()
+        public HashSet<Variable> Variables()
         {
-            return Inner.Variables().Prepend(QuantifiedVariable).Distinct();
+            var vars = new HashSet<Variable>(Inner.Variables())
+            {
+                QuantifiedVariable
+            };
+            return vars;
         }
 
-        public IEnumerable<Variable> FreeVariables()
+        public HashSet<Variable> FreeVariables()
         {
-            return Inner.FreeVariables().Where(v => !v.Equals(QuantifiedVariable));
+            var vars = new HashSet<Variable>(Inner.FreeVariables());
+            vars.Remove(QuantifiedVariable);
+            return vars;
         }
 
-        public IEnumerable<Variable> BoundVariables()
+        public HashSet<Variable> BoundVariables()
         {
-            return Inner.BoundVariables().Prepend(QuantifiedVariable).Distinct();
+            var vars = new HashSet<Variable> (Inner.BoundVariables());
+            vars.Add(QuantifiedVariable);
+            return vars;
         }
 
         public bool IsBoolean()
