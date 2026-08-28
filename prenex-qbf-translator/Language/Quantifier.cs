@@ -10,11 +10,7 @@ namespace prenex_qbf_translator.Language
         public abstract Variable QuantifiedVariable { get; set; }
         public abstract IFormula Inner { get; set; }
 
-
-        public IFormula DeepCopy()
-        {
-            return (IFormula)Activator.CreateInstance(GetType(), QuantifiedVariable.DeepCopy(), Inner.DeepCopy())!;
-        }
+        public abstract IFormula DeepCopy();
 
         public IEnumerable<Variable> Variables()
         {

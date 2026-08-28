@@ -45,6 +45,12 @@ namespace prenex_qbf_translator.Language
         }
 
 
+        public override IFormula DeepCopy()
+        {
+            return new Exists(QuantifiedVariable, Inner.DeepCopy());
+        }
+
+
         public override string ToString()
         {
             string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?

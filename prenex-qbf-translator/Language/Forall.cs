@@ -45,6 +45,12 @@ namespace prenex_qbf_translator.Language
         }
 
 
+        public override Forall DeepCopy()
+        {
+            return new Forall(QuantifiedVariable, Inner.DeepCopy());
+        }
+
+
         public override string ToString()
         {
             string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?

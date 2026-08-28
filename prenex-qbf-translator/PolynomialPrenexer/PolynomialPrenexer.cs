@@ -10,7 +10,7 @@ namespace prenex_qbf_translator.Translator
         private readonly SmallTGenerator smallTGenerator = new();
 
         /// <summary>
-        /// Generates T_exists according to Definition 5. This method is used to prenex a formula for Limboole.
+        /// Generates T_exists according to Definition 5. T_exists and the initial formula are equisatisfiable. This method is used to prenex a formula for Limboole.
         /// </summary>
         /// <param name="formula"></param>
         /// <returns></returns>

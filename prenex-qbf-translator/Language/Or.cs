@@ -2,43 +2,6 @@
 {
     public class Or : BinaryOperator
     {
-        private IFormula left;
-        private IFormula right;
-
-        public override IFormula Left
-        {
-            get => left;
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                left = value;
-            }
-        }
-
-        public override IFormula Right
-        {
-            get => right;
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                right = value;
-            }
-        }
-
-        public override IEnumerable<IFormula> Subformulas
-        {
-            get => [left, right];
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                var subformulas = value.ToArray();
-                if (subformulas.Length != 2) throw new ArgumentException("needs 2 subformulas");
-                Left = subformulas[0];
-                Right = subformulas[1];
-            }
-        }
-
-
         public Or(IFormula left, IFormula right)
         {
             Left = left;
