@@ -238,5 +238,15 @@ namespace prenex_qbf_translator.Tests
                 ")"
                 );
         }
+
+
+
+        [Fact]
+        public void HardFormulaTimeTest()
+        {
+            string s = "a <-> (b <-> (c <-> (d <-> (e <-> (f <-> (g <-> (h <-> (i <-> ?x x )))) ))))";
+            var formula = new Parser(s).Parse();
+            new ExponentialPrenexer().Prenexed(formula);
+        }
     }
 }
