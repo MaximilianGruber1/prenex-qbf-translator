@@ -18,28 +18,26 @@ namespace prenex_qbf_translator.Translator
         {
             formula = formula.DeepCopy();
 
-            var unav = ComputeVariables(formula).ToList();
+            var unavailableVariables = ComputeVariables(formula);
+            var varGenerator = new FreshVariableGenerator(unavailableVariables);
 
-            return GenerateBigTRecursive(formula, forall: false, unav).Formula;
+            return GenerateBigTRecursive(formula, forall: false, varGenerator).Formula;
         }
 
 
-        private Result GenerateBigTRecursive(IFormula phi, bool forall, List<Variable> unavailableVariables)
+        private Result GenerateBigTRecursive(IFormula phi, bool forall, FreshVariableGenerator varGenerator)
         {
             if (IsBoolean(phi))
             {
                 return new Result(phi, []);
             }
 
-            var smallTResult = smallTGenerator.GenerateSmallT(phi, forall, unavailableVariables);
+            var smallTResult = smallTGenerator.GenerateSmallT(phi, forall, varGenerator);
             IFormula psi = smallTResult.Formula;
             IEnumerable<Variable> pPhi = smallTResult.P;
             IEnumerable<Variable> nPhi = smallTResult.N;
 
-            unavailableVariables.AddRange(pPhi); // add to unavailable variables to avoid variable capture
-            unavailableVariables.AddRange(nPhi); // same
-
-            Result TPsiResult = GenerateBigTRecursive(psi, !forall, unavailableVariables);
+            Result TPsiResult = GenerateBigTRecursive(psi, !forall, varGenerator);
             IFormula TPsi = TPsiResult.Formula;
             IEnumerable<Variable> nPsi = TPsiResult.N;
 

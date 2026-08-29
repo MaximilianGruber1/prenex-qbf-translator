@@ -7,31 +7,27 @@ namespace prenex_qbf_translator.Translator
 {
     public class OutermostQuantifierDecomposer
     {
-        private readonly FreshVariableGenerator variableGenerator = new();
 
 
         /// <summary>
         /// Decomposes a formula into beta and a substitution according to Fact 4.
         /// </summary>
-        /// <param name="formula"></param>
+        /// <param name="formula">is changed and should never be used by the caller after the method call</param>4
         /// <param name="unavailableVariables">variables that cannot be used for fresh variables</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public Args GetDecomposition(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
+        public Args Decompose(IFormula formula, FreshVariableGenerator varGenerator)
         {
             ArgumentNullException.ThrowIfNull(formula);
-            unavailableVariables ??= [];
-
-            formula = formula.DeepCopy();
 
             if (formula is Quantifier)
             {
-                var p = variableGenerator.GetP(unavailableVariables);
+                var p = varGenerator.NextP();
                 return new Args(p, new Substitution((p, formula)));
             }
             else if (formula is BooleanOperator b)
             {
-                return DecomposeRecursive(b, unavailableVariables.ToList());
+                return DecomposeRecursive(b, varGenerator);
             }
             else // variable
             {
@@ -39,7 +35,7 @@ namespace prenex_qbf_translator.Translator
             }
         }
 
-        private Args DecomposeRecursive(BooleanOperator formula, List<Variable> unavailableVariables)
+        private Args DecomposeRecursive(BooleanOperator formula, FreshVariableGenerator varGenerator)
         {
             var subformulas = formula.Subformulas;
 
@@ -49,14 +45,13 @@ namespace prenex_qbf_translator.Translator
             {
                 if (subformula is Quantifier)
                 {
-                    Variable p = variableGenerator.GetP(unavailableVariables);
-                    unavailableVariables.Add(p);
+                    Variable p = varGenerator.NextP();
                     newSubformulas.Add(p);
                     substitution.Add(p, subformula);
                 }
                 else if (subformula is BooleanOperator b)
                 {
-                    var args = DecomposeRecursive(b, unavailableVariables);
+                    var args = DecomposeRecursive(b, varGenerator);
                     newSubformulas.Add(args.Beta);
                     substitution.Add(args.Substitution);
                 }

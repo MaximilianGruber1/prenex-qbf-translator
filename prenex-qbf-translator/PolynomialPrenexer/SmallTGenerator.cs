@@ -7,25 +7,22 @@ namespace prenex_qbf_translator.Translator
     /// </summary>
     public class SmallTGenerator
     {
-        private readonly FreshVariableGenerator variableGenerator = new();
         private readonly OutermostQuantifierDecomposer decomposer = new();
 
 
-
-
-
-        public Result GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
+        public Result GenerateSmallT(IFormula formula, bool isForall, FreshVariableGenerator varGenerator)
         {
-            ArgumentNullException.ThrowIfNull(unavailableVariables);
+            ArgumentNullException.ThrowIfNull(formula);
+            ArgumentNullException.ThrowIfNull(varGenerator);
 
-            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
+            var decomp = decomposer.Decompose(formula, varGenerator);
 
             if (decomp.Substitution.Count == 0)
             {
                 return new Result(formula, [], []); // all three big parentheses of Definition 2 (t terms) lines 1 and 2 are empty, so just return the formula itself
             }
 
-            var groups = ConstructGroups(decomp.Substitution, unavailableVariables);
+            var groups = ConstructGroups(decomp.Substitution, varGenerator);
 
             IEnumerable<IFormula> parenthesis1 = GetParenthesis1(groups);
             IEnumerable<IFormula> parentheses2and3 = GetParentheses2And3(groups);
@@ -51,9 +48,8 @@ namespace prenex_qbf_translator.Translator
             return new Result(t, p, n);
         }
 
-        private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, IEnumerable<Variable> unavailableVariables)
+        private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, FreshVariableGenerator variableGenerator)
         {
-            List<Variable> unav = unavailableVariables.ToList();
             List<Group> groups = [];
 
             foreach (var (from, to) in unnamedSub.Mappings)
@@ -70,11 +66,9 @@ namespace prenex_qbf_translator.Translator
                 };
                 foreach (Variable v in group.QuantifiedVariables)
                 {
-                    var args = variableGenerator.GetPositiveAndNegative(v, unav);
+                    var args = variableGenerator.NextPositiveAndNegative(v);
                     group.XPlus.Add(args.P);
                     group.XMinus.Add(args.N);
-                    unav.Add(args.P);
-                    unav.Add(args.N);
                 }
 
                 groups.Add(group);

@@ -4,58 +4,74 @@ namespace prenex_qbf_translator.Translator
 {
     public class FreshVariableGenerator
     {
+        private HashSet<Variable> unav;
+        private int pIndex = 1;
+
+        public FreshVariableGenerator(HashSet<Variable> unavailableVariables)
+        {
+            ArgumentNullException.ThrowIfNull(unavailableVariables, nameof(unavailableVariables));
+            unav = unavailableVariables;
+        }
+
+
         /// <summary>
         /// Generates a fresh variable "pn" that is not in the set of unavailable variables where "n" is the smallest integer >= 1. Used for Fact 4 (decomposition with outermost quantifiers).
         /// </summary>
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
-        public Variable GetP(IEnumerable<Variable> unavailableVariables)
+        public Variable NextP()
         {
-            int index = 1;
             Variable p;
             do
             {
-                p = new Variable($"p{index}");
-                index++;
-            } while (unavailableVariables.Contains(p));
+                p = new Variable($"p{pIndex}");
+                pIndex++;
+            } while (unav.Contains(p));
+            unav.Add(p);
             return p;
         }
 
         /// <summary>
         /// Generates fresh variables x^+ and x^- that are not in the set of unavailable variables for a given variable x. If "xp" and "xm" are available, they are returned. Otherwise, "xpn" and "xmn" are returned where n is the smallest integer >= 1. Used for Definition 2 (t terms).
         /// </summary>
-        /// <param name="baseVariable"></param>
+        /// <param name="variable"></param>
         /// <param name="unavailableVariables"></param>
         /// <returns></returns>
-        public Args GetPositiveAndNegative(Variable baseVariable, IEnumerable<Variable> unavailableVariables)
+        public PN NextPositiveAndNegative(Variable variable)
         {
             string plusEnding = "p";
             string minusEnding = "m";
             
-            Variable plusVariable = new Variable(baseVariable.Name + plusEnding);
-            Variable minusVariable = new Variable(baseVariable.Name + minusEnding);
+            Variable plusVariable = new Variable(variable.Name + plusEnding);
+            Variable minusVariable = new Variable(variable.Name + minusEnding);
 
-            if (!unavailableVariables.Contains(plusVariable) && !unavailableVariables.Contains(minusVariable))
+            if (!unav.Contains(plusVariable) && !unav.Contains(minusVariable))
             {
-                return new Args(plusVariable, minusVariable);
+                unav.Add(plusVariable);
+                unav.Add(minusVariable);
+                return new PN(plusVariable, minusVariable);
             }
 
             int index = 1;
-            Variable vPlus, vMinus;
+            Variable plusVariableWithIndex, minusVariableWithIndex;
             do
             {
-                vPlus = new Variable(baseVariable.Name + plusEnding + index);
-                vMinus = new Variable(baseVariable.Name + minusEnding + index);
+                plusVariableWithIndex = new Variable(variable.Name + plusEnding + index);
+                minusVariableWithIndex = new Variable(variable.Name + minusEnding + index);
                 index++;
-            } while (unavailableVariables.Contains(vPlus) || unavailableVariables.Contains(vMinus));
-            return new Args(vPlus, vMinus);
+            } while (unav.Contains(plusVariableWithIndex) || unav.Contains(minusVariableWithIndex));
+
+            unav.Add(plusVariableWithIndex);
+            unav.Add(minusVariableWithIndex);
+
+            return new PN(plusVariableWithIndex, minusVariableWithIndex);
         }
 
-        public class Args
+        public class PN
         {
             public Variable P { get; }
             public Variable N { get; }
-            public Args(Variable p, Variable n)
+            public PN(Variable p, Variable n)
             {
                 P = p;
                 N = n;
