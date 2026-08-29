@@ -55,15 +55,15 @@ namespace prenex_qbf_translator.Translator
             foreach (var (from, to) in unnamedSub.Mappings)
             {
                 var q = (Quantifier)to;
-                Group group = new()
-                {
-                    P = from,
-                    IsForall = q is Forall,
-                    QuantifiedVariables = GetQuantifiedVariablesForGroup(q),
-                    Phi = GetPhiForGroup(q),
-                    XPlus = [],
-                    XMinus = []
-                };
+                Group group = new(
+                
+                    p: from,
+                    isForall: q is Forall,
+                    quantifiedVars: GetQuantifiedVariablesForGroup(q),
+                    phi: GetPhiForGroup(q),
+                    xPlus: [],
+                    xMinus: []
+                );
                 foreach (Variable v in group.QuantifiedVariables)
                 {
                     var args = variableGenerator.NextPositiveAndNegative(v);
@@ -115,19 +115,19 @@ namespace prenex_qbf_translator.Translator
             IFormula right = equivalences.Count() == 1 ? // always at least 1
                 equivalences[0] :
                 new And(equivalences[0], equivalences[1], equivalences[2..].ToArray());
-            if (!group.IsForall) // Exists
-            {
-                return
-                    new Implies(
-                        new Not(group.P),
-                        right
-                    );
-            }
-            else // Forall
+            if (group.IsForall)
             {
                 return
                     new Implies(
                         group.P,
+                        right
+                    );
+            }
+            else
+            {
+                return
+                    new Implies(
+                        new Not(group.P),
                         right
                     );
             }
@@ -187,17 +187,18 @@ namespace prenex_qbf_translator.Translator
             return q.Inner;
         }
 
+
         /// <summary>
-        /// Represents a mapping (p_i / Q_i X_i phi_i) of the unnamed substitution and the corresponding sigma_i in Fact 4.
+        /// Represents a mapping (p_i / Q_i X_i phi_i) of the unnamed substitution of Fact 4 combined with the corresponding sigma_i in Definition 2.
         /// </summary>
-        private class Group
+        private class Group(Variable p, bool isForall, List<Variable> quantifiedVars, IFormula phi, List<Variable> xPlus, List<Variable> xMinus)
         {
-            public Variable P { get; set; }
-            public bool IsForall { get; set; }
-            public List<Variable> QuantifiedVariables { get; set; }
-            public IFormula Phi { get; set; }
-            public List<Variable> XPlus { get; set; }
-            public List<Variable> XMinus { get; set; }
+            public Variable P { get; private set; } = p;
+            public bool IsForall { get; private set; } = isForall;
+            public List<Variable> QuantifiedVariables { get; private set; } = quantifiedVars;
+            public IFormula Phi { get; private set; } = phi;
+            public List<Variable> XPlus { get; private set; } = xPlus;
+            public List<Variable> XMinus { get; private set; } = xMinus;
         }
 
         public class Result(IFormula formula, IEnumerable<Variable> p, IEnumerable<Variable> n)

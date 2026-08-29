@@ -10,14 +10,14 @@ namespace prenex_qbf_translator.Translator
         public FreshVariableGenerator(HashSet<Variable> unavailableVariables)
         {
             ArgumentNullException.ThrowIfNull(unavailableVariables, nameof(unavailableVariables));
+
             unav = unavailableVariables;
         }
 
 
         /// <summary>
-        /// Generates a fresh variable "pn" that is not in the set of unavailable variables where "n" is the smallest integer >= 1. Used for Fact 4 (decomposition with outermost quantifiers).
+        /// Generates the next fresh variable pn. It is the first of "p1", "p2", "p3", ... that is fresh. Used for Fact 4 (decomposition with outermost quantifiers).
         /// </summary>
-        /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         public Variable NextP()
         {
@@ -32,10 +32,9 @@ namespace prenex_qbf_translator.Translator
         }
 
         /// <summary>
-        /// Generates fresh variables x^+ and x^- that are not in the set of unavailable variables for a given variable x. If "xp" and "xm" are available, they are returned. Otherwise, "xpn" and "xmn" are returned where n is the smallest integer >= 1. Used for Definition 2 (t terms).
+        /// Generates the next pair of fresh variables x_plus and x_minus for a variable x. It is the first of ("xp", "xm"), ("xp1", "xm1"), ("xp2", "xm2"), ... where both variables are fresh. Used for Definition 2 (t terms).
         /// </summary>
         /// <param name="variable"></param>
-        /// <param name="unavailableVariables"></param>
         /// <returns></returns>
         public PN NextPositiveAndNegative(Variable variable)
         {

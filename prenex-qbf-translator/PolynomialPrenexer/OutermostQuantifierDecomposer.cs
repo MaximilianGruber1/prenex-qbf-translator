@@ -69,11 +69,6 @@ namespace prenex_qbf_translator.Translator
                 Beta = beta;
                 Substitution = substitution;
             }
-
-            public override string ToString()
-            {
-                return $"Beta: {Beta}, Substitution: {Substitution}";
-            }
         }
     }
 }
