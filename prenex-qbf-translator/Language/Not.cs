@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Not : BooleanOperator
+    public class Not : IFormula
     {
         private IFormula inner;
 
@@ -11,18 +11,6 @@
             {
                 ArgumentNullException.ThrowIfNull(value);
                 inner = value;
-            }
-        }
-
-        public IEnumerable<IFormula> Subformulas
-        {
-            get => [inner];
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                var subformulas = value.ToArray();
-                if (subformulas.Length != 1) throw new ArgumentException("needs 1 subformula");
-                Inner = subformulas[0];
             }
         }
 

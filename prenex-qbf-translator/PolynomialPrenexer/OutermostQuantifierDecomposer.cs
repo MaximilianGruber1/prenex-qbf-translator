@@ -2,78 +2,69 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace prenex_qbf_translator.Translator
 {
     public class OutermostQuantifierDecomposer
     {
-
-
         /// <summary>
         /// Decomposes a formula into beta and a substitution according to Fact 4.
         /// </summary>
-        /// <param name="formula">is changed and should never be used by the caller after the method call</param>4
-        /// <param name="unavailableVariables">variables that cannot be used for fresh variables</param>
+        /// <param name="formula">is changed and should never be used by the caller after the method call</param>
+        /// <param name="varGenerator"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public Args Decompose(IFormula formula, FreshVariableGenerator varGenerator)
+        public Result Decompose(IFormula formula, FreshVariableGenerator varGenerator)
         {
             ArgumentNullException.ThrowIfNull(formula);
+            ArgumentNullException.ThrowIfNull(varGenerator);
 
+            if (formula is Variable)
+            {
+                return new Result(beta: formula, substitution: new Substitution());
+            }
             if (formula is Quantifier)
             {
                 var p = varGenerator.NextP();
-                return new Args(p, new Substitution((p, formula)));
+                return new Result(p, new Substitution((p, formula)));
             }
-            else if (formula is BooleanOperator b)
+            else if (formula is Not n)
             {
-                return DecomposeRecursive(b, varGenerator);
+                var decomposedInner = Decompose(n.Inner, varGenerator);
+                n.Inner = decomposedInner.Beta;
+                return new Result(n, decomposedInner.Substitution);
             }
-            else // variable
+            else if (formula is BinaryOperator b)
             {
-                return new Args(beta: formula, substitution: new Substitution());
+                var decomposedLeft = Decompose(b.Left, varGenerator);
+                var decomposedRight = Decompose(b.Right, varGenerator);
+                var lBeta = decomposedLeft.Beta;
+                var rBeta = decomposedRight.Beta;
+                var lSub = decomposedLeft.Substitution;
+                var rsub = decomposedRight.Substitution;
+
+                b.Left = lBeta;
+                b.Right = rBeta;
+
+                var combinedSub = lSub;
+                combinedSub.Add(rsub);
+
+                return new Result(b, combinedSub);
+            }
+            else
+            {
+                throw new Exception("impossible case");
             }
         }
 
-        private Args DecomposeRecursive(BooleanOperator formula, FreshVariableGenerator varGenerator)
-        {
-            var subformulas = formula.Subformulas;
 
-            List<IFormula> newSubformulas = new();
-            Substitution substitution = new();
-            foreach (var subformula in subformulas)
-            {
-                if (subformula is Quantifier)
-                {
-                    Variable p = varGenerator.NextP();
-                    newSubformulas.Add(p);
-                    substitution.Add(p, subformula);
-                }
-                else if (subformula is BooleanOperator b)
-                {
-                    var args = DecomposeRecursive(b, varGenerator);
-                    newSubformulas.Add(args.Beta);
-                    substitution.Add(args.Substitution);
-                }
-                else // variable
-                {
-                    newSubformulas.Add(subformula);
-                }
-            }
-
-            formula.Subformulas = newSubformulas;
-            return new Args(formula, substitution);
-        }
-
-
-
-        public class Args
+        public class Result
         {
             public IFormula Beta {  get; set; }
             public Substitution Substitution { get; set; }
 
 
-            public Args(IFormula beta, Substitution substitution)
+            public Result(IFormula beta, Substitution substitution)
             {
                 Beta = beta;
                 Substitution = substitution;

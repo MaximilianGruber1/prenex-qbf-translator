@@ -51,13 +51,15 @@ namespace prenex_qbf_translator.Language
 
         public void Add(Variable variable, IFormula replacement)
         {
-            ArgumentNullException.ThrowIfNull(replacement);
             mappings.Add(variable, replacement);
         }
 
         public void Add(Substitution sub)
         {
-            mappings = mappings.Concat(sub.mappings).ToDictionary();
+            foreach (var pair in sub.mappings)
+            {
+                mappings.Add(pair.Key, pair.Value);
+            }
         }
 
         public void Remove(Variable v)
@@ -85,17 +87,23 @@ namespace prenex_qbf_translator.Language
                 }
                 return v;
             }
-            else if (f is BooleanOperator b)
-            {
-                b.Subformulas = b.Subformulas.Select(subf => ApplyToRecursive(subst, subf));
-                return b;
-            }
             else if (f is Quantifier q)
             {
                 Substitution newSubst = new(subst);
                 newSubst.Remove(q.Variable);
                 q.Inner = ApplyToRecursive(newSubst, q.Inner);
                 return q;
+            }
+            else if (f is Not n)
+            {
+                n.Inner = ApplyToRecursive(subst, n.Inner);
+                return n;
+            }
+            else if (f is BinaryOperator b)
+            {
+                b.Left = ApplyToRecursive(subst, b.Left);
+                b.Right = ApplyToRecursive(subst, b.Right);
+                return b;
             }
             else
             {

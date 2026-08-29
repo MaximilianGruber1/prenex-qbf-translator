@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Xunit;
 using prenex_qbf_translator.Language;
 using prenex_qbf_translator.Parsing;
+using Xunit.Sdk;
 
 namespace prenex_qbf_translator.Tests
 {
@@ -22,24 +23,82 @@ namespace prenex_qbf_translator.Tests
 
 
         [Fact]
-        public void Test()
+        public void AddVariable()
         {
-            Variable a = new("a");
-            Variable b = new("b");
-            Variable c = new("c");
-            Variable x = new("x");
-            Variable y = new("y");
-            Variable z = new("z");
+            Substitution sub = new(
+                (new Variable("a"), ParseFormula("x & y")),
+                (new Variable("b"), ParseFormula("y | z")),
+                (new Variable("c"), ParseFormula("x <-> y"))
+                );
 
-            Substitution ax = new((a, x));
-            Substitution axyz = new(
-                (a, ParseFormula("x&y|z")));
-            Substitution abcxyz = new(
-                (a, x), (b, y), (c, z));
+            Assert.Throws<ArgumentException>(() => sub.Add(new Variable("a"), ParseFormula("x")));
+            Assert.Throws<ArgumentException>(() => sub.Add(new Variable("a"), ParseFormula("x & y")));
+
+            sub.Add(new Variable("d"), ParseFormula("x <- z"));
+            Assert.Equal(4, sub.Count);
         }
 
         [Fact]
-        public void Empty()
+        public void AddSubstitution()
+        {
+            Substitution sub = new(
+                (new Variable("a"), ParseFormula("x & y")),
+                (new Variable("b"), ParseFormula("y | z")),
+                (new Variable("c"), ParseFormula("x <-> y"))
+                );
+
+            Substitution badSub = new(
+                (new Variable("b"), ParseFormula("x | y")),
+                (new Variable("d"), ParseFormula("y <- z")),
+                (new Variable("e"), ParseFormula("x & !y"))
+                );
+
+            Assert.Throws<ArgumentException>(() => sub.Add(badSub));
+
+
+
+            Substitution goodSub = new(
+                (new Variable("f"), ParseFormula("x | y")),
+                (new Variable("d"), ParseFormula("y <- z")),
+                (new Variable("e"), ParseFormula("x & !y"))
+                );
+
+            sub.Add(goodSub);
+            Assert.Equal(6, sub.Count);
+        }
+
+        [Fact]
+        public void RemoveVariable()
+        {
+            Substitution sub = new(
+                (new Variable("a"), ParseFormula("x & y")),
+                (new Variable("b"), ParseFormula("y | z")),
+                (new Variable("c"), ParseFormula("x <-> y"))
+                );
+
+            sub.Remove(new Variable("c"));
+
+            Assert.Equal(2, sub.Count);
+
+            sub.Remove(new Variable("c"));
+
+            Assert.Equal(2, sub.Count);
+
+            sub.Remove(new Variable("x"));
+
+            Assert.Equal(2, sub.Count);
+
+            sub.Remove(new Variable("a"));
+
+            Assert.Equal(1, sub.Count);
+
+            sub.Remove(new Variable("b"));
+
+            Assert.Equal(0, sub.Count);
+        }
+
+        [Fact]
+        public void Apply_Empty()
         {
             Substitution empty = new();
 
@@ -79,7 +138,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void AToA()
+        public void Apply_AToA()
         {
             Substitution sub = new((
                 new Variable("a"),
@@ -121,7 +180,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void AToX()
+        public void Apply_AToX()
         {
             Substitution sub = new((
                 new Variable("a"),
@@ -163,7 +222,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void BToY()
+        public void Apply_BToY()
         {
             Substitution sub = new((
                 new Variable("b"),
@@ -205,7 +264,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void CToZ()
+        public void Apply_CToZ()
         {
             Substitution sub = new((
                 new Variable("c"),
@@ -238,7 +297,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void AToXEquivY()
+        public void Apply_AToXEquivY()
         {
             Substitution sub = new((
                 new Variable("a"),
@@ -280,7 +339,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void CToXImpliesY()
+        public void Apply_CToXImpliesY()
         {
             Substitution sub = new((
                 new Variable("c"),
@@ -313,7 +372,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void AB_BC_CA()
+        public void Apply_AB_BC_CA()
         {
             Substitution sub = new(
                 (new Variable("a"),

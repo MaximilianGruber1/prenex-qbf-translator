@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public abstract class BinaryOperator : BooleanOperator
+    public abstract class BinaryOperator : IFormula
     {
         private IFormula left;
         private IFormula right;
