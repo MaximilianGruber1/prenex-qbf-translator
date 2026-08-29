@@ -10,14 +10,16 @@ namespace prenex_qbf_translator.Language
             Right = right;
         }
 
-        public And(IFormula first, IFormula second, params IFormula[] other)
+        public And(params IFormula[] subformulas)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            ArgumentNullException.ThrowIfNull(subformulas);
+            if (subformulas.Length < 2)
+                throw new ArgumentException("needs at least two subformulas");
 
-            Left = first;
-            Right = other.Length == 0
-                ? second
-                : new And(second, other[0], other[1..]);
+            Left = subformulas[0];
+            Right = subformulas.Length == 2
+                ? subformulas[1]
+                : new And(subformulas[1..]);
         }
 
 

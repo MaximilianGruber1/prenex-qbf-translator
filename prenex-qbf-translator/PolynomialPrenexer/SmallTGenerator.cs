@@ -31,13 +31,13 @@ namespace prenex_qbf_translator.Translator
             if (isForall)
             {
                 IFormula[] subs = [.. parenthesis1, .. parentheses2and3, decomp.Beta]; // the two parentheses lists have at least one element each, so 'subs' has at least two elements
-                t = new And(subs[0], subs[1], subs[2..]);
+                t = new And(subs);
             }
             else // exists
             {
                 IFormula[] subs = [.. parenthesis1, .. parentheses2and3];
                 t = new Implies(
-                        new And(subs[0], subs[1], subs[2..]), // same here
+                        new And(subs), // same here
                         decomp.Beta
                     );
             }
@@ -114,7 +114,7 @@ namespace prenex_qbf_translator.Translator
 
             IFormula right = equivalences.Count() == 1 ? // always at least 1
                 equivalences[0] :
-                new And(equivalences[0], equivalences[1], equivalences[2..].ToArray());
+                new And(equivalences.ToArray());
             if (group.IsForall)
             {
                 return

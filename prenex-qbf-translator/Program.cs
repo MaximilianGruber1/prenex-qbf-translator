@@ -5,6 +5,7 @@ using prenex_qbf_translator.Translator;
 using System.Reflection.Emit;
 using System.Runtime.Intrinsics.Wasm;
 using System.CommandLine;
+using prenex_qbf_translator.TestFormulaGenerator;
 
 
 public class Program
@@ -13,6 +14,13 @@ public class Program
 
     public static int Main(string[] args)
     {
+        for (int i = 1; i < 6; i++)
+        {
+            Console.WriteLine(new Attempt1_ExistsEquivForall_Or().GenerateFormula(i));
+        }
+
+
+
         var rootCommand = new RootCommand("prenex qbf formulas");
 
         // pol

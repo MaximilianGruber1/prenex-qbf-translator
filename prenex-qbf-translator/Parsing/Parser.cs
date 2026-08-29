@@ -53,7 +53,7 @@ namespace prenex_qbf_translator.Parsing
             }
             else // more than one subformula, return new disjunction of these subformulas
             {
-                return new Equivalent(first, other[0], other[1..].ToArray());
+                return new Equivalent([first, ..other]);
             }
         }
 
@@ -97,7 +97,7 @@ namespace prenex_qbf_translator.Parsing
             }
             else
             {
-                return new Or(first, other[0], other[1..].ToArray());
+                return new Or([first, ..other]);
             }
         }
 
@@ -119,7 +119,7 @@ namespace prenex_qbf_translator.Parsing
             }
             else
             {
-                return new And(first, other[0], other[1..].ToArray());
+                return new And([first, ..other]);
             }
         }
 
