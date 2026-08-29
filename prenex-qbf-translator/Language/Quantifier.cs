@@ -7,37 +7,30 @@ namespace prenex_qbf_translator.Language
     /// </summary>
     public abstract class Quantifier : IFormula
     {
-        public abstract Variable QuantifiedVariable { get; set; }
-        public abstract IFormula Inner { get; set; }
+        private Variable quantifiedVariable;
+        private IFormula inner;
+
+
+        public Variable Variable
+        {
+            get => quantifiedVariable;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                quantifiedVariable = value;
+            }
+        }
+
+        public IFormula Inner
+        {
+            get => inner;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                inner = value;
+            }
+        }
 
         public abstract IFormula DeepCopy();
-
-        public HashSet<Variable> Variables()
-        {
-            var vars = new HashSet<Variable>(Inner.Variables())
-            {
-                QuantifiedVariable
-            };
-            return vars;
-        }
-
-        public HashSet<Variable> FreeVariables()
-        {
-            var vars = new HashSet<Variable>(Inner.FreeVariables());
-            vars.Remove(QuantifiedVariable);
-            return vars;
-        }
-
-        public HashSet<Variable> BoundVariables()
-        {
-            var vars = new HashSet<Variable> (Inner.BoundVariables());
-            vars.Add(QuantifiedVariable);
-            return vars;
-        }
-
-        public bool IsBoolean()
-        {
-            return false;
-        }
     }
 }

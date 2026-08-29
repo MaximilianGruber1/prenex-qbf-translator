@@ -2,32 +2,9 @@ namespace prenex_qbf_translator.Language
 {
     public class Exists : Quantifier
     {
-        private Variable quantifiedVariable;
-        private IFormula inner;
-
-        public override Variable QuantifiedVariable
-        {
-            get => quantifiedVariable;
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                quantifiedVariable = value;
-            }
-        }
-
-        public override IFormula Inner
-        {
-            get => inner;
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-                inner = value;
-            }
-        }
-
         public Exists(Variable quantifiedVariable, IFormula inner)
         {
-            QuantifiedVariable = quantifiedVariable;
+            Variable = quantifiedVariable;
             Inner = inner;
         }
 
@@ -38,7 +15,7 @@ namespace prenex_qbf_translator.Language
             if (qvars.Length == 0)
                 throw new ArgumentException("quantifier requires at least one quantified variable");
 
-            QuantifiedVariable = qvars[0];
+            Variable = qvars[0];
             Inner = qvars.Length == 1 ? 
                 inner : 
                 new Exists(qvars[1..], inner);
@@ -47,7 +24,7 @@ namespace prenex_qbf_translator.Language
 
         public override IFormula DeepCopy()
         {
-            return new Exists(QuantifiedVariable, Inner.DeepCopy());
+            return new Exists(Variable, Inner.DeepCopy());
         }
 
 
@@ -56,7 +33,7 @@ namespace prenex_qbf_translator.Language
             string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?
                     $"({Inner})" :
                     $"{Inner}";
-            return $"?{QuantifiedVariable} {subformula}";
+            return $"?{Variable} {subformula}";
         }
     }
 }

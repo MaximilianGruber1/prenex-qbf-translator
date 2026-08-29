@@ -11,90 +11,44 @@ namespace prenex_qbf_translator.Translator
         private readonly OutermostQuantifierDecomposer decomposer = new();
 
 
-        /// <summary>
-        /// Generates t_forall(phi), N(phi), and P(phi) for a formula phi according to Definition 2.
-        /// </summary>
-        /// <param name="formula"></param>
-        /// <param name="unavailableVariables"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTForall(IFormula formula, IEnumerable<Variable> unavailableVariables)
-        {
-            return GenerateSmallT(formula, true, unavailableVariables);
-        }
 
 
-        /// <summary>
-        /// Generates t_exists(phi), N(phi), and P(phi) for a formula phi according to Definition 2.
-        /// </summary>
-        /// <param name="formula"></param>
-        /// <param name="unavailableVariables0"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public IFormula GenerateSmallTExists(IFormula formula, IEnumerable<Variable> unavailableVariables)
-        {
-            return GenerateSmallT(formula, false, unavailableVariables);
-        }
 
-        public IEnumerable<Variable> GetP(IFormula formula, IEnumerable<Variable>unavailableVariables)
+        public Result GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
         {
             ArgumentNullException.ThrowIfNull(unavailableVariables);
 
-            if (formula.IsBoolean())
+            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
+
+            if (decomp.Substitution.Count == 0)
             {
-                return [];
+                return new Result(formula, [], []); // all three big parentheses of Definition 2 (t terms) lines 1 and 2 are empty, so just return the formula itself
             }
 
-            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
             var groups = ConstructGroups(decomp.Substitution, unavailableVariables);
-            return groups.SelectMany(g => g.XPlus).Concat(groups.Select(g => g.P));
-        }
-
-        public IEnumerable<Variable> GetN(IFormula formula, IEnumerable<Variable> unavailableVariables)
-        {
-            ArgumentNullException.ThrowIfNull(unavailableVariables);
-
-            if (formula.IsBoolean())
-            {
-                return [];
-            }
-
-            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
-            var groups = ConstructGroups(decomp.Substitution, unavailableVariables);
-            return groups.SelectMany(g => g.XMinus);
-        }
-
-
-        public IFormula GenerateSmallT(IFormula formula, bool isForall, IEnumerable<Variable> unavailableVariables)
-        {
-            ArgumentNullException.ThrowIfNull(unavailableVariables);
-
-            if (formula.IsBoolean())
-            {
-                return formula; // all three big parentheses of Definition 2 (t terms) lines 1 and 2 are empty, so just return the formula itself
-            }
-            var unav = new List<Variable>(unavailableVariables);
-            unav.AddRange(formula.Variables());
-            unav = unav.Distinct().ToList();
-
-            var decomp = decomposer.GetDecomposition(formula, unavailableVariables);
-            var groups = ConstructGroups(decomp.Substitution, unav);
 
             IEnumerable<IFormula> parenthesis1 = GetParenthesis1(groups);
             IEnumerable<IFormula> parentheses2and3 = GetParentheses2And3(groups);
+
+            IFormula t;
             if (isForall)
             {
-                IFormula[] subs = [.. parenthesis1, .. parentheses2and3, decomp.Beta]; // the two parentheses lists have at least one element each
-                return new And(subs[0], subs[1], subs[2..]);
+                IFormula[] subs = [.. parenthesis1, .. parentheses2and3, decomp.Beta]; // the two parentheses lists have at least one element each, so 'subs' has at least two elements
+                t = new And(subs[0], subs[1], subs[2..]);
             }
             else // exists
             {
                 IFormula[] subs = [.. parenthesis1, .. parentheses2and3];
-                return new Implies(
+                t = new Implies(
                         new And(subs[0], subs[1], subs[2..]), // same here
                         decomp.Beta
                     );
             }
+
+            var p = groups.SelectMany(g => g.XPlus).Concat(groups.Select(g => g.P)).ToList();
+            var n = groups.SelectMany(g => g.XMinus).ToList();
+
+            return new Result(t, p, n);
         }
 
         private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, IEnumerable<Variable> unavailableVariables)
@@ -192,13 +146,13 @@ namespace prenex_qbf_translator.Translator
         /// <returns></returns>
         private List<Variable> GetQuantifiedVariablesForGroup(Quantifier q)
         {
-            List<Variable> vars = [q.QuantifiedVariable];
+            List<Variable> vars = [q.Variable];
 
             if (q is Exists)
             {
                 while (q.Inner is Exists e)
                 {
-                    vars.Add(e.QuantifiedVariable);
+                    vars.Add(e.Variable);
                     q = e;
                 }
 
@@ -207,7 +161,7 @@ namespace prenex_qbf_translator.Translator
             {
                 while (q.Inner is Forall f)
                 {
-                    vars.Add(f.QuantifiedVariable);
+                    vars.Add(f.Variable);
                     q = f;
                 }
             }
@@ -250,6 +204,13 @@ namespace prenex_qbf_translator.Translator
             public IFormula Phi { get; set; }
             public List<Variable> XPlus { get; set; }
             public List<Variable> XMinus { get; set; }
+        }
+
+        public class Result(IFormula formula, IEnumerable<Variable> p, IEnumerable<Variable> n)
+        {
+            public IFormula Formula { get; set; } = formula;
+            public IEnumerable<Variable> P { get; set; } = p;
+            public IEnumerable<Variable> N { get; set; } = n;
         }
     }
 }

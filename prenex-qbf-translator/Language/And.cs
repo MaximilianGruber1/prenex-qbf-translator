@@ -23,7 +23,7 @@ namespace prenex_qbf_translator.Language
 
         public override And DeepCopy()
         {
-            return new And(left.DeepCopy(), right.DeepCopy());
+            return new And(Left.DeepCopy(), Right.DeepCopy());
         }
 
 
@@ -32,7 +32,7 @@ namespace prenex_qbf_translator.Language
             bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy || o is Or;
             string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
 
-            return $"{Format(left)} & {Format(right)}";
+            return $"{Format(Left)} & {Format(Right)}";
         }
     }
 }

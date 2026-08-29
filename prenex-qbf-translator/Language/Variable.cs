@@ -12,30 +12,10 @@
             }
         }
 
-        public HashSet<Variable> Variables()
-        {
-            return [this];
-        }
-
-        public HashSet<Variable> FreeVariables()
-        {
-            return [this];
-        }
-
-        public HashSet<Variable> BoundVariables()
-        {
-            return [];
-        }
-
 
         public IFormula DeepCopy()
         {
             return this; // immutable, therefore fine
-        }
-
-        public bool IsBoolean()
-        {
-            return true;
         }
 
         public override string ToString()

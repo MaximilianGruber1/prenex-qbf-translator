@@ -21,7 +21,7 @@
 
         public override Or DeepCopy()
         {
-            return new Or(left.DeepCopy(), right.DeepCopy());
+            return new Or(Left.DeepCopy(), Right.DeepCopy());
         }
 
 
@@ -30,7 +30,7 @@
             bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy;
             string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
 
-            return $"{Format(left)} | {Format(right)}";
+            return $"{Format(Left)} | {Format(Right)}";
         }
     }
 }

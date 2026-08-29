@@ -15,6 +15,9 @@ namespace prenex_qbf_translator.Language
             }
         }
 
+        public int Count => mappings.Count;
+
+
         public Substitution(params (Variable, IFormula)[] mappings)
         {
             ArgumentNullException.ThrowIfNull(mappings);
@@ -90,7 +93,7 @@ namespace prenex_qbf_translator.Language
             else if (f is Quantifier q)
             {
                 Substitution newSubst = new(subst);
-                newSubst.Remove(q.QuantifiedVariable);
+                newSubst.Remove(q.Variable);
                 q.Inner = ApplyToRecursive(newSubst, q.Inner);
                 return q;
             }

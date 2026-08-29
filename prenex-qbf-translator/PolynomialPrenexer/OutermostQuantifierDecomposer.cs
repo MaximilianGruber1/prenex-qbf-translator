@@ -14,7 +14,7 @@ namespace prenex_qbf_translator.Translator
         /// Decomposes a formula into beta and a substitution according to Fact 4.
         /// </summary>
         /// <param name="formula"></param>
-        /// <param name="unavailableVariables">variables that do not occur in the formula but still must not be used</param>
+        /// <param name="unavailableVariables">variables that cannot be used for fresh variables</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         public Args GetDecomposition(IFormula formula, IEnumerable<Variable>? unavailableVariables = null)
@@ -23,7 +23,6 @@ namespace prenex_qbf_translator.Translator
             unavailableVariables ??= [];
 
             formula = formula.DeepCopy();
-            unavailableVariables = unavailableVariables.Concat(formula.Variables());
 
             if (formula is Quantifier)
             {

@@ -23,13 +23,13 @@ namespace prenex_qbf_translator.Language
 
         public override Equivalent DeepCopy()
         {
-            return new Equivalent(left.DeepCopy(), right.DeepCopy());
+            return new Equivalent(Left.DeepCopy(), Right.DeepCopy());
         }
 
 
         public override string ToString()
         {
-            return $"{left} <-> {right}";
+            return $"{Left} <-> {Right}";
         }
     }
 }

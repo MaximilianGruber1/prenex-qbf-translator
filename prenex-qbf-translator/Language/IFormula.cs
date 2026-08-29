@@ -11,17 +11,5 @@ namespace prenex_qbf_translator.Language
         /// </summary>
         /// <returns></returns>
         IFormula DeepCopy();
-
-        HashSet<Variable> Variables();
-
-        HashSet<Variable> FreeVariables();
-
-        HashSet<Variable> BoundVariables();
-
-        /// <summary>
-        /// Checks if the formula does not contain any quantifiers
-        /// </summary>
-        /// <returns></returns>
-        bool IsBoolean();
     }
 }

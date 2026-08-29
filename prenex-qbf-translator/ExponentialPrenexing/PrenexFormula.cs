@@ -191,9 +191,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private Quantifier GetDual(Quantifier q)
         {
             if (q is Forall)
-                return new Exists(q.QuantifiedVariable, q.Inner);
+                return new Exists(q.Variable, q.Inner);
             else
-                return new Forall(q.QuantifiedVariable, q.Inner);
+                return new Forall(q.Variable, q.Inner);
         }
 
 
@@ -262,8 +262,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             }
             else if (f is Quantifier q)
             {
-                if (q.QuantifiedVariable.Equals(oldVar))
-                    q.QuantifiedVariable = newVar;
+                if (q.Variable.Equals(oldVar))
+                    q.Variable = newVar;
                 q.Inner = RenameVariable(q.Inner, oldVar, newVar);
                 return f;
             }

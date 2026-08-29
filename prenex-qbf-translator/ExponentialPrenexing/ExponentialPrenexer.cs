@@ -34,13 +34,13 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             else if (f is Exists e)
             {
                 PrenexFormula prenexInner = PrenexRecursive(e.Inner);
-                prenexInner.Exists(e.QuantifiedVariable);
+                prenexInner.Exists(e.Variable);
                 return prenexInner;
             }
             else if (f is Forall a)
             {
                 PrenexFormula prenexInner = PrenexRecursive(a.Inner);
-                prenexInner.Forall(a.QuantifiedVariable);
+                prenexInner.Forall(a.Variable);
                 return prenexInner;
             }
             if (f is Not n)

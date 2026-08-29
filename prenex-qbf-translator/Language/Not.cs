@@ -46,25 +46,5 @@
                 $"!({Inner})" : 
                 $"!{Inner}";
         }
-
-        public HashSet<Variable> Variables()
-        {
-            return Inner.Variables();
-        }
-
-        public HashSet<Variable> FreeVariables()
-        {
-            return Inner.FreeVariables();
-        }
-
-        public HashSet<Variable> BoundVariables()
-        {
-            return Inner.BoundVariables();
-        }
-
-        public bool IsBoolean()
-        {
-            return Inner.IsBoolean();
-        }
     }
 }
