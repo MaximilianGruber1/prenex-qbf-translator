@@ -32,14 +32,19 @@ namespace prenex_qbf_translator.Tests
             Assert.Equal(wo, w);
         }
 
-        
-
-
 
 
 
         [Fact]
-        public void TestVariableNames()
+        public void Test()
+        {
+            
+            string s = new Variable("a").ToString();
+        }
+
+
+        [Fact]
+        public void VariableNames()
         {
             TestSuccess("a");
             TestSuccess("b");

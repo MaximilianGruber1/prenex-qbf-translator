@@ -8,15 +8,15 @@ using System.CommandLine;
 using prenex_qbf_translator.TestFormulaGenerator;
 
 
-public class Program
+public partial class Program
 {
     
 
     public static int Main(string[] args)
     {
-        IFormulaGenerator gen = new Attempt1b_ExistsEquivForall_And();
+        IFormulaGenerator gen = new Attemp0_QuantifiersAtBottom();
 
-        for (int i = 1; i < 6; i++)
+        foreach (int i in new int[] {1500})
         {
             Console.WriteLine(gen.GenerateFormula(i));
         }
@@ -75,6 +75,9 @@ public class Program
             return 0;
         });
 
+        // gen
+        var genCommand = new Command("gen");
+
         // root
         rootCommand.Add(polCommand);
         rootCommand.Add(expCommand);
@@ -87,7 +90,7 @@ public class Program
     {
         string fileText = File.ReadAllText(input.FullName);
         IFormula formula = new Parser(fileText).Parse();
-        IFormula prenexedFormula = new PolynomialPrenexer().Prenexed(formula);
+        IFormula prenexedFormula = new PolynomialPrenexer().Prenex(formula);
         string result = prenexedFormula.ToString()!;
 
         if (output != null)
@@ -104,7 +107,7 @@ public class Program
     {
         string fileText = File.ReadAllText(input.FullName);
         IFormula formula = new Parser(fileText).Parse();
-        IFormula prenexedFormula = new ExponentialPrenexer().Prenexed(formula);
+        PrenexFormula prenexedFormula = new ExponentialPrenexer().Prenexed(formula);
         string result = prenexedFormula.ToString()!;
 
         if (output != null)
@@ -116,10 +119,6 @@ public class Program
             Console.WriteLine(result);
         }
     }
-
-
-
-
     
 
 }

@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Not : IFormula
+    public class Not : Formula
     {
         private IFormula inner;
 
@@ -17,22 +17,6 @@
         public Not(IFormula inner)
         {
             Inner = inner;
-        }
-
-
-
-
-        public IFormula DeepCopy()
-        {
-            return new Not(inner.DeepCopy());
-        }
-        
-
-        public override string ToString()
-        {
-            return Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And ? 
-                $"!({Inner})" : 
-                $"!{Inner}";
         }
     }
 }

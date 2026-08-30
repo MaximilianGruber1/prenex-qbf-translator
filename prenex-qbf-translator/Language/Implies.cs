@@ -20,19 +20,5 @@ namespace prenex_qbf_translator.Language
                 : new Implies(second, other[0], other[1..]);
         }
 
-
-        public override Implies DeepCopy()
-        {
-            return new Implies(Left.DeepCopy(), Right.DeepCopy());
-        }
-
-
-        public override string ToString()
-        {
-            bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy;
-            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
-
-            return $"{Format(Left)} -> {Format(Right)}";
-        }
     }
 }

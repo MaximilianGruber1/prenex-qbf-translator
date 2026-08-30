@@ -6,10 +6,14 @@ namespace prenex_qbf_translator.Language
 {
     public interface IFormula
     {
-        /// <summary>
-        /// Creates a deep copy of the object
-        /// </summary>
-        /// <returns></returns>
-        IFormula DeepCopy();
+
+    }
+
+    public abstract class Formula : IFormula
+    {
+        public override string ToString()
+        {
+            return new FormulaToStringConverter().Convert(this);
+        }
     }
 }

@@ -71,7 +71,6 @@ namespace prenex_qbf_translator.PolynomialPrenexing
 
         public IFormula ApplyTo(IFormula f)
         {
-            f = f.DeepCopy();
             return ApplyToRecursive(this, f);
         }
 

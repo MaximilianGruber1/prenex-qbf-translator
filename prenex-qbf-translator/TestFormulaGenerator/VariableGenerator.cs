@@ -30,6 +30,10 @@ namespace prenex_qbf_translator.TestFormulaGenerator
         {
             if (letter == 'z')
             {
+                letter = 'A';
+            }
+            else if (letter == 'Z')
+            {
                 letter = 'a';
                 index++;
             }

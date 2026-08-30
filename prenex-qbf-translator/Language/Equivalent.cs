@@ -21,17 +21,5 @@ namespace prenex_qbf_translator.Language
                 ? subformulas[1]
                 : new Equivalent(subformulas[1..]);
         }
-
-
-        public override Equivalent DeepCopy()
-        {
-            return new Equivalent(Left.DeepCopy(), Right.DeepCopy());
-        }
-
-
-        public override string ToString()
-        {
-            return $"{Left} <-> {Right}";
-        }
     }
 }

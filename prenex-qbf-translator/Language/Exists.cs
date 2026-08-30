@@ -20,21 +20,6 @@ namespace prenex_qbf_translator.Language
                 inner : 
                 new Exists(qvars[1..], inner);
         }
-
-
-        public override IFormula DeepCopy()
-        {
-            return new Exists(Variable, Inner.DeepCopy());
-        }
-
-
-        public override string ToString()
-        {
-            string subformula = (Inner is Equivalent || Inner is Implies || Inner is IsImpliedBy || Inner is Or || Inner is And) ?
-                    $"({Inner})" :
-                    $"{Inner}";
-            return $"?{Variable} {subformula}";
-        }
     }
 }
 

@@ -15,7 +15,7 @@ namespace prenex_qbf_translator.Tests
 
             Parser p = new(formula);
             IFormula f = p.Parse();
-            IFormula prenexed = new ExponentialPrenexer().Prenexed(f);
+            PrenexFormula prenexed = new ExponentialPrenexer().Prenexed(f);
             string actual = prenexed.ToString();
 
             Assert.Equal(expected, actual);

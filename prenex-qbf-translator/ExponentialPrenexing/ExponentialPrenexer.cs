@@ -14,9 +14,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>
-        public IFormula Prenexed(IFormula f)
+        public PrenexFormula Prenexed(IFormula f)
         {
-            return PrenexRecursive(f).ToFormula();
+            return PrenexRecursive(f);
         }
 
         /// <summary>
@@ -86,18 +86,5 @@ namespace prenex_qbf_translator.ExponentialPrenexing
                 throw new Exception("impossible case");
             }
         }
-
-
-
-        
-
-        
-
-        
-
-        
-
-
-        
     }
 }

@@ -11,6 +11,11 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private HashSet<Variable> variables;
         private HashSet<Variable> quantifiedVariables;
 
+        private readonly FormulaDuplicator duplicator = new();
+
+        public List<Quantifier> Prefix => prefix;
+        public IFormula Matrix => matrix;
+
         public PrenexFormula(Variable variable)
         {
             prefix = [];
@@ -23,7 +28,7 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private PrenexFormula(PrenexFormula p)
         {
             prefix = p.prefix.Select(q => new Quantifier(q)).ToList();
-            matrix = p.matrix.DeepCopy();
+            matrix = duplicator.Duplicate(p.matrix);
 
             variables = [.. p.variables];
             quantifiedVariables = [.. p.quantifiedVariables];
@@ -123,24 +128,24 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             quantifiedVariables.Add(qvar);
         }
 
-        public IFormula ToFormula()
+        public string ConvertToString()
         {
-            var formula = matrix;
+            if (prefix.Count == 0)
+                return matrix.ToString();
 
-            for (int i = prefix.Count - 1; i >= 0; i--)
+            var sb = new StringBuilder()
+                .Append(string.Join(" ", prefix))
+                .Append(' ');
+            bool needsParentheses = matrix is BinaryOperator;
+            if (needsParentheses) 
+                sb.Append('(');
+            sb.Append(matrix);
+            if (needsParentheses)
             {
-                var quantifier = prefix[i];
-                if (quantifier.IsForall)
-                {
-                    formula = new Forall(quantifier.Variable, formula);
-                }
-                else
-                {
-                    formula = new Exists(quantifier.Variable, formula);
-                }
+                sb.Append(')');
             }
 
-            return formula;
+            return sb.ToString();
         }
 
         /// <summary>
@@ -272,7 +277,7 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
         public override string ToString()
         {
-            return ToFormula().ToString()!;
+            return ConvertToString();
         }
 
 
@@ -292,6 +297,11 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             {
                 IsForall = q.IsForall;
                 Variable = q.Variable;
+            }
+
+            public override string ToString()
+            {
+                return IsForall ? ("#" + Variable) : ("?" + Variable);
             }
         }
     }

@@ -15,7 +15,7 @@ namespace prenex_qbf_translator.Tests
 
             Parser p = new(formula);
             IFormula f = p.Parse();
-            IFormula TExists = new PolynomialPrenexer().Prenexed(f);
+            IFormula TExists = new PolynomialPrenexer().Prenex(f);
             string actual = TExists.ToString();
 
             Assert.Equal(expected, actual);

@@ -19,20 +19,5 @@
                 ? subformulas[1]
                 : new Or(subformulas[1..]);
         }
-
-
-        public override Or DeepCopy()
-        {
-            return new Or(Left.DeepCopy(), Right.DeepCopy());
-        }
-
-
-        public override string ToString()
-        {
-            bool NeedsParentheses(IFormula o) => o is Equivalent || o is Implies || o is IsImpliedBy;
-            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
-
-            return $"{Format(Left)} | {Format(Right)}";
-        }
     }
 }

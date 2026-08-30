@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public abstract class BinaryOperator : IFormula
+    public abstract class BinaryOperator : Formula
     {
         private IFormula left;
         private IFormula right;
@@ -37,8 +37,6 @@
                 Right = subformulas[1];
             }
         }
-
-        public abstract IFormula DeepCopy();
 
     }
 }

@@ -5,7 +5,7 @@ namespace prenex_qbf_translator.Language
     /// <summary>
     /// superclass of 'exists' and 'forall'
     /// </summary>
-    public abstract class Quantifier : IFormula
+    public abstract class Quantifier : Formula
     {
         private Variable quantifiedVariable;
         private IFormula inner;
@@ -30,7 +30,5 @@ namespace prenex_qbf_translator.Language
                 inner = value;
             }
         }
-
-        public abstract IFormula DeepCopy();
     }
 }

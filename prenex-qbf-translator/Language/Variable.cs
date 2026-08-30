@@ -1,6 +1,6 @@
 ﻿namespace prenex_qbf_translator.Language
 {
-    public class Variable : IFormula, IEquatable<Variable>
+    public class Variable : Formula, IEquatable<Variable>
     {
         public string Name { get; }
         public Variable(string name)
@@ -10,17 +10,6 @@
             {
                 throw new ArgumentException("empty variable name");
             }
-        }
-
-
-        public IFormula DeepCopy()
-        {
-            return this; // immutable, therefore fine
-        }
-
-        public override string ToString()
-        {
-            return Name;
         }
 
         public bool Equals(Variable? other)

@@ -14,10 +14,8 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         /// </summary>
         /// <param name="formula"></param>
         /// <returns></returns>
-        public IFormula Prenexed(IFormula formula)
+        public IFormula Prenex(IFormula formula)
         {
-            formula = formula.DeepCopy();
-
             var unavailableVariables = ComputeVariables(formula);
             var varGenerator = new FreshVariableGenerator(unavailableVariables);
 

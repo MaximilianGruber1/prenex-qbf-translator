@@ -11,4 +11,5 @@ namespace prenex_qbf_translator.TestFormulaGenerator
         /// <returns></returns>
         IFormula GenerateFormula(int n);
     }
+
 }

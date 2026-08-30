@@ -19,20 +19,5 @@ namespace prenex_qbf_translator.Language
                 ? second
                 : new IsImpliedBy(second, other[0], other[1..]);
         }
-
-
-        public override IsImpliedBy DeepCopy()
-        {
-            return new IsImpliedBy(Left.DeepCopy(), Right.DeepCopy());
-        }
-
-
-        public override string ToString()
-        {
-            bool NeedsParentheses(IFormula o) => o is Equivalent || o is IsImpliedBy || o is IsImpliedBy;
-            string Format(IFormula formula) => NeedsParentheses(formula) ? $"({formula})" : formula.ToString();
-
-            return $"{Format(Left)} <- {Format(Right)}";
-        }
     }
 }
