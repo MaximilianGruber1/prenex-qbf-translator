@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using prenex_qbf_translator.Language;
+using System.Text;
 using System.Xml;
 
-namespace prenex_qbf_translator.Language
+namespace prenex_qbf_translator.PolynomialPrenexing
 {
     public class Substitution
     {

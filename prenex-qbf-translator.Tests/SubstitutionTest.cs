@@ -4,6 +4,7 @@ using Xunit;
 using prenex_qbf_translator.Language;
 using prenex_qbf_translator.Parsing;
 using Xunit.Sdk;
+using prenex_qbf_translator.PolynomialPrenexing;
 
 namespace prenex_qbf_translator.Tests
 {

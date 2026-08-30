@@ -1,10 +1,11 @@
 ﻿using prenex_qbf_translator.Language;
+using prenex_qbf_translator.PolynomialPrenexing;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace prenex_qbf_translator.Translator
+namespace prenex_qbf_translator.PolynomialPrenexing
 {
     public class OutermostQuantifierDecomposer
     {

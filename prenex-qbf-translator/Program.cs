@@ -1,7 +1,7 @@
 ﻿using prenex_qbf_translator.ExponentialPrenexing;
 using prenex_qbf_translator.Language;
 using prenex_qbf_translator.Parsing;
-using prenex_qbf_translator.Translator;
+using prenex_qbf_translator.PolynomialPrenexing;
 using System.Reflection.Emit;
 using System.Runtime.Intrinsics.Wasm;
 using System.CommandLine;
@@ -14,12 +14,14 @@ public class Program
 
     public static int Main(string[] args)
     {
+        IFormulaGenerator gen = new Attempt1b_ExistsEquivForall_And();
+
         for (int i = 1; i < 6; i++)
         {
-            Console.WriteLine(new Attempt1_ExistsEquivForall_Or().GenerateFormula(i));
+            Console.WriteLine(gen.GenerateFormula(i));
         }
 
-
+        // --------------------------------------------------------------------
 
         var rootCommand = new RootCommand("prenex qbf formulas");
 

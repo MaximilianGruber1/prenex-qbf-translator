@@ -2,7 +2,7 @@
 
 namespace prenex_qbf_translator.TestFormulaGenerator
 {
-    public class Attempt2_ExistsEquivForall_And : IFormulaGenerator
+    public class Attempt1b_ExistsEquivForall_And : IFormulaGenerator
     {
         public IFormula GenerateFormula(int size)
         {

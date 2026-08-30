@@ -1,27 +1,30 @@
 ﻿using prenex_qbf_translator.Language;
+using System.Text;
 
 namespace prenex_qbf_translator.ExponentialPrenexing
 {
     public class PrenexFormula
     {
+        private List<Quantifier> prefix;
+        private IFormula matrix;
+
         private HashSet<Variable> variables;
         private HashSet<Variable> quantifiedVariables;
 
-        /// <summary>
-        /// The formula it represents.
-        /// </summary>
-        public IFormula Formula { get; private set; }
-
         public PrenexFormula(Variable variable)
         {
-            Formula = variable;
+            prefix = [];
+            matrix = variable;
+
             variables = [variable];
             quantifiedVariables = [];
         }
 
         private PrenexFormula(PrenexFormula p)
         {
-            Formula = p.Formula.DeepCopy();
+            prefix = p.prefix.Select(q => new Quantifier(q)).ToList();
+            matrix = p.matrix.DeepCopy();
+
             variables = [.. p.variables];
             quantifiedVariables = [.. p.quantifiedVariables];
         }
@@ -29,21 +32,18 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         public void Not()
         {
             SetToDual();
-            var oldMatrix = GetMatrix();
-            IFormula newMatrix =
-                oldMatrix is Not n ?
+            matrix = 
+                matrix is Not n ?
                 n.Inner :
-                new Not(GetMatrix());
-            ReplaceMatrix(newMatrix);
+                new Not(matrix);
         }
 
         public void And(PrenexFormula right)
         {
             RenameVariables(right);
 
-            IFormula newMatrix = new And(this.GetMatrix(), right.GetMatrix());
-            right.ReplaceMatrix(newMatrix);
-            this.ReplaceMatrix(right.Formula);
+            prefix.AddRange(right.prefix);
+            matrix = new And(matrix, right.matrix);
 
             variables.UnionWith(right.variables);
             quantifiedVariables.UnionWith(right.quantifiedVariables);
@@ -53,9 +53,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         {
             RenameVariables(right);
 
-            IFormula newMatrix = new Or(this.GetMatrix(), right.GetMatrix());
-            right.ReplaceMatrix(newMatrix);
-            this.ReplaceMatrix(right.Formula);
+            prefix.AddRange(right.prefix);
+            matrix = new Or(matrix, right.matrix);
 
             variables.UnionWith(right.variables);
             quantifiedVariables.UnionWith(right.quantifiedVariables);
@@ -66,9 +65,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             RenameVariables(right);
 
             this.SetToDual();
-            IFormula newMatrix = new Implies(this.GetMatrix(), right.GetMatrix());
-            right.ReplaceMatrix(newMatrix);
-            this.ReplaceMatrix(right.Formula);
+            prefix.AddRange(right.prefix);
+            matrix = new Implies(matrix, right.matrix);
 
             variables.UnionWith(right.variables);
             quantifiedVariables.UnionWith(right.quantifiedVariables);
@@ -79,9 +77,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             RenameVariables(right);
 
             right.SetToDual();
-            IFormula newMatrix = new IsImpliedBy(this.GetMatrix(), right.GetMatrix());
-            right.ReplaceMatrix(newMatrix);
-            this.ReplaceMatrix(right.Formula);
+            prefix.AddRange(right.prefix);
+            matrix = new IsImpliedBy(matrix, right.matrix);
 
             variables.UnionWith(right.variables);
             quantifiedVariables.UnionWith(right.quantifiedVariables);
@@ -89,31 +86,30 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
         public void Equivalent(PrenexFormula right)
         {
-            if (this.quantifiedVariables.Count == 0 && right.quantifiedVariables.Count == 0) // no decomposition of a<->b into a&b|!a&!b needed
+            if (this.prefix.Count == 0 && right.prefix.Count == 0) // no decomposition of a<->b into a&b|!a&!b needed
             {
-                Formula = new Equivalent(this.Formula, right.Formula);
+                matrix = new Equivalent(matrix, right.matrix);
 
                 variables.UnionWith(right.variables);
                 quantifiedVariables.UnionWith(right.quantifiedVariables);
             }
             else
             {
-                var p1 = this;
                 var p2 = right;
                 var p3 = new PrenexFormula(this);
                 var p4 = new PrenexFormula(right);
 
-                p1.And(p2);
+                this.And(p2);
                 p3.Not();
                 p4.Not();
                 p3.And(p4);
-                p1.Or(p3);
+                this.Or(p3);
             }
         }
 
         public void Forall(Variable qvar)
         {
-            Formula = new Forall(qvar, Formula);
+            prefix.Insert(0, new Quantifier(isForall: true, qvar));
 
             variables.Add(qvar);
             quantifiedVariables.Add(qvar);
@@ -121,48 +117,30 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
         public void Exists(Variable qvar)
         {
-            Formula = new Exists(qvar, Formula);
+            prefix.Insert(0, new Quantifier(isForall: false, qvar));
 
             variables.Add(qvar);
             quantifiedVariables.Add(qvar);
         }
 
-
-
-        /// <summary>
-        /// Returns the quantifier-free formula inside the quantifiers.
-        /// </summary>
-        /// <returns></returns>
-        private IFormula GetMatrix()
+        public IFormula ToFormula()
         {
-            var cur = Formula;
-            while (cur is Quantifier q)
-            {
-                cur = q.Inner;
-            }
-            return cur;
-        }
+            var formula = matrix;
 
-        /// <summary>
-        /// Sets the quantifier-free formula inside the quantifiers to a given prenexed formula. The new matrix becomes the matrix of p.
-        /// </summary>
-        /// <param name="p"></param>
-        private void ReplaceMatrix(IFormula p)
-        {
-            if (Formula is Quantifier q)
+            for (int i = prefix.Count - 1; i >= 0; i--)
             {
-                // find innermost quantifier
-                var cur = q;
-                while (cur.Inner is Quantifier qq)
+                var quantifier = prefix[i];
+                if (quantifier.IsForall)
                 {
-                    cur = qq;
+                    formula = new Forall(quantifier.Variable, formula);
                 }
-                cur.Inner = p;
+                else
+                {
+                    formula = new Exists(quantifier.Variable, formula);
+                }
             }
-            else
-            {
-                Formula = p;
-            }
+
+            return formula;
         }
 
         /// <summary>
@@ -171,29 +149,10 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// <returns></returns>
         private void SetToDual()
         {
-            Formula = CreateDualRecursive(Formula);
-        }
-
-        private IFormula CreateDualRecursive(IFormula formula)
-        {
-            if (formula is Quantifier q)
+            foreach (var q in prefix)
             {
-                var dual = GetDual(q);
-                dual.Inner = CreateDualRecursive(q.Inner);
-                return dual;
+                q.IsForall = !q.IsForall;
             }
-            else
-            {
-                return formula;
-            }
-        }
-
-        private Quantifier GetDual(Quantifier q)
-        {
-            if (q is Forall)
-                return new Exists(q.Variable, q.Inner);
-            else
-                return new Forall(q.Variable, q.Inner);
         }
 
 
@@ -233,7 +192,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         
         private void RenameVariable(Variable oldVar, Variable newVar)
         {
-            Formula = RenameVariable(Formula, oldVar, newVar);
+            RenamePrefix(oldVar, newVar);
+            matrix = RenameVariableRecursive(matrix, oldVar, newVar);
 
             variables.Remove(oldVar);
             variables.Add(newVar);
@@ -241,7 +201,18 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             quantifiedVariables.Add(newVar);
         }
 
-        private IFormula RenameVariable(IFormula f, Variable oldVar, Variable newVar)
+        private void RenamePrefix(Variable oldVar, Variable newVar)
+        {
+            foreach (var q in prefix)
+            {
+                if (q.Variable.Equals(oldVar))
+                {
+                    q.Variable = newVar;
+                }
+            }
+        }
+
+        private IFormula RenameVariableRecursive(IFormula f, Variable oldVar, Variable newVar)
         {
             if (f is Variable v)
             {
@@ -251,20 +222,13 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             }
             else if (f is Not n)
             {
-                n.Inner = RenameVariable(n.Inner, oldVar, newVar);
+                n.Inner = RenameVariableRecursive(n.Inner, oldVar, newVar);
                 return f;
             }
             else if (f is BinaryOperator b)
             {
-                b.Left = RenameVariable(b.Left, oldVar, newVar);
-                b.Right = RenameVariable(b.Right, oldVar, newVar);
-                return f;
-            }
-            else if (f is Quantifier q)
-            {
-                if (q.Variable.Equals(oldVar))
-                    q.Variable = newVar;
-                q.Inner = RenameVariable(q.Inner, oldVar, newVar);
+                b.Left = RenameVariableRecursive(b.Left, oldVar, newVar);
+                b.Right = RenameVariableRecursive(b.Right, oldVar, newVar);
                 return f;
             }
             else
@@ -306,10 +270,29 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             return vMinus;
         }
 
-
         public override string ToString()
         {
-            return Formula.ToString();
+            return ToFormula().ToString()!;
+        }
+
+
+        public class Quantifier
+        {
+            public bool IsForall { get; set; }
+            public Variable Variable { get; set; }
+
+
+            public Quantifier(bool isForall, Variable variable)
+            {
+                IsForall = isForall;
+                Variable = variable;
+            }
+
+            public Quantifier(Quantifier q)
+            {
+                IsForall = q.IsForall;
+                Variable = q.Variable;
+            }
         }
     }
 }

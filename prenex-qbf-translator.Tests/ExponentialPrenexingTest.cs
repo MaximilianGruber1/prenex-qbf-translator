@@ -125,10 +125,10 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void Equivalent()
         {
+            TestFormula("?a a <-> b", "?a #ap (a & b | !ap & !b)");
             TestFormula("a <-> b", "a <-> b");
             TestFormula("a <-> b", "a <-> b");
 
-            TestFormula("?a a <-> b", "?a #ap (a & b | !ap & !b)");
             TestFormula("#a a <-> b", "#a ?ap (a & b | !ap & !b)");
             TestFormula("a <-> ?b b", "?b #bp (a & b | !a & !bp)");
             TestFormula("a <-> #b b", "#b ?bp (a & b | !a & !bp)");

@@ -1,6 +1,6 @@
 ﻿using prenex_qbf_translator.Language;
 
-namespace prenex_qbf_translator.Translator
+namespace prenex_qbf_translator.PolynomialPrenexing
 {
     public class FreshVariableGenerator
     {

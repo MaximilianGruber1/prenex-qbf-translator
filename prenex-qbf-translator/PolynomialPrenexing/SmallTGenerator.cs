@@ -1,6 +1,7 @@
 ﻿using prenex_qbf_translator.Language;
+using prenex_qbf_translator.PolynomialPrenexing;
 
-namespace prenex_qbf_translator.Translator
+namespace prenex_qbf_translator.PolynomialPrenexing
 {
     /// <summary>
     /// Generates t_forall(phi), t_exists(phi), P(phi), and N(phi) for a given formula phi according to Definition 5. 

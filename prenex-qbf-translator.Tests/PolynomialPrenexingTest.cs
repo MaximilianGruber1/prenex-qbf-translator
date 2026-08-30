@@ -2,7 +2,7 @@
 using Xunit;
 using prenex_qbf_translator.Parsing;
 using prenex_qbf_translator.Language;
-using prenex_qbf_translator.Translator;
+using prenex_qbf_translator.PolynomialPrenexing;
 using prenex_qbf_translator.ExponentialPrenexing;
 
 namespace prenex_qbf_translator.Tests
