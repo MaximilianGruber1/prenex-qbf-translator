@@ -14,9 +14,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// </summary>
         /// <param name="f"></param>
         /// <returns></returns>
-        public PrenexFormula Prenexed(IFormula f)
+        public IFormula Prenexed(IFormula f)
         {
-            return PrenexRecursive(f);
+            return PrenexRecursive(f).ToFormula();
         }
 
         /// <summary>

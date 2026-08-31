@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using System.Runtime.Intrinsics.Wasm;
 using System.CommandLine;
 using prenex_qbf_translator.TestFormulaGenerator;
+using prenex_qbf_translator.TestFormulaGenerator.NQuantifiers;
 
 
 public partial class Program
@@ -14,27 +15,22 @@ public partial class Program
 
     public static int Main(string[] args)
     {
-        IFormulaGenerator gen = new Attemp0_QuantifiersAtBottom();
-
-        foreach (int i in new int[] {1500})
-        {
-            Console.WriteLine(gen.GenerateFormula(i));
-        }
-
-        // --------------------------------------------------------------------
-
         var rootCommand = new RootCommand("prenex qbf formulas");
 
         // pol
-        var polCommand = new Command("pol", "prenex a formula using the polynomial approach");
+        var polCommand = new Command(
+            "pol",
+            "prenex a formula using the polynomial approach");
 
-        var polInput = new Argument<FileInfo>("input")
+        var polInput = new Argument<FileInfo?>("input")
         {
-            Description = "input file"
+            Description = "input file (default: stdin)",
+            Arity = ArgumentArity.ZeroOrOne
         };
+
         var polOutput = new Option<FileInfo?>("-o")
         {
-            Description = "output file"
+            Description = "output file (default: stdout)"
         };
 
         polCommand.Add(polInput);
@@ -45,21 +41,28 @@ public partial class Program
             var input = parseResult.GetValue(polInput);
             var output = parseResult.GetValue(polOutput);
 
-            RunPol(input!, output);
+            RunPol(input, output);
 
             return 0;
         });
 
-        // exp
-        var expCommand = new Command("exp", "prenex a formula using the exponential approach");
+        rootCommand.Add(polCommand);
 
-        var expInput = new Argument<FileInfo>("input")
+
+        // exp
+        var expCommand = new Command(
+            "exp",
+            "prenex a formula using the exponential approach");
+
+        var expInput = new Argument<FileInfo?>("input")
         {
-            Description = "input file"
+            Description = "input file (default: stdin)",
+            Arity = ArgumentArity.ZeroOrOne
         };
+
         var expOutput = new Option<FileInfo?>("-o")
         {
-            Description = "output file"
+            Description = "output file (default: stdout)"
         };
 
         expCommand.Add(expInput);
@@ -70,55 +73,95 @@ public partial class Program
             var input = parseResult.GetValue(expInput);
             var output = parseResult.GetValue(expOutput);
 
-            RunExp(input!, output);
+            RunExp(input, output);
 
             return 0;
         });
 
-        // gen
-        var genCommand = new Command("gen");
-
-        // root
-        rootCommand.Add(polCommand);
         rootCommand.Add(expCommand);
+
+
+        // gen
+        var genCommand = new Command(
+            "gen",
+            "generate a test formula");
+
+        var genN = new Argument<int>("n")
+        {
+            Description = "equivalence nesting depth"
+        };
+
+        var genOutput = new Option<FileInfo?>("-o")
+        {
+            Description = "output file (default: stdout)"
+        };
+
+        genCommand.Add(genN);
+        genCommand.Add(genOutput);
+
+        genCommand.SetAction(parseResult =>
+        {
+            var n = parseResult.GetValue(genN);
+            var output = parseResult.GetValue(genOutput);
+
+            RunGen(n, output);
+
+            return 0;
+        });
+
+        rootCommand.Add(genCommand);
 
         return rootCommand.Parse(args).Invoke();
     }
 
 
-    private static void RunPol(FileInfo input, FileInfo? output)
+    private static void RunPol(FileInfo? input, FileInfo? output)
     {
-        string fileText = File.ReadAllText(input.FullName);
+        using TextReader reader = input is null
+            ? Console.In
+            : input.OpenText();
+
+        string fileText = reader.ReadToEnd();
+
         IFormula formula = new Parser(fileText).Parse();
         IFormula prenexedFormula = new PolynomialPrenexer().Prenex(formula);
         string result = prenexedFormula.ToString()!;
 
-        if (output != null)
-        {
-            File.WriteAllText(output.FullName, result);
-        }
-        else
-        {
-            Console.WriteLine(result);
-        }
+        using TextWriter writer = output is null
+            ? Console.Out
+            : new StreamWriter(output.FullName);
+
+        writer.WriteLine(result);
     }
 
-    private static void RunExp(FileInfo input, FileInfo? output)
+    private static void RunExp(FileInfo? input, FileInfo? output)
     {
-        string fileText = File.ReadAllText(input.FullName);
+        using TextReader reader = input is null
+            ? Console.In
+            : input.OpenText();
+
+        string fileText = reader.ReadToEnd();
+
         IFormula formula = new Parser(fileText).Parse();
-        PrenexFormula prenexedFormula = new ExponentialPrenexer().Prenexed(formula);
+        IFormula prenexedFormula = new ExponentialPrenexer().Prenexed(formula);
         string result = prenexedFormula.ToString()!;
 
-        if (output != null)
-        {
-            File.WriteAllText(output.FullName, result);
-        }
-        else
-        {
-            Console.WriteLine(result);
-        }
-    }
-    
+        using TextWriter writer = output is null
+            ? Console.Out
+            : new StreamWriter(output.FullName);
 
+        writer.WriteLine(result);
+    }
+
+    private static void RunGen(int n, FileInfo? output)
+    {
+        IFormula f = new RandomQuantifiers().GenerateFalse(n, 12);
+        string fString = f.ToString()!;
+
+        using TextWriter writer = output is null
+            ? Console.Out
+            : new StreamWriter(output.FullName);
+
+        writer.WriteLine(fString);
+    }
 }
