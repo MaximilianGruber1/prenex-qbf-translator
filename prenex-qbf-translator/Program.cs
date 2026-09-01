@@ -169,7 +169,7 @@ public partial class Program
 
     private static void RunGen(int n, int q, int f, FileInfo? output)
     {
-        IFormula formula = new RandomQuantifiersAndTerms().GenerateFormula(n, q, f);
+        IFormula formula = new RandomQuantifiersAndTerms().GenerateFormula2(n, q, f, new Random());
         string fString = formula.ToString()!;
 
         using TextWriter writer = output is null

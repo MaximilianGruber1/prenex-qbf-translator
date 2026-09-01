@@ -24,13 +24,13 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
                 throw new ArgumentException("only defined for >= 1 subformulas");
             }
 
+            List<Variable> qVars = GetNVariables(gen, nQvars);
             List<Variable> freeVars = GetNVariables(gen, nFreeVars);
 
             IFormula[] subformulas = new IFormula[nSubf];
             for (int i = 0; i < nSubf; i++)
             {
-                List<Variable> qVars = GetNVariables(gen, nQvars);
-                subformulas[i] = GenerateRandomSubformula(qVars, freeVars, rng);
+                subformulas[i] = GenerateSubformula(isForall: false, qVars, freeVars, rng);
             }
 
             if (nSubf == 1)
@@ -46,27 +46,21 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             return result;
         }
 
-        private IFormula GenerateRandomSubformula(List<Variable> quantifiedVariables, List<Variable> freeVariables, Random rng)
+        private IFormula GenerateSubformula(bool isForall, List<Variable> quantifiedVariables, List<Variable> freeVariables, Random rng)
         {
-            IFormula f = CombineRandomly([.. quantifiedVariables, ..freeVariables], rng);
-            f = Quantifiy(f, isForall: rng.Next(2) == 0, quantifiedVariables);
+            IFormula f = GenerateBooleanFormula([.. quantifiedVariables, ..freeVariables], rng);
+            f = Quantifiy(f, isForall, quantifiedVariables);
 
             return f;
         }
 
-        /// <summary>
-        /// combines a set of formulas to a formula randomly
-        /// </summary>
-        /// <param name="formulas"></param>
-        /// <param name="rng"></param>
-        /// <returns></returns>
-        private IFormula CombineRandomly(List<Variable> variables, Random rng)
+        private IFormula GenerateBooleanFormula(List<Variable> variables, Random rng)
         {
             List<IFormula> formulas = [.. variables.Select(v => (IFormula)v)];
 
             while (formulas.Count > 1)
             {
-                (int index1, int index2) = GetRandomLeftAndRightIndex(formulas.Count, rng);
+                (int index1, int index2) = GetLeftAndRightIndex(formulas.Count, rng);
                 var f1 = formulas.ElementAt(index1);
                 var f2 = formulas.ElementAt(index2);
 
@@ -97,7 +91,7 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             return formulas.First();
         }
 
-        private (int, int) GetRandomLeftAndRightIndex(int n, Random rng)
+        private (int, int) GetLeftAndRightIndex(int n, Random rng)
         {
             if (n < 2) throw new ArgumentException("n must be at least 2");
 
@@ -120,14 +114,14 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             {
                 for (int i = qVars.Count - 1; i >= 0; i--)
                 {
-                    new Forall(qVars[i], f);
+                    f = new Forall(qVars[i], f);
                 }
             }
             else
             {
                 for (int i = qVars.Count - 1; i >= 0; i--)
                 {
-                    new Exists(qVars[i], f);
+                    f = new Exists(qVars[i], f);
                 }
             }
 
@@ -141,6 +135,34 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
         private enum QuantifierType
         {
             Forall, Exists
+        }
+
+
+
+        public IFormula GenerateFormula2(int nSubf, int nQvars, int nFreeVars, Random rng)
+        {
+            VariableGenerator gen = new();
+
+            if (nSubf <= 0)
+            {
+                throw new ArgumentException("only defined for >= 1 subformulas");
+            }
+
+            List<Variable> outerQvars = GetNVariables(gen, nQvars);
+            List<Variable> innerQvars = GetNVariables(gen, nQvars);
+            List<Variable> freeVars = GetNVariables(gen, nFreeVars);
+
+            IFormula[] subformulas = new IFormula[nSubf];
+            for (int i = 0; i < nSubf; i++)
+            {
+                subformulas[i] = GenerateBooleanFormula([.. outerQvars, .. innerQvars, .. freeVars], rng);
+                subformulas[i] = Quantifiy(subformulas[i], isForall: false, innerQvars);
+                subformulas[i] = Quantifiy(subformulas[i], isForall: true, outerQvars);
+            }
+
+            if (nSubf == 1)
+                return subformulas[0];
+            return new Equivalent(subformulas);
         }
     }
 
