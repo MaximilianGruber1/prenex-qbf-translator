@@ -91,20 +91,27 @@ public partial class Program
             Description = "equivalence nesting depth"
         };
 
+        var genM = new Argument<int>("m")
+        {
+            Description = "variables per subformula"
+        };
+
         var genOutput = new Option<FileInfo?>("-o")
         {
             Description = "output file (default: stdout)"
         };
 
         genCommand.Add(genN);
+        genCommand.Add(genM);
         genCommand.Add(genOutput);
 
         genCommand.SetAction(parseResult =>
         {
             var n = parseResult.GetValue(genN);
+            var m = parseResult.GetValue(genM);
             var output = parseResult.GetValue(genOutput);
 
-            RunGen(n, output);
+            RunGen(n, m, output);
 
             return 0;
         });
@@ -153,9 +160,9 @@ public partial class Program
         writer.WriteLine(result);
     }
 
-    private static void RunGen(int n, FileInfo? output)
+    private static void RunGen(int n, int m, FileInfo? output)
     {
-        IFormula f = new RandomQuantifiers().GenerateFalse(n, 12);
+        IFormula f = new RandomQuantifiersAndTerms().GenerateFormula(n, m);
         string fString = f.ToString()!;
 
         using TextWriter writer = output is null

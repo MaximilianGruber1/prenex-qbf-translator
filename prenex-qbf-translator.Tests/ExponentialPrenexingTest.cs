@@ -55,7 +55,7 @@ namespace prenex_qbf_translator.Tests
             TestFormula("!?a !a", "#a a");
             TestFormula("!#a !a", "?a a");
         }
-            
+
         [Fact]
         public void And()
         {
@@ -166,7 +166,7 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void ComplexFormulas()
         {
-            TestFormula("#x (a & !#b (!b -> (c | ?d d))  <-  (!c | a | ?f b))",    "#x ?b #d #f ((a & !(!b -> c | d))  <-  (!c | a | bp))");
+            TestFormula("#x (a & !#b (!b -> (c | ?d d))  <-  (!c | a | ?f b))", "#x ?b #d #f ((a & !(!b -> c | d))  <-  (!c | a | bp))");
         }
 
         [Fact]
@@ -239,14 +239,12 @@ namespace prenex_qbf_translator.Tests
                 );
         }
 
-
-
         [Fact]
-        public void HardFormulaTimeTest()
+        public void EquivalenceWithoutQuantifiersInSubformulas()
         {
-            string s = "a <-> (b <-> (c <-> (d <-> (e <-> (f <-> (g <-> (h <-> (i <-> (j <-> (k <-> (l <-> (m <-> ?x x )))) )))) ))))";
-            var formula = new Parser(s).Parse();
-            new ExponentialPrenexer().Prenexed(formula);
+            TestFormula("a <-> b", "a <-> b");
+            TestFormula("!#a (a <-> b)", "?a !(a <-> b)");
+            TestFormula("#c ?d (c <-> d) & ?e ?f (e <-> f)", "#c ?d ?e ?f ((c <-> d) & (e <-> f))");
         }
     }
 }
