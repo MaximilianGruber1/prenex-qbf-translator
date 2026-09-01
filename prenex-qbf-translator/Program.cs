@@ -88,12 +88,17 @@ public partial class Program
 
         var genN = new Argument<int>("n")
         {
-            Description = "equivalence nesting depth"
+            Description = "subformulas"
         };
 
-        var genM = new Argument<int>("m")
+        var genQ = new Argument<int>("q")
         {
-            Description = "variables per subformula"
+            Description = "quantified variables per subformula"
+        };
+
+        var genF = new Argument<int>("f")
+        {
+            Description = "free variables per subformula"
         };
 
         var genOutput = new Option<FileInfo?>("-o")
@@ -102,16 +107,18 @@ public partial class Program
         };
 
         genCommand.Add(genN);
-        genCommand.Add(genM);
+        genCommand.Add(genQ);
+        genCommand.Add(genF);
         genCommand.Add(genOutput);
 
         genCommand.SetAction(parseResult =>
         {
             var n = parseResult.GetValue(genN);
-            var m = parseResult.GetValue(genM);
+            var q = parseResult.GetValue(genQ);
+            var f = parseResult.GetValue(genF);
             var output = parseResult.GetValue(genOutput);
 
-            RunGen(n, m, output);
+            RunGen(n, q, f, output);
 
             return 0;
         });
@@ -160,10 +167,10 @@ public partial class Program
         writer.WriteLine(result);
     }
 
-    private static void RunGen(int n, int m, FileInfo? output)
+    private static void RunGen(int n, int q, int f, FileInfo? output)
     {
-        IFormula f = new RandomQuantifiersAndTerms().GenerateFormula(n, m);
-        string fString = f.ToString()!;
+        IFormula formula = new RandomQuantifiersAndTerms().GenerateFormula(n, q, f);
+        string fString = formula.ToString()!;
 
         using TextWriter writer = output is null
             ? Console.Out

@@ -5,42 +5,51 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
 {
     public class RandomQuantifiersAndTerms
     {
-        public IFormula GenerateFormula(int subformulas, int variablesPerSubformula, int seed)
+        public IFormula GenerateFormula(int subformulas, int quantifiedVariablesPerSubformula, int freeVariables, int seed)
         {
-            return GenerateFormula(subformulas, variablesPerSubformula, new Random(seed));
+            return GenerateFormula(subformulas, quantifiedVariablesPerSubformula, freeVariables, new Random(seed));
         }
 
-        public IFormula GenerateFormula(int equivalences, int variablesPerSubformula)
+        public IFormula GenerateFormula(int subformulas, int quantifiedVariablesPerSubformula, int freeVariables)
         {
-            return GenerateFormula(equivalences, variablesPerSubformula, new Random());
+            return GenerateFormula(subformulas, quantifiedVariablesPerSubformula, freeVariables, new Random());
         }
 
-        private IFormula GenerateFormula(int nSubformulas, int variablesPerSubformula, Random rng)
+        private IFormula GenerateFormula(int nSubf, int nQvars, int nFreeVars, Random rng)
         {
             VariableGenerator gen = new();
 
-            if (nSubformulas <= 1)
+            if (nSubf <= 0)
             {
-                return GenerateRandomSubformula(variablesPerSubformula, gen, rng);
+                throw new ArgumentException("only defined for >= 1 subformulas");
             }
 
-            IFormula[] subformulas = new IFormula[nSubformulas];
-            for (int i = 0; i < nSubformulas; i++)
-                subformulas[i] = GenerateRandomSubformula(variablesPerSubformula, gen, rng);
+            List<Variable> freeVars = GetNVariables(gen, nFreeVars);
+
+            IFormula[] subformulas = new IFormula[nSubf];
+            for (int i = 0; i < nSubf; i++)
+            {
+                List<Variable> qVars = GetNVariables(gen, nQvars);
+                subformulas[i] = GenerateRandomSubformula(qVars, freeVars, rng);
+            }
+
+            if (nSubf == 1)
+                return subformulas[0];
             return new Equivalent(subformulas);
         }
 
-        private IFormula GenerateRandomSubformula(int nVariables, VariableGenerator gen, Random rng)
+        private List<Variable> GetNVariables(VariableGenerator gen, int n)
         {
-            List<Variable> vars = new();
+            List<Variable> result = [];
+            for (int i = 0; i < n; i++)
+                result.Add(gen.Next());
+            return result;
+        }
 
-            for (int i = 0; i < nVariables; i++)
-            {
-                vars.Add(gen.Next());
-            }
-
-            IFormula f = CombineRandomly(vars, rng);
-            f = AddQuantifiersRandomly(f, vars, rng);
+        private IFormula GenerateRandomSubformula(List<Variable> quantifiedVariables, List<Variable> freeVariables, Random rng)
+        {
+            IFormula f = CombineRandomly([.. quantifiedVariables, ..freeVariables], rng);
+            f = Quantifiy(f, isForall: rng.Next(2) == 0, quantifiedVariables);
 
             return f;
         }
@@ -105,20 +114,21 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
                 return (i2, i1);
         }
 
-        private IFormula AddQuantifiersRandomly(IFormula f, List<Variable> variables, Random rng)
+        private IFormula Quantifiy(IFormula f, bool isForall, List<Variable> qVars)
         {
-            bool isForall = rng.Next(2) == 0;
-
-            for (int i = variables.Count-1; i >= 0; i--)
+            if (isForall)
             {
-                if (rng.Next(2) == 0 || i == 0) // ensure at least one quantifier is added
+                for (int i = qVars.Count - 1; i >= 0; i--)
                 {
-                    f = isForall ? new Forall(variables[i], f) : new Exists(variables[i], f);
+                    new Forall(qVars[i], f);
                 }
             }
-            
-            foreach (var v in variables)
+            else
             {
+                for (int i = qVars.Count - 1; i >= 0; i--)
+                {
+                    new Exists(qVars[i], f);
+                }
             }
 
             return f;

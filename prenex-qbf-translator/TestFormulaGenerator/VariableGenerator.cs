@@ -11,7 +11,7 @@ namespace prenex_qbf_translator.TestFormulaGenerator
         private char letter = 'a';
 
         /// <summary>
-        /// Generates the variables "a", "b", ... , "z", "a1", ... , "z1", "a2", ... "z2", ...
+        /// Generates the variables "a", "b", ... , "z", "a1", ... , "z1", "a2", ... "z2", ... 
         /// </summary>
         /// <returns></returns>
         public Variable Next()
