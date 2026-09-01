@@ -27,7 +27,7 @@ namespace prenex_qbf_translator.TestFormulaGenerator
 
 
         private void Increase() 
-        {
+        { 
             if (letter == 'z')
             {
                 letter = 'A';
