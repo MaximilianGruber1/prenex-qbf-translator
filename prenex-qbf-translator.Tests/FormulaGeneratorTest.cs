@@ -8,5 +8,11 @@ namespace prenex_qbf_translator.Tests
 {
     public class FormulaGeneratorTest
     {
+        [Fact]
+        public void Test()
+        {
+            
+
+        }
     }
 }

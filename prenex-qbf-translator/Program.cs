@@ -85,45 +85,92 @@ public partial class Program
         var genCommand = new Command(
             "gen",
             "generate a test formula");
+        rootCommand.Add(genCommand);
 
-        var genN = new Argument<int>("n")
+        var genACommand = new Command(
+            "a",
+            "with the outermost layer consisting of forall quantifiers");
+        genCommand.Add(genACommand);
+
+        var genECommand = new Command(
+            "e",
+            "with the outermost layer consisting of exists quantifiers");
+        genCommand.Add(genECommand);
+
+        var genRCommand = new Command(
+            "r",
+            "with the outermost layer consisting of randomly mixed quantifiers");
+        genCommand.Add(genRCommand);
+
+        var genL = new Argument<int>("l")
         {
-            Description = "subformulas"
+            Description = "quantifier layers"
         };
+        genCommand.Add(genL);
 
         var genQ = new Argument<int>("q")
         {
-            Description = "quantified variables per subformula"
+            Description = "quantifiers per layer"
         };
+        genCommand.Add(genQ);
 
-        var genF = new Argument<int>("f")
+        var genS = new Argument<int>("s")
         {
-            Description = "free variables per subformula"
+            Description = "subformulas"
         };
+        genCommand.Add(genS);
 
         var genOutput = new Option<FileInfo?>("-o")
         {
             Description = "output file (default: stdout)"
         };
-
-        genCommand.Add(genN);
-        genCommand.Add(genQ);
-        genCommand.Add(genF);
         genCommand.Add(genOutput);
 
-        genCommand.SetAction(parseResult =>
+        var genSeed = new Option<int?>("-s")
         {
-            var n = parseResult.GetValue(genN);
-            var q = parseResult.GetValue(genQ);
-            var f = parseResult.GetValue(genF);
-            var output = parseResult.GetValue(genOutput);
+            Description = "seed"
+        };
+        genCommand.Add(genSeed);
 
-            RunGen(n, q, f, output);
+        genACommand.SetAction(parseResult =>
+        {
+            int l = parseResult.GetValue(genL);
+            int q = parseResult.GetValue(genQ);
+            int s = parseResult.GetValue(genS);
+            int? seed = parseResult.GetValue(genSeed);
+            FileInfo? output = parseResult.GetValue(genOutput);
+
+            RunGen(Layer.Forall, l, q, s, seed, output);
 
             return 0;
         });
 
-        rootCommand.Add(genCommand);
+        genECommand.SetAction(parseResult =>
+        {
+            int l = parseResult.GetValue(genL);
+            int q = parseResult.GetValue(genQ);
+            int s = parseResult.GetValue(genS);
+            int? seed = parseResult.GetValue(genSeed);
+            FileInfo? output = parseResult.GetValue(genOutput);
+
+            RunGen(Layer.Exists, l, q, s, seed, output);
+
+            return 0;
+        });
+
+        genRCommand.SetAction(parseResult =>
+        {
+            int l = parseResult.GetValue(genL);
+            int q = parseResult.GetValue(genQ);
+            int s = parseResult.GetValue(genS);
+            int? seed = parseResult.GetValue(genSeed);
+            FileInfo? output = parseResult.GetValue(genOutput);
+
+            RunGen(Layer.Random, l, q, s, seed, output);
+
+            return 0;
+        });
+
 
         return rootCommand.Parse(args).Invoke();
     }
@@ -167,9 +214,10 @@ public partial class Program
         writer.WriteLine(result);
     }
 
-    private static void RunGen(int n, int q, int f, FileInfo? output)
+    private static void RunGen(Layer firstLayer, int layers, int quantifiersPerLayer, int subformulas, int? seed, FileInfo? output)
     {
-        IFormula formula = new RandomQuantifiersAndTerms().GenerateFormula2(n, q, f, new Random());
+        RandomQuantifiersAndTerms generator = new();
+        IFormula formula = generator.GenerateFormula(layers, quantifiersPerLayer, firstLayer, subformulas, seed);
         string fString = formula.ToString()!;
 
         using TextWriter writer = output is null
