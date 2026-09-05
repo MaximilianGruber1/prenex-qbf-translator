@@ -5,26 +5,35 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
 {
     public class RandomQuantifiersAndTerms
     {
-        public IFormula GenerateFormula(int layers, int quantifiersPerLayer, Layer firstLayer, int subformulas, int? seed = null)
+        public IFormula GenerateFormula(int layers, int quantifiersPerLayer, int subformulas, bool firstLayerIsForall, bool firstLayerIsExists, bool simplified, int? seed)
         {
+            if (subformulas < 1)
+                throw new ArgumentException("only defined for >= 1 subformulas");
+
+            if (firstLayerIsForall && firstLayerIsExists)
+                throw new ArgumentException("'forall' and 'exists' cannot be true at the same time");
+
+            Layer firstLayer;
+            if (firstLayerIsForall)
+                firstLayer = Layer.Forall;
+            else if (firstLayerIsExists)
+                firstLayer = Layer.Exists;
+            else
+                firstLayer = Layer.Random;
+
             Random rng = seed == null ? new() : new(seed.Value);
             VariableGenerator gen = new();
-
-            if (subformulas <= 0)
-            {
-                throw new ArgumentException("only defined for >= 1 subformulas");
-            }
 
             Variable[] freeVars = GetVariableArray(gen, layers * quantifiersPerLayer);
             Variable[][] qVars = GetVariable2dArray(gen, layers, quantifiersPerLayer);
 
             if (subformulas == 1)
-                return GenerateSubformula(freeVars, qVars, firstLayer, rng);
+                return GenerateSubformula(freeVars, qVars, firstLayer, simplified, rng);
 
             IFormula[] subs = new IFormula[subformulas];
             for (int i = 0; i < subformulas; i++)
             {
-                subs[i] = GenerateSubformula(freeVars, qVars, firstLayer, rng);
+                subs[i] = GenerateSubformula(freeVars, qVars, firstLayer, simplified, rng);
             }
 
             return new Equivalent(subs);
@@ -49,53 +58,68 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             return result;
         }
 
-        private IFormula GenerateSubformula(Variable[] freeVars, Variable[][] qVars, Layer firstLayer, Random rng)
+        private IFormula GenerateSubformula(Variable[] freeVars, Variable[][] qVars, Layer firstLayer, bool simplified, Random rng)
         {
-            IFormula quant = CombineRandomlyToBooleanFormula(qVars.SelectMany(v => v).Cast<IFormula>().ToList(), rng);
-            IFormula free = CombineRandomlyToBooleanFormula(freeVars.Select(v => (IFormula)v).ToList(), rng);
+            IFormula quant = CombineRandomlyToBooleanFormula(qVars.SelectMany(v => v).ToArray(), simplified, rng);
+            IFormula free = CombineRandomlyToBooleanFormula(freeVars, simplified, rng);
             IFormula f = new Equivalent(quant, free);
             f = Quantify(f, qVars, firstLayer, rng);
 
             return f;
         }
 
-        private IFormula CombineRandomlyToBooleanFormula(List<IFormula> formulas, Random rng)
+        private IFormula CombineRandomlyToBooleanFormula(Variable[] vars, bool simplified, Random rng)
         {
-            while (true)
+            List<IFormula> formulas = vars.Cast<IFormula>().ToList();
+
+            // negate each variable with 50% chance
+            for (int i = 0; i < formulas.Count; i++)
             {
-
-                if (rng.Next(5) == 0) // apply Not to f1
+                if (rng.Next(2) == 0)
                 {
-                    int index = rng.Next(formulas.Count);
-                    var f = formulas[index];
-
-                    formulas.RemoveAt(index);
-                    f = f is Not n ? n.Inner : new Not(f);
-                    formulas.Add(f);
+                    formulas[i] = new Not(formulas[i]);
                 }
-                else // combine f1 and f2 with a random binary operator
+            }
+
+            // combine randomly with binary operators
+            while (formulas.Count > 1)
+            {
+                (int lIndex, int rIndex) = GetLeftAndRightIndex(formulas.Count, rng);
+                var f1 = formulas[lIndex];
+                var f2 = formulas[rIndex];
+
+                formulas.RemoveAt(rIndex);
+                formulas.RemoveAt(lIndex);
+
+                if (simplified)
                 {
-                    if (formulas.Count == 1)
-                        break;
-
-                    (int lIndex, int rIndex) = GetLeftAndRightIndex(formulas.Count, rng);
-                    var f1 = formulas[lIndex];
-                    var f2 = formulas[rIndex];
-
-                    formulas.RemoveAt(rIndex);
-                    formulas.RemoveAt(lIndex);
-
-                    f1 = rng.Next(5) switch
+                    f1 = rng.Next(3) switch
                     {
-                        1 => new And(f1, f2),
-                        2 => new Or(f1, f2),
-                        3 => new Implies(f1, f2),
-                        4 => new IsImpliedBy(f1, f2),
-                        _ => new Equivalent(f1, f2),
+                        1 => new Equivalent(f1, f2),
+                        2 => new And(f1, f2),
+                        _ => new Or(f1, f2)
                     };
-
-                    formulas.Add(f1);
                 }
+                else
+                {
+                    f1 = rng.Next(3) switch
+                    {
+                        1 => new Equivalent(f1, f2),
+                        2 => new And(f1, f2),
+                        _ => rng.Next(3) switch
+                        {
+                            1 => new Or(f1, f2),
+                            2 => new Implies(f1, f2),
+                            _ => new IsImpliedBy(f1, f2)
+                        }
+                    };
+                    if (rng.Next(2) == 0) 
+                    {
+                        f1 = new Not(f1);
+                    }
+                }
+                
+                formulas.Add(f1);
             }
 
             return formulas[0];
@@ -160,5 +184,7 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             
             return f;
         }
+
+        private enum Layer { Forall, Exists, Random }
     }
 }

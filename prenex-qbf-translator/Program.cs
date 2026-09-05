@@ -86,22 +86,7 @@ public partial class Program
             "gen",
             "generate a test formula");
         rootCommand.Add(genCommand);
-
-        var genACommand = new Command(
-            "a",
-            "with the outermost layer consisting of forall quantifiers");
-        genCommand.Add(genACommand);
-
-        var genECommand = new Command(
-            "e",
-            "with the outermost layer consisting of exists quantifiers");
-        genCommand.Add(genECommand);
-
-        var genRCommand = new Command(
-            "r",
-            "with the outermost layer consisting of randomly mixed quantifiers");
-        genCommand.Add(genRCommand);
-
+        
         var genL = new Argument<int>("l")
         {
             Description = "quantifier layers"
@@ -120,56 +105,83 @@ public partial class Program
         };
         genCommand.Add(genS);
 
-        var genOutput = new Option<FileInfo?>("-o")
+        var genOutput = new Option<FileInfo?>("-o", "--output")
         {
             Description = "output file (default: stdout)"
         };
         genCommand.Add(genOutput);
 
-        var genSeed = new Option<int?>("-s")
+        var genA = new Option<bool>("-a", "--forall")
+        {
+            Description = "outermost quantifiers are 'forall'"
+        };
+        genCommand.Add(genA);
+        
+        var genE = new Option<bool>("-e", "--exists")
+        {
+            Description = "outermost quantifiers are 'exists'"
+        };
+        genCommand.Add(genE);
+
+        var genSimplified = new Option<bool>("-s", "--simplified")
+        {
+            Description = "only uses the binary operators &, |, <->, and only negates variables"
+        };
+        genCommand.Add(genSimplified);
+
+        var genSeed = new Option<int?>("--seed")
         {
             Description = "seed"
         };
         genCommand.Add(genSeed);
 
-        genACommand.SetAction(parseResult =>
+        genCommand.SetAction(parseResult =>
         {
             int l = parseResult.GetValue(genL);
             int q = parseResult.GetValue(genQ);
             int s = parseResult.GetValue(genS);
-            int? seed = parseResult.GetValue(genSeed);
             FileInfo? output = parseResult.GetValue(genOutput);
+            int? seed = parseResult.GetValue(genSeed);
+            bool forall = parseResult.GetValue(genA);
+            bool exists = parseResult.GetValue(genE);
+            bool simplified = parseResult.GetValue(genSimplified);
 
-            RunGen(Layer.Forall, l, q, s, seed, output);
+            RunGen(l, q, s, output, seed, forall, exists, simplified);
 
             return 0;
         });
 
-        genECommand.SetAction(parseResult =>
+
+        // neg
+        var negCommand = new Command(
+            "neg",
+            "negate a formula");
+
+        var negInput = new Argument<FileInfo?>("input")
         {
-            int l = parseResult.GetValue(genL);
-            int q = parseResult.GetValue(genQ);
-            int s = parseResult.GetValue(genS);
-            int? seed = parseResult.GetValue(genSeed);
-            FileInfo? output = parseResult.GetValue(genOutput);
+            Description = "input file (default: stdin)",
+            Arity = ArgumentArity.ZeroOrOne
+        };
 
-            RunGen(Layer.Exists, l, q, s, seed, output);
-
-            return 0;
-        });
-
-        genRCommand.SetAction(parseResult =>
+        var negOutput = new Option<FileInfo?>("-o")
         {
-            int l = parseResult.GetValue(genL);
-            int q = parseResult.GetValue(genQ);
-            int s = parseResult.GetValue(genS);
-            int? seed = parseResult.GetValue(genSeed);
-            FileInfo? output = parseResult.GetValue(genOutput);
+            Description = "output file (default: stdout)"
+        };
 
-            RunGen(Layer.Random, l, q, s, seed, output);
+        negCommand.Add(negInput);
+        negCommand.Add(negOutput);
+
+        negCommand.SetAction(parseResult =>
+        {
+            var input = parseResult.GetValue(negInput);
+            var output = parseResult.GetValue(negOutput);
+
+            RunNeg(input, output);
 
             return 0;
         });
+
+        rootCommand.Add(negCommand);
 
 
         return rootCommand.Parse(args).Invoke();
@@ -214,10 +226,10 @@ public partial class Program
         writer.WriteLine(result);
     }
 
-    private static void RunGen(Layer firstLayer, int layers, int quantifiersPerLayer, int subformulas, int? seed, FileInfo? output)
+    private static void RunGen(int layers, int quantifiersPerLayer, int subformulas, FileInfo? output, int? seed, bool forall, bool exists, bool simplified)
     {
         RandomQuantifiersAndTerms generator = new();
-        IFormula formula = generator.GenerateFormula(layers, quantifiersPerLayer, firstLayer, subformulas, seed);
+        IFormula formula = generator.GenerateFormula(layers, quantifiersPerLayer, subformulas, forall, exists, simplified, seed: seed);
         string fString = formula.ToString()!;
 
         using TextWriter writer = output is null
@@ -225,5 +237,24 @@ public partial class Program
             : new StreamWriter(output.FullName);
 
         writer.WriteLine(fString);
+    }
+
+    private static void RunNeg(FileInfo? input, FileInfo? output)
+    {
+        using TextReader reader = input is null
+            ? Console.In
+            : input.OpenText();
+
+        string fileText = reader.ReadToEnd();
+
+        IFormula formula = new Parser(fileText).Parse();
+        formula = (formula is Not not) ? not.Inner : new Not(formula);
+        string result = formula.ToString()!;
+
+        using TextWriter writer = output is null
+            ? Console.Out
+            : new StreamWriter(output.FullName);
+
+        writer.WriteLine(result);
     }
 }
