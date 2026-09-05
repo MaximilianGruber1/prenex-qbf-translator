@@ -7,8 +7,12 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
     {
         public IFormula GenerateFormula(int layers, int quantifiersPerLayer, int subformulas, bool firstLayerIsForall, bool firstLayerIsExists, bool simplified, int? seed)
         {
+            if (layers < 1)
+                throw new ArgumentException("only defined for at least 1 layer");
+            if (quantifiersPerLayer < 1)
+                throw new ArgumentException("only defined for at least 1 quantifier per layer");
             if (subformulas < 1)
-                throw new ArgumentException("only defined for >= 1 subformulas");
+                throw new ArgumentException("only defined for at least 1 subformula");
 
             if (firstLayerIsForall && firstLayerIsExists)
                 throw new ArgumentException("'forall' and 'exists' cannot be true at the same time");

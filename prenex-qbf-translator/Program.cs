@@ -38,12 +38,20 @@ public partial class Program
 
         polCommand.SetAction(parseResult =>
         {
-            var input = parseResult.GetValue(polInput);
-            var output = parseResult.GetValue(polOutput);
+            try
+            {
+                var input = parseResult.GetValue(polInput);
+                var output = parseResult.GetValue(polOutput);
 
-            RunPol(input, output);
+                RunPol(input, output);
 
-            return 0;
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
         });
 
         rootCommand.Add(polCommand);
@@ -70,12 +78,20 @@ public partial class Program
 
         expCommand.SetAction(parseResult =>
         {
-            var input = parseResult.GetValue(expInput);
-            var output = parseResult.GetValue(expOutput);
+            try
+            {
+                var input = parseResult.GetValue(expInput);
+                var output = parseResult.GetValue(expOutput);
 
-            RunExp(input, output);
+                RunExp(input, output);
 
-            return 0;
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
         });
 
         rootCommand.Add(expCommand);
@@ -137,18 +153,26 @@ public partial class Program
 
         genCommand.SetAction(parseResult =>
         {
-            int l = parseResult.GetValue(genL);
-            int q = parseResult.GetValue(genQ);
-            int s = parseResult.GetValue(genS);
-            FileInfo? output = parseResult.GetValue(genOutput);
-            int? seed = parseResult.GetValue(genSeed);
-            bool forall = parseResult.GetValue(genA);
-            bool exists = parseResult.GetValue(genE);
-            bool simplified = parseResult.GetValue(genSimplified);
+            try
+            {
+                int l = parseResult.GetValue(genL);
+                int q = parseResult.GetValue(genQ);
+                int s = parseResult.GetValue(genS);
+                FileInfo? output = parseResult.GetValue(genOutput);
+                int? seed = parseResult.GetValue(genSeed);
+                bool forall = parseResult.GetValue(genA);
+                bool exists = parseResult.GetValue(genE);
+                bool simplified = parseResult.GetValue(genSimplified);
 
-            RunGen(l, q, s, output, seed, forall, exists, simplified);
+                RunGen(l, q, s, output, seed, forall, exists, simplified);
 
-            return 0;
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
         });
 
 
@@ -173,12 +197,20 @@ public partial class Program
 
         negCommand.SetAction(parseResult =>
         {
-            var input = parseResult.GetValue(negInput);
-            var output = parseResult.GetValue(negOutput);
+            try
+            {
+                var input = parseResult.GetValue(negInput);
+                var output = parseResult.GetValue(negOutput);
 
-            RunNeg(input, output);
+                RunNeg(input, output);
 
-            return 0;
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
         });
 
         rootCommand.Add(negCommand);
