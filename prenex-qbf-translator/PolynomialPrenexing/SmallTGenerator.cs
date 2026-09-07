@@ -11,7 +11,7 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         private readonly OutermostQuantifierDecomposer decomposer = new();
 
 
-        public Result GenerateSmallT(IFormula formula, bool isForall, FreshVariableGenerator varGenerator)
+        public Result GenerateSmallT(IFormula formula, bool isForall, PolVariableGenerator varGenerator)
         {
             ArgumentNullException.ThrowIfNull(formula);
             ArgumentNullException.ThrowIfNull(varGenerator);
@@ -49,7 +49,7 @@ namespace prenex_qbf_translator.PolynomialPrenexing
             return new Result(t, p, n);
         }
 
-        private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, FreshVariableGenerator variableGenerator)
+        private IEnumerable<Group> ConstructGroups(Substitution unnamedSub, PolVariableGenerator variableGenerator)
         {
             List<Group> groups = [];
 

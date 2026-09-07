@@ -15,7 +15,7 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         /// <param name="formula">is changed and should never be used by the caller after the method call</param>
         /// <param name="varGenerator"></param>
         /// <returns></returns>
-        public Result Decompose(IFormula formula, FreshVariableGenerator varGenerator)
+        public Result Decompose(IFormula formula, PolVariableGenerator varGenerator)
         {
             ArgumentNullException.ThrowIfNull(formula);
             ArgumentNullException.ThrowIfNull(varGenerator);

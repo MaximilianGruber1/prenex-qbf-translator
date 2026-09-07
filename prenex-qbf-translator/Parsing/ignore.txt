@@ -1,1 +1,10 @@
-\forall x^{+} \forall y^{+} \forall p_{1} \forall p_{2} \forall z^{-} \exists z^{+} \exists p_{3} \left(\left(p_{3} \leftrightarrow b\right) \land \left(\neg p_{3} \rightarrow \left(z^{+} \leftrightarrow z^{-}\right)\right) \land \left(\left(p_{1} \leftrightarrow a \land \neg p_{3}\right) \land \left(p_{2} \leftrightarrow c\right) \land \left(\neg p_{1} \rightarrow \left(x^{+} \leftrightarrow x^{-}\right)\right) \land \left(p_{2} \rightarrow \left(y^{+} \leftrightarrow y^{-}\right)\right) \rightarrow p_{1} \land \neg p_{2}\right)\right)
+"?p ?p1 ?pm (p|p1|pm|p3|p2m) & (p2|p1p)",
+
+                "#p3p #p4p #p5p #p4" +
+                "(" +
+                "    (p4 <-> p3p|p4p|p5p|p3|pm2)" +
+                "    &" +
+                "    (!p4 -> (p3p <-> pm3) & (p4p <-> p4m) & (p5p <-> p5m))" +
+                "    ->" +
+                "    p4 & (p2|pp1)" +
+                ")"

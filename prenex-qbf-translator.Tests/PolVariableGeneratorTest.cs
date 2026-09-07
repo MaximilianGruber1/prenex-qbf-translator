@@ -1,5 +1,5 @@
-﻿using prenex_qbf_translator.Language;
-using prenex_qbf_translator.PolynomialPrenexing;
+﻿using prenex_qbf_translator.PolynomialPrenexing;
+using prenex_qbf_translator.Language;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace prenex_qbf_translator.Tests
     {
         private void TestNextP(List<string> unav, params string[] generatedNames)
         {
-            var gen = new FreshVariableGenerator(unav.Select(v => new Variable(v)).ToHashSet());
+            var gen = new PolVariableGenerator(unav.Select(v => new Variable(v)).ToHashSet());
 
             for (int i = 0; i < generatedNames.Length; i++)
             {
@@ -24,7 +24,7 @@ namespace prenex_qbf_translator.Tests
 
         private void TestNextPositiveAndNegative(string name, List<string> unav, params (string, string)[] expectedNames)
         {
-            var gen = new FreshVariableGenerator(unav.Select(v => new Variable(v)).ToHashSet());
+            var gen = new PolVariableGenerator(unav.Select(v => new Variable(v)).ToHashSet());
 
             for (int i = 0; i < expectedNames.Length; i++)
             {
@@ -49,18 +49,12 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void NextPositiveAndNegative()
+        public void BasicSequence()
         {
             TestNextPositiveAndNegative("a", [], ("ap", "am"), ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
-            TestNextPositiveAndNegative("a1", [], ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
-            TestNextPositiveAndNegative("a2", [], ("a2p", "a2m"), ("a1p", "a1m"), ("a3p", "a3m"));
-            TestNextPositiveAndNegative("a3", [], ("a3p", "a3m"), ("a1p", "a1m"), ("a2p", "a2m"), ("a4p", "a4m"));
-
-            TestNextPositiveAndNegative("a", ["ap"],
-                ("a1p", "a1m"), ("a2p", "a2m"));
-            TestNextPositiveAndNegative("a", ["am"],
-                ("a1p", "a1m"), ("a2p", "a2m"));
-
+            TestNextPositiveAndNegative("a1", [], ("ap", "am"), ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
+            TestNextPositiveAndNegative("a2", [], ("ap", "am"), ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
+            TestNextPositiveAndNegative("a123", [], ("ap", "am"), ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
         }
 
         [Fact]
@@ -85,19 +79,11 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void VariablesWithIndices()
-        {
-            TestNextPositiveAndNegative("a1", [], ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
-            TestNextPositiveAndNegative("a2", [], ("a2p", "a2m"), ("a1p", "a1m"), ("a3p", "a3m"));
-            TestNextPositiveAndNegative("a123", [], ("a123p", "a123m"), ("a1p", "a1m"), ("a2p", "a2m"), ("a3p", "a3m"));
-        }
-
-        [Fact]
         public void LongVariables()
         {
             TestNextPositiveAndNegative("var", [], ("varp", "varm"), ("var1p", "var1m"), ("var2p", "var2m"));
-            TestNextPositiveAndNegative("var2", [], ("var2p", "var2m"), ("var1p", "var1m"), ("var3p", "var3m"));
-            TestNextPositiveAndNegative("var345", [], ("var345p", "var345m"), ("var1p", "var1m"), ("var2p", "var2m"));
+            TestNextPositiveAndNegative("var2", [], ("varp", "varm"), ("var1p", "var1m"), ("var2p", "var2m"));
+            TestNextPositiveAndNegative("var345", [], ("varp", "varm"), ("var1p", "var1m"), ("var2p", "var2m"));
         }
 
         [Fact]
@@ -105,7 +91,7 @@ namespace prenex_qbf_translator.Tests
         {
             TestNextPositiveAndNegative("1", [], ("1p", "1m"), ("11p", "11m"), ("12p", "12m"));
             TestNextPositiveAndNegative("5", [], ("5p", "5m"), ("51p", "51m"), ("52p", "52m"));
-            TestNextPositiveAndNegative("13", [], ("13p", "13m"), ("11p", "11m"), ("12p", "12m"), ("14p", "14m"));
+            TestNextPositiveAndNegative("13", [], ("1p", "1m"), ("11p", "11m"), ("12p", "12m"), ("13p", "13m"));
         }
     }
 }

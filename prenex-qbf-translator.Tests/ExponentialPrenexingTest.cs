@@ -125,17 +125,14 @@ namespace prenex_qbf_translator.Tests
         [Fact]
         public void Equivalent()
         {
-            TestFormula("?a a <-> b", "?a #ap (a & b | !ap & !b)");
-            TestFormula("a <-> b", "a <-> b");
-            TestFormula("a <-> b", "a <-> b");
-
-            TestFormula("#a a <-> b", "#a ?ap (a & b | !ap & !b)");
-            TestFormula("a <-> ?b b", "?b #bp (a & b | !a & !bp)");
-            TestFormula("a <-> #b b", "#b ?bp (a & b | !a & !bp)");
-            TestFormula("?a a <-> ?b b", "?a ?b #ap #bp (a & b | !ap & !bp)");
-            TestFormula("?a a <-> #b b", "?a #b #ap ?bp (a & b | !ap & !bp)");
-            TestFormula("#a a <-> ?b b", "#a ?b ?ap #bp (a & b | !ap & !bp)");
-            TestFormula("#a a <-> #b b", "#a #b ?ap ?bp (a & b | !ap & !bp)");
+            TestFormula("?a a <-> b", "?a #a1 (a & b | !a1 & !b)");
+            TestFormula("#a a <-> b", "#a ?a1 (a & b | !a1 & !b)");
+            TestFormula("a <-> ?b b", "?b #b1 (a & b | !a & !b1)");
+            TestFormula("a <-> #b b", "#b ?b1 (a & b | !a & !b1)");
+            TestFormula("?a a <-> ?b b", "?a ?b #a1 #b1 (a & b | !a1 & !b1)");
+            TestFormula("?a a <-> #b b", "?a #b #a1 ?b1 (a & b | !a1 & !b1)");
+            TestFormula("#a a <-> ?b b", "#a ?b ?a1 #b1 (a & b | !a1 & !b1)");
+            TestFormula("#a a <-> #b b", "#a #b ?a1 ?b1 (a & b | !a1 & !b1)");
         }
 
         [Fact]
@@ -146,27 +143,27 @@ namespace prenex_qbf_translator.Tests
             TestFormula("(#a ?b ?c (a&b&c) | ?d ?e #f #g (d&e&f&g))", "#a?b?c?d?e#f#g (a&b&c|d&e&f&g)");
             TestFormula("(#a ?b ?c (a&b&c) -> ?d ?e #f #g (d&e&f&g))", "?a#b#c?d?e#f#g (a&b&c -> d&e&f&g)");
             TestFormula("(#a ?b ?c (a&b&c) <- ?d ?e #f #g (d&e&f&g))", "#a?b?c#d#e?f?g (a&b&c <- d&e&f&g)");
-            TestFormula("(#a ?b ?c (a|b|c) <-> ?d ?e #f #g (d|e|f|g))", "#a ?b ?c ?d ?e #f #g  ?ap #bp #cp #dp #ep ?fp ?gp  ((a|b|c) & (d|e|f|g) | !(ap|bp|cp) & !(dp|ep|fp|gp))");
+            TestFormula("(#a ?b ?c (a|b|c) <-> ?d ?e #f #g (d|e|f|g))", "#a ?b ?c ?d ?e #f #g  ?a1 #b1 #c1 #d1 #e1 ?f1 ?g1  ((a|b|c) & (d|e|f|g) | !(a1|b1|c1) & !(d1|e1|f1|g1))");
         }
 
         [Fact]
         public void VariableRenaming()
         {
-            TestFormula("?a a & ?a a", "?a ?ap (a & ap)");
-            TestFormula("?v1 v1 | #v1 v1", "?v1 #v1p (v1 | v1p)");
-            TestFormula("#a a -> ?a a", "?a ?ap (a -> ap)");
-            TestFormula("#a a <- #a a", "#a ?ap (a <- ap)");
-            TestFormula("?a a <-> ?a a", "?a ?ap #ap1 #app (a & ap | !ap1 & !app)");
+            TestFormula("?a a & ?a a", "?a ?a1 (a & a1)");
+            TestFormula("?v1 v1 | #v1 v1", "?v1 #v2 (v1 | v2)");
+            TestFormula("#a a -> ?a a", "?a ?a1 (a -> a1)");
+            TestFormula("#a a <- #a a", "#a ?a1 (a <- a1)");
+            TestFormula("?a a <-> ?a a", "?a ?a1 #a3 #a2 (a & a1 | !a3 & !a2)");
 
-            TestFormula("((#a a  &  #a a)  &  #a a)  &  #a a", "#a #ap #ap1 #ap2 (a & ap & ap1 &ap2)");
+            TestFormula("((#a a  &  #a a)  &  #a a)  &  #a a", "#a #a1 #a2 #a3 (a & a1 & a2 & a3)");
 
-            TestFormula("?a?b?e (a&b&c&d&e) | #b#c#f (a&b&c&d&f)", "?a ?b ?e #bp #cp #f (a & b & c & d & e | ap & bp & cp & d & f)");
+            TestFormula("?a?b?e (a&b&c&d&e) | #b#c#f (a&b&c&d&f)", "?a ?b ?e #b1 #c1 #f (a & b & c & d & e | a1 & b1 & c1 & d & f)");
         }
 
         [Fact]
         public void ComplexFormulas()
         {
-            TestFormula("#x (a & !#b (!b -> (c | ?d d))  <-  (!c | a | ?f b))", "#x ?b #d #f ((a & !(!b -> c | d))  <-  (!c | a | bp))");
+            TestFormula("#x (a & !#b (!b -> (c | ?d d))  <-  (!c | a | ?f b))", "#x ?b #d #f ((a & !(!b -> c | d))  <-  (!c | a | b1))");
         }
 
         [Fact]
@@ -175,21 +172,21 @@ namespace prenex_qbf_translator.Tests
             TestFormula(
                 "(?a a <-> ?b b) <-> ?c c"
                 ,
-                "?a ?b #ap #bp ?c  #ap1 #bp1 ?app ?bpp #cp" +
+                "?a ?b #a1 #b1 ?c  #a2 #b2 ?a3 ?b3 #c1" +
                 "(" +
-                "  (a & b | !ap & !bp) & c" +
+                "  (a & b | !a1 & !b1) & c" +
                 "  |" +
-                "  !(ap1 & bp1 | !app & !bpp) & !cp" +
+                "  !(a2 & b2 | !a3 & !b3) & !c1" +
                 ")"
                 );
             TestFormula(
                 "?a a <-> (?b b <-> ?c c)"
                 ,
-                "?a ?b ?c #bp #cp  #ap #bp1 #cp1 ?bpp ?cpp" +
+                "?a ?b ?c #b1 #c1  #a1 #b2 #c2 ?b3 ?c3" +
                 "(" +
-                "  a & (b & c | !bp & !cp) " +
+                "  a & (b & c | !b1 & !c1) " +
                 "  |" +
-                "  !ap & !(bp1 & cp1 | !bpp & !cpp)" +
+                "  !a1 & !(b2 & c2 | !b3 & !c3)" +
                 ")"
                 );
         }
@@ -201,12 +198,12 @@ namespace prenex_qbf_translator.Tests
                 "(?a a <-> ?b b) <-> (?c c <-> ?d d)"
                 ,
 
-                "?a ?b #ap #bp ?c ?d #cp #dp  #ap1 #bp1 ?app ?bpp #cp1 #dp1 ?cpp ?dpp" +
+                "?a ?b #a1 #b1 ?c ?d #c1 #d1  #a2 #b2 ?a3 ?b3 #c2 #d2 ?c3 ?d3" +
                 "(" +
-                "  (a & b | !ap & !bp) &" +
-                "  (c & d | !cp & !dp) |" +
-                "  !(ap1 & bp1 | !app & !bpp) &" +
-                "  !(cp1 & dp1 | !cpp & !dpp)" +
+                "  (a & b | !a1 & !b1) &" +
+                "  (c & d | !c1 & !d1) |" +
+                "  !(a2 & b2 | !a3 & !b3) &" +
+                "  !(c2 & d2 | !c3 & !d3)" +
                 ")"
                 );
 
@@ -214,27 +211,27 @@ namespace prenex_qbf_translator.Tests
                 "((?a a <-> ?b b) <-> ?c c) <-> ?d d"
                 ,
 
-                "?a ?b #ap #bp ?c  " +
-                "#ap1 #bp1 ?app ?bpp #cp" +
+                "?a ?b #a1 #b1 ?c  " +
+                "#a2 #b2 ?a3 ?b3 #c1" +
                 "?d" +
-                "#ap2 #bp2 ?app1 ?bpp1 #cp1" +
-                "?ap1p ?bp1p #appp #bppp ?cpp" +
-                "#dp" +
+                "#a4 #b4 ?a5 ?b5 #c2" +
+                "?a6 ?b6 #a7 #b7 ?c3" +
+                "#d1" +
                 "(" +
                 "  (" +
-                "    (a & b | !ap & !bp) & c |" +
-                "    !(ap1 & bp1 | !app & !bpp) & !cp" +
+                "    (a & b | !a1 & !b1) & c |" +
+                "    !(a2 & b2 | !a3 & !b3) & !c1" +
                 "  )" +
                 "  &" +
                 "  d" +
                 "  |" +
                 "  !" +
                 "  (" +
-                "    (ap2 & bp2 | !app1 & !bpp1) & cp1 |" +
-                "    !(ap1p & bp1p | !appp & !bppp) & !cpp" +
+                "    (a4 & b4 | !a5 & !b5) & c2 |" +
+                "    !(a6 & b6 | !a7 & !b7) & !c3" +
                 "  )" +
                 "  &" +
-                "  !dp" +
+                "  !d1" +
                 ")"
                 );
         }

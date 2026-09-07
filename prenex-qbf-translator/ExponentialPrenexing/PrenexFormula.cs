@@ -1,4 +1,5 @@
-﻿using prenex_qbf_translator.Language;
+﻿using prenex_qbf_translator.FormulaGeneration;
+using prenex_qbf_translator.Language;
 using System.Text;
 
 namespace prenex_qbf_translator.ExponentialPrenexing
@@ -11,16 +12,22 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private HashSet<Variable> variables;
         private HashSet<Variable> quantifiedVariables;
 
+        private readonly ExpVariableGenerator variableGenerator;
+
         private readonly FormulaDuplicator duplicator = new();
 
 
-        public PrenexFormula(Variable variable)
+        public PrenexFormula(Variable variable, ExpVariableGenerator gen)
         {
             prefix = [];
             matrix = variable;
 
             variables = [variable];
             quantifiedVariables = [];
+
+            variableGenerator = gen;
+
+            variableGenerator.AddUnavailableVariable(variable);
         }
 
         private PrenexFormula(PrenexFormula p)
@@ -30,6 +37,8 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
             variables = [.. p.variables];
             quantifiedVariables = [.. p.quantifiedVariables];
+
+            variableGenerator = p.variableGenerator;
         }
 
         public void Not()
@@ -167,16 +176,14 @@ namespace prenex_qbf_translator.ExponentialPrenexing
 
             toRename.UnionWith(temp);
 
-            var allVariables = new HashSet<Variable>(this.variables);
-            allVariables.UnionWith(right.variables);
+            List<Variable> toRenameSorted = toRename.ToList(); // sort by alphabet to make renaming deterministic, which is convenient for testing
+            toRenameSorted.Sort();
 
-            foreach (var v in toRename)
+            foreach (var v in toRenameSorted)
             {
-                Variable freshVar = GetAvailableVariable(v, unav: allVariables);
-                allVariables.Add(freshVar);
+                Variable freshVar = variableGenerator.Next(v);
                 right.RenameVariable(v, freshVar);
             }
-
         }
 
         /// <summary>
@@ -231,39 +238,6 @@ namespace prenex_qbf_translator.ExponentialPrenexing
             {
                 throw new NotImplementedException("impossible case");
             }
-        }
-
-        /// <summary>
-        /// Returns the first of "vp", "vp1", "vp2", ... not appearing in unavailableVariables for a variable "v".
-        /// </summary>
-        /// <param name="v"></param>
-        /// <param name="unav"></param>
-        /// <param name="ending"></param>
-        /// <returns></returns>
-        private Variable GetAvailableVariable(Variable v, IEnumerable<Variable> unav)
-        {
-            if (!unav.Contains(v))
-                return v;
-
-            string ending = "p";
-            var minusVariable = new Variable(v + ending);
-            if (!unav.Contains(minusVariable))
-            {
-                return minusVariable;
-            }
-
-            int index = 1;
-            Variable vMinus;
-            do
-            {
-                vMinus = new Variable(v + ending + index);
-                index++;
-            }
-            while (unav.Contains(vMinus));
-            {
-                index++;
-            }
-            return vMinus;
         }
 
         public override string ToString()

@@ -16,7 +16,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// <returns></returns>
         public IFormula Prenexed(IFormula f)
         {
-            return PrenexRecursive(f).ToFormula();
+            ExpVariableGenerator gen = new();
+
+            return PrenexRecursive(f, gen).ToFormula();
         }
 
         /// <summary>
@@ -25,34 +27,34 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// <param name="f"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private PrenexFormula PrenexRecursive(IFormula f)
+        private PrenexFormula PrenexRecursive(IFormula f, ExpVariableGenerator gen)
         {
             if (f is Variable v)
             {
-                return new PrenexFormula(v);
+                return new PrenexFormula(v, gen);
             }
             else if (f is Exists e)
             {
-                PrenexFormula prenexInner = PrenexRecursive(e.Inner);
+                PrenexFormula prenexInner = PrenexRecursive(e.Inner, gen);
                 prenexInner.Exists(e.Variable);
                 return prenexInner;
             }
             else if (f is Forall a)
             {
-                PrenexFormula prenexInner = PrenexRecursive(a.Inner);
+                PrenexFormula prenexInner = PrenexRecursive(a.Inner, gen);
                 prenexInner.Forall(a.Variable);
                 return prenexInner;
             }
             if (f is Not n)
             {
-                PrenexFormula prenexInner = PrenexRecursive(n.Inner);
+                PrenexFormula prenexInner = PrenexRecursive(n.Inner, gen);
                 prenexInner.Not();
                 return prenexInner;
             }
             else if (f is BinaryOperator b)
             {
-                PrenexFormula prenexLeft = PrenexRecursive(b.Left);
-                PrenexFormula prenexRight = PrenexRecursive(b.Right);
+                PrenexFormula prenexLeft = PrenexRecursive(b.Left, gen);
+                PrenexFormula prenexRight = PrenexRecursive(b.Right, gen);
 
                 if (b is And)
                 {

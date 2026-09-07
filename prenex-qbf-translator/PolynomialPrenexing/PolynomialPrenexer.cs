@@ -17,13 +17,13 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         public IFormula Prenex(IFormula formula)
         {
             var unavailableVariables = ComputeVariables(formula);
-            var varGenerator = new FreshVariableGenerator(unavailableVariables);
+            var varGenerator = new PolVariableGenerator(unavailableVariables);
 
             return GenerateBigTRecursive(formula, forall: false, varGenerator).Formula;
         }
 
 
-        private Result GenerateBigTRecursive(IFormula phi, bool forall, FreshVariableGenerator varGenerator)
+        private Result GenerateBigTRecursive(IFormula phi, bool forall, PolVariableGenerator varGenerator)
         {
             if (IsBoolean(phi))
             {
