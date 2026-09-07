@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace prenex_qbf_translator.TestFormulaGenerator
+namespace prenex_qbf_translator.FormulaGeneration
 {
     public class VariableGenerator
     {
@@ -11,7 +11,7 @@ namespace prenex_qbf_translator.TestFormulaGenerator
         private char letter = 'a';
 
         /// <summary>
-        /// Generates the variables "a", "b", ... , "z", "a1", ... , "z1", "a2", ... "z2", ... 
+        /// Generates the variable sequence a, b, ..., z, A, B, ..., Z, a1, ... , Z1, a2, ..., Z2, ... 
         /// </summary>
         /// <returns></returns>
         public Variable Next()

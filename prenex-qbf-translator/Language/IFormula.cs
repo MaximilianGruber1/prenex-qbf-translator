@@ -1,4 +1,5 @@
-﻿using System;
+﻿using prenex_qbf_translator.Language.ToTextConverters;
+using System;
 using System.Collections.Generic;
 using System.Text;
 

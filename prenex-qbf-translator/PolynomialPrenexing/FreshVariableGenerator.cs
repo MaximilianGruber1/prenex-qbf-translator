@@ -4,14 +4,16 @@ namespace prenex_qbf_translator.PolynomialPrenexing
 {
     public class FreshVariableGenerator
     {
-        private HashSet<Variable> unav;
+        private readonly HashSet<string> unav;
         private int pIndex = 1;
+
+        private readonly Dictionary<string, int> indices = new();
 
         public FreshVariableGenerator(HashSet<Variable> unavailableVariables)
         {
             ArgumentNullException.ThrowIfNull(unavailableVariables, nameof(unavailableVariables));
 
-            unav = unavailableVariables;
+            unav = unavailableVariables.Select(v => v.Name).ToHashSet();
         }
 
 
@@ -21,14 +23,14 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         /// <returns></returns>
         public Variable NextP()
         {
-            Variable p;
+            string p;
             do
             {
-                p = new Variable($"p{pIndex}");
+                p = "p" + pIndex;
                 pIndex++;
             } while (unav.Contains(p));
-            unav.Add(p);
-            return p;
+             
+            return new Variable(p);
         }
 
         /// <summary>
@@ -40,30 +42,53 @@ namespace prenex_qbf_translator.PolynomialPrenexing
         {
             string plusEnding = "p";
             string minusEnding = "m";
-            
-            Variable plusVariable = new Variable(variable.Name + plusEnding);
-            Variable minusVariable = new Variable(variable.Name + minusEnding);
 
-            if (!unav.Contains(plusVariable) && !unav.Contains(minusVariable))
+            string namePlus = variable.Name + plusEnding;
+            string nameMinus = variable.Name + minusEnding;
+
+            // if plus and minus for this variable are fresh
+            if (!unav.Contains(namePlus) && !unav.Contains(nameMinus))
             {
-                unav.Add(plusVariable);
-                unav.Add(minusVariable);
-                return new PN(plusVariable, minusVariable);
+                unav.Add(namePlus);
+                unav.Add(nameMinus);
+                return new PN(
+                    new Variable(namePlus), 
+                    new Variable(nameMinus));
             }
 
-            int index = 1;
-            Variable plusVariableWithIndex, minusVariableWithIndex;
+            // if not, remove the index and try with indices 1, 2, ...
+            string nameWithoutIndex = WithoutIndex(variable.Name);
+            
+            if (!indices.ContainsKey(nameWithoutIndex))
+            {
+                indices[nameWithoutIndex] = 1;
+            }
+            int index = indices[nameWithoutIndex];
+
+            string plus, minus;
             do
             {
-                plusVariableWithIndex = new Variable(variable.Name + plusEnding + index);
-                minusVariableWithIndex = new Variable(variable.Name + minusEnding + index);
+                plus = nameWithoutIndex + index + plusEnding;
+                minus = nameWithoutIndex + index + minusEnding;
                 index++;
-            } while (unav.Contains(plusVariableWithIndex) || unav.Contains(minusVariableWithIndex));
+            } while (unav.Contains(plus) || unav.Contains(minus));
+            indices[nameWithoutIndex] = index;
 
-            unav.Add(plusVariableWithIndex);
-            unav.Add(minusVariableWithIndex);
+            return new PN(
+                new Variable(plus),
+                new Variable(minus));
+        }
 
-            return new PN(plusVariableWithIndex, minusVariableWithIndex);
+        private string WithoutIndex(string name)
+        {
+            int i = name.Length;
+
+            while (i > 1 && char.IsDigit(name[i - 1]))
+            {
+                i--;
+            }
+
+            return name[..i];
         }
 
         public class PN

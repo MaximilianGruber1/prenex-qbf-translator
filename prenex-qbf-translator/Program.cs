@@ -5,8 +5,8 @@ using prenex_qbf_translator.PolynomialPrenexing;
 using System.Reflection.Emit;
 using System.Runtime.Intrinsics.Wasm;
 using System.CommandLine;
-using prenex_qbf_translator.TestFormulaGenerator;
-using prenex_qbf_translator.TestFormulaGenerator.NQuantifiers;
+using prenex_qbf_translator.FormulaGeneration;
+using prenex_qbf_translator.Language.ToTextConverters;
 
 
 public partial class Program
@@ -181,6 +181,8 @@ public partial class Program
             "neg",
             "negate a formula");
 
+        rootCommand.Add(negCommand);
+
         var negInput = new Argument<FileInfo?>("input")
         {
             Description = "input file (default: stdin)",
@@ -213,7 +215,51 @@ public partial class Program
             }
         });
 
-        rootCommand.Add(negCommand);
+
+        // latex
+        var latexCommand = new Command(
+            "latex",
+            "convert a formula to latex");
+        rootCommand.Add(latexCommand);
+
+        var latexInput = new Argument<FileInfo?>("input")
+        {
+            Description = "input file (default: stdin)",
+            Arity = ArgumentArity.ZeroOrOne
+        };
+
+        var latexOutput = new Option<FileInfo?>("-o")
+        {
+            Description = "output file (default: stdout)"
+        };
+
+        var latexCombineQuantifiers = new Option<bool>("-c", "--combine-quantifiers")
+        {
+            Description = "combine multiple consecutive forall and multiple consecutive exists quantifiers to one"
+        };
+
+        latexCommand.Add(latexInput);
+        latexCommand.Add(latexOutput);
+        latexCommand.Add(latexCombineQuantifiers);
+
+        latexCommand.SetAction(parseResult =>
+        {
+            try
+            {
+                var input = parseResult.GetValue(latexInput);
+                var output = parseResult.GetValue(latexOutput);
+                var combineQuantifiers = parseResult.GetValue(latexCombineQuantifiers);
+
+                RunLatex(input, output, combineQuantifiers);
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return 1;
+            }
+        });
 
 
         return rootCommand.Parse(args).Invoke();
@@ -260,7 +306,7 @@ public partial class Program
 
     private static void RunGen(int layers, int quantifiersPerLayer, int subformulas, FileInfo? output, int? seed, bool forall, bool exists, bool simplified)
     {
-        RandomQuantifiersAndTerms generator = new();
+        FormulaGenerator generator = new();
         IFormula formula = generator.GenerateFormula(layers, quantifiersPerLayer, subformulas, forall, exists, simplified, seed: seed);
         string fString = formula.ToString()!;
 
@@ -282,6 +328,24 @@ public partial class Program
         IFormula formula = new Parser(fileText).Parse();
         formula = (formula is Not not) ? not.Inner : new Not(formula);
         string result = formula.ToString()!;
+
+        using TextWriter writer = output is null
+            ? Console.Out
+            : new StreamWriter(output.FullName);
+
+        writer.WriteLine(result);
+    }
+
+    private static void RunLatex(FileInfo? input, FileInfo? output, bool combineQuantifiers)
+    {
+        using TextReader reader = input is null
+            ? Console.In
+            : input.OpenText();
+
+        string fileText = reader.ReadToEnd();
+
+        IFormula formula = new Parser(fileText).Parse();
+        string result = new FormulaToLatexConverter().Convert(formula, combineQuantifiers);
 
         using TextWriter writer = output is null
             ? Console.Out

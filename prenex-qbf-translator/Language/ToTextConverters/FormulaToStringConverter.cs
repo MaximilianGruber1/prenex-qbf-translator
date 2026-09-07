@@ -1,8 +1,7 @@
-﻿using prenex_qbf_translator.Language;
-using System.Text;
+﻿using System.Text;
 
 
-namespace prenex_qbf_translator.Language
+namespace prenex_qbf_translator.Language.ToTextConverters
 {
     /// <summary>
     /// Efficiently converts a formula to a string.
@@ -42,8 +41,6 @@ namespace prenex_qbf_translator.Language
                         break;
 
                     case PrintFormula(var f, var needsParentheses):
-                        // Die schließende Klammer wird direkt beim
-                        // Verarbeiten der Formel eingeplant.
                         if (needsParentheses)
                         {
                             sb.Append('(');
@@ -74,7 +71,7 @@ namespace prenex_qbf_translator.Language
                                 out bool leftNeedsParentheses,
                                 out bool rightNeedsParentheses);
 
-                            // Reverse order because Stack is LIFO.
+                            // reverse order
                             stack.Push(new PrintFormula(
                                 b.Right,
                                 rightNeedsParentheses));
@@ -178,15 +175,10 @@ namespace prenex_qbf_translator.Language
 
         private abstract record PrintOperation;
 
-        private record PrintFormula(
-            IFormula Formula,
-            bool Parentheses
-        ) : PrintOperation;
+        private record PrintFormula(IFormula Formula, bool Parentheses) : PrintOperation;
 
         private record PrintText(string Text) : PrintOperation;
 
         private record PrintCloseParenthesis() : PrintOperation;
     }
-    
-
 }

@@ -1,9 +1,9 @@
 ﻿using prenex_qbf_translator.Language;
 using System.Security.Cryptography;
 
-namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
+namespace prenex_qbf_translator.FormulaGeneration
 {
-    public class RandomQuantifiersAndTerms
+    public class FormulaGenerator
     {
         public IFormula GenerateFormula(int layers, int quantifiersPerLayer, int subformulas, bool firstLayerIsForall, bool firstLayerIsExists, bool simplified, int? seed)
         {
@@ -28,8 +28,8 @@ namespace prenex_qbf_translator.TestFormulaGenerator.NQuantifiers
             Random rng = seed == null ? new() : new(seed.Value);
             VariableGenerator gen = new();
 
-            Variable[] freeVars = GetVariableArray(gen, layers * quantifiersPerLayer);
             Variable[][] qVars = GetVariable2dArray(gen, layers, quantifiersPerLayer);
+            Variable[] freeVars = GetVariableArray(gen, layers * quantifiersPerLayer);
 
             if (subformulas == 1)
                 return GenerateSubformula(freeVars, qVars, firstLayer, simplified, rng);
