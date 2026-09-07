@@ -243,5 +243,35 @@ namespace prenex_qbf_translator.Tests
                 ")"
                 );
         }
+
+        [Fact]
+        public void Simple222Seed0()
+        {
+            TestFormula(
+                "?a ?b #c #d (b <-> d | a & c <-> h | e & !f & g) " +
+                "<-> " +
+                "#a #b ?c ?d (c & d & (!a <-> b) <-> (!f <-> !g) & !e & !h)",
+                
+                "#ap #bp #a1p #b1p #p1 #p2 #cm #dm #c1m #d1m" +
+                "?cp ?dp ?c1p ?d1p ?p3 ?p4" +
+                "(" +
+                "  (" +
+                "    (p3 <-> (bp <-> dp | ap & cp)  <->  h | e & !f & g) &" +
+                "    (p4 <-> c1p & d1p & (!a1p <-> b1p)  <->  (!f <-> !g) & !e & !h) &" +
+                "    (p3 -> (cp <-> cm) & (dp <-> dm)) &" +
+                "    (!p4 -> (c1p <-> c1m) & (d1p <-> d1m))" +
+                "  )" +
+                "  &" +
+                "  (" +
+                "    (p1 <-> p3) &" +
+                "    (p2 <-> p4) &" +
+                "    (!p1 -> (ap <-> am) & (bp <-> bm)) &" +
+                "    (p2 -> (a1p <-> a1m) & (b1p <-> b1m))" +
+                "    ->" +
+                "    (p1 <-> p2)" +
+                "  )" +
+                ")")
+                ;
+        }
     }
 }
