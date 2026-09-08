@@ -245,7 +245,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void Simple222Seed0()
+        public void _222_Seed0_Simplified()
         {
             TestFormula(
                 "?a ?b #c #d (b <-> d | a & c <-> h | e & !f & g) " +
@@ -272,6 +272,35 @@ namespace prenex_qbf_translator.Tests
                 "  )" +
                 ")")
                 ;
+        }
+
+        [Fact]
+        public void _133_Seed1()
+        {
+            TestFormula(
+                "#a #b #c (!(!a <-> !(!b <-> !c)) <-> !d | !e | f) <-> " +
+                "#a #b #c (a & !b & c <-> !(e & !(!d & f))) <-> " +
+                "?a ?b ?c (!(!a & !(b <-> !c)) <-> !(!f <- (d -> !e)))",
+
+                "#ap #bp #cp #a1p #b1p #c1p #a2p #b2p #c2p #p1 #p2 #p3" +
+                "(" +
+                "  (" +
+                "    (p1 <-> (!(!ap <-> !(!bp <-> !cp)) <-> !d | !e | f)) &" +
+                "    (p2 <-> (a1p & !b1p & c1p <-> !(e & !(!d & f)))) &" +
+                "    (p3 <-> (!(!a2p & !(b2p <-> !c2p)) <-> !(!f <- (d -> !e))))" +
+                "  )" +
+                "  &" +
+                "  (" +
+                "    (p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm)) &" +
+                "    (p2 -> (a1p <-> a1m) & (b1p <-> b1m) & (c1p <-> c1m)) &" +
+                "    (!p3 -> (a2p <-> a2m) & (b2p <-> b2m) & (c2p <-> c2m))" +
+                "  )" +
+                "  ->" +
+                "  (" +
+                "    p1 <-> p2 <-> p3" +
+                "  )" +
+                ")"
+                );
         }
     }
 }

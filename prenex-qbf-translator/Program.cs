@@ -238,9 +238,15 @@ public partial class Program
             Description = "combine multiple consecutive forall and multiple consecutive exists quantifiers to one"
         };
 
+        var latexFormatVariables = new Option<bool>("-f", "--format-Variables")
+        {
+            Description = "formats trailing 'p' and 'm' as ^+ and ^- and indices as subscripts"
+        };
+
         latexCommand.Add(latexInput);
         latexCommand.Add(latexOutput);
         latexCommand.Add(latexCombineQuantifiers);
+        latexCommand.Add(latexFormatVariables);
 
         latexCommand.SetAction(parseResult =>
         {
@@ -249,14 +255,16 @@ public partial class Program
                 var input = parseResult.GetValue(latexInput);
                 var output = parseResult.GetValue(latexOutput);
                 var combineQuantifiers = parseResult.GetValue(latexCombineQuantifiers);
+                var formatVariables = parseResult.GetValue(latexFormatVariables);
 
-                RunLatex(input, output, combineQuantifiers);
+                RunLatex(input, output, combineQuantifiers, formatVariables);
 
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                throw ex;
+                //Console.Error.WriteLine($"Error: {ex.Message}");
                 return 1;
             }
         });
@@ -336,7 +344,7 @@ public partial class Program
         writer.WriteLine(result);
     }
 
-    private static void RunLatex(FileInfo? input, FileInfo? output, bool combineQuantifiers)
+    private static void RunLatex(FileInfo? input, FileInfo? output, bool combineQuantifiers, bool formatQuantifiers)
     {
         using TextReader reader = input is null
             ? Console.In
@@ -345,7 +353,7 @@ public partial class Program
         string fileText = reader.ReadToEnd();
 
         IFormula formula = new Parser(fileText).Parse();
-        string result = new FormulaToLatexConverter().Convert(formula, combineQuantifiers);
+        string result = new FormulaToLatexConverter().Convert(formula, combineQuantifiers, formatQuantifiers);
 
         using TextWriter writer = output is null
             ? Console.Out

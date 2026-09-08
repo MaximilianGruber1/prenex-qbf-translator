@@ -4,18 +4,19 @@ namespace prenex_qbf_translator.Language.ToTextConverters
 {
     public class FormulaToLatexConverter
     {
-        public string Convert(IFormula formula, bool combineQuantifiers)
+        public string Convert(IFormula formula, bool combineQuantifiers, bool formatVariables)
         {
             var sb = new StringBuilder();
             AppendRec(
                 formula, 
                 needsParentheses: false,
                 combineQuantifiers,
+                formatVariables,
                 sb);
             return sb.ToString();
         }
 
-        public void AppendRec(IFormula formula, bool needsParentheses, bool combineQuantifiers, StringBuilder sb)
+        public void AppendRec(IFormula formula, bool needsParentheses, bool combineQuantifiers, bool formatVariables, StringBuilder sb)
         {
             if (needsParentheses)
                 sb.Append('(');
@@ -24,35 +25,44 @@ namespace prenex_qbf_translator.Language.ToTextConverters
             {
                 string name = v.Name;
 
-                sb.Append(name[0]);
-
-                int i = 1;
-                if (i < name.Length && name[i] != 'p' && name[i] != 'm')
+                if (formatVariables)
                 {
-                    sb.Append("_{");
-                    while (i < name.Length && name[i] != 'p' && name[i] != 'm')
+                    string superscript;
+                    Variable baseVar;
+                    if (name.Length > 1 && name.EndsWith('p'))
                     {
-                        sb.Append(name[i]);
-                        i++;
+                        superscript = "+";
+                        baseVar = new Variable(name[..(name.Length - 1)]);
+                    }
+                    else if (name.Length > 1 && name.EndsWith('m'))
+                    {
+                        superscript = "-";
+                        baseVar = new Variable(name[..(name.Length - 1)]);
+                    }
+                    else
+                    {
+                        superscript = "";
+                        baseVar = v;
                     }
 
-                    sb.Append("}");
+                    string stem = baseVar.Stem;
+                    string subscript = baseVar.Index;
+
+                    sb.Append(stem);
+                    if (subscript.Length > 0)
+                    {
+                        sb.Append('_')
+                            .Append(subscript);
+                    }
+                    if (superscript.Length > 0)
+                    {
+                        sb.Append('^')
+                            .Append(superscript);
+                    }
                 }
-                if (i < name.Length)
+                else
                 {
-                    sb.Append("^{");
-                    while (i < name.Length)
-                    {
-                        if (name[i] == 'p')
-                            sb.Append('+');
-                        else if (name[i] == 'm')
-                            sb.Append('-');
-                        else
-                            sb.Append(name[i]);
-                        i++;
-                    }
-
-                    sb.Append('}');
+                    sb.Append(name);
                 }
             }
             else if (formula is Quantifier q)
@@ -71,6 +81,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                                 q.Variable,
                                 needsParentheses: false,
                                 combineQuantifiers,
+                                formatVariables,
                                 sb);
                             sb.Append(", ");
                             q = e;
@@ -80,6 +91,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                             q.Variable,
                             needsParentheses: false,
                             combineQuantifiers,
+                            formatVariables,
                             sb);
                         sb.Append("\\}");
                     }
@@ -89,6 +101,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                             q.Variable,
                             needsParentheses: false,
                             combineQuantifiers,
+                            formatVariables,
                             sb);
                     }
                     sb.Append(' ');
@@ -96,6 +109,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                         q.Inner,
                         needsParentheses: q.Inner is BinaryOperator,
                         combineQuantifiers,
+                        formatVariables,
                         sb);
                 }
                 else // forall
@@ -112,6 +126,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                                 q.Variable,
                                 needsParentheses: false,
                                 combineQuantifiers,
+                                formatVariables,
                                 sb);
                             sb.Append(", ");
                             q = e;
@@ -121,6 +136,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                             q.Variable,
                             needsParentheses: false,
                             combineQuantifiers,
+                            formatVariables,
                             sb);
                         sb.Append("\\}");
                     }
@@ -130,6 +146,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                             q.Variable,
                             needsParentheses: false,
                             combineQuantifiers,
+                            formatVariables,
                             sb);
                     }
                     sb.Append(' ');
@@ -137,6 +154,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                         q.Inner,
                         needsParentheses: q.Inner is BinaryOperator,
                         combineQuantifiers,
+                        formatVariables,
                         sb);
                 }
             }
@@ -146,6 +164,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                 AppendRec(not.Inner,
                     needsParentheses: not.Inner is BinaryOperator,
                     combineQuantifiers,
+                    formatVariables,
                     sb);
             }
             else if (formula is BinaryOperator b)
@@ -214,6 +233,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                     b.Left, 
                     leftNeedsParentheses, 
                     combineQuantifiers,
+                    formatVariables,
                     sb);
                 sb.Append(' ')
                     .Append(symb)
@@ -222,6 +242,7 @@ namespace prenex_qbf_translator.Language.ToTextConverters
                     b.Right, 
                     rightNeedsParentheses, 
                     combineQuantifiers,
+                    formatVariables,
                     sb);
             }
 

@@ -16,10 +16,11 @@
         /// <summary>
         /// The trailing digit sequence. If the variable name consists of only digits, the first digit is the stem
         /// </summary>
-        public int Index => index;
-        private readonly int index;
+        public string Index => index;
+        private readonly string index;
+        private readonly int indexInt; // for more efficient comparison
 
-        private readonly record struct VariableParts(string Stem, int Index);
+        private readonly record struct VariableParts(string Stem, string Index);
 
         public Variable(string name)
         {
@@ -34,6 +35,7 @@
 
             stem = parts.Stem;
             index = parts.Index;
+            indexInt = index == "" ? -1 : int.Parse(index);
         }
 
         public bool Equals(Variable? other)
@@ -57,14 +59,14 @@
                 return 1;
 
             int result = string.Compare(
-                Stem,
-                other.Stem,
+                stem,
+                other.stem,
                 StringComparison.Ordinal);
 
             if (result != 0)
                 return result;
 
-            result = Index.CompareTo(other.Index);
+            result = index.CompareTo(other.index);
 
             if (result != 0)
                 return result;
@@ -80,20 +82,14 @@
         {
             int i = name.Length - 1;
 
-            // find the beginning of the trailing digit sequence. if name consists of only digits, the first digit is the stem
+            // Find the beginning of the trailing digit sequence. If name consists of only digits, the first digit is the stem.
             while (i >= 1 && char.IsDigit(name[i]))
             {
                 i--;
             }
 
-            // No trailing digits.
-            if (i == name.Length - 1)
-            {
-                return new VariableParts(name, -1);
-            }
-
             string stem = name[..(i + 1)];
-            int index = int.Parse(name[(i + 1)..]);
+            string index = name[(i + 1)..];
 
             return new VariableParts(stem, index);
         }
