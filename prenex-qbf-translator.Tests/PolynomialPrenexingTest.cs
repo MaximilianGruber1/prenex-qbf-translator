@@ -245,6 +245,35 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
+        public void _133_Seed1()
+        {
+            TestFormula(
+                "#a #b #c (!(!a <-> !(!b <-> !c)) <-> !d | !e | f) <-> " +
+                "#a #b #c (a & !b & c <-> !(e & !(!d & f))) <-> " +
+                "?a ?b ?c (!(!a & !(b <-> !c)) <-> !(!f <- (d -> !e)))",
+
+                "#ap #bp #cp #a1p #b1p #c1p #a2p #b2p #c2p #p1 #p2 #p3" +
+                "(" +
+                "  (" +
+                "    (p1 <-> (!(!ap <-> !(!bp <-> !cp)) <-> !d | !e | f)) &" +
+                "    (p2 <-> (a1p & !b1p & c1p <-> !(e & !(!d & f)))) &" +
+                "    (p3 <-> (!(!a2p & !(b2p <-> !c2p)) <-> !(!f <- (d -> !e))))" +
+                "  )" +
+                "  &" +
+                "  (" +
+                "    (p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm)) &" +
+                "    (p2 -> (a1p <-> a1m) & (b1p <-> b1m) & (c1p <-> c1m)) &" +
+                "    (!p3 -> (a2p <-> a2m) & (b2p <-> b2m) & (c2p <-> c2m))" +
+                "  )" +
+                "  ->" +
+                "  (" +
+                "    p1 <-> p2 <-> p3" +
+                "  )" +
+                ")"
+                );
+        }
+
+        [Fact]
         public void _222_Seed0_Simplified()
         {
             TestFormula(
@@ -275,31 +304,39 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void _133_Seed1()
+        public void _312_Seed2_Simplified()
         {
             TestFormula(
-                "#a #b #c (!(!a <-> !(!b <-> !c)) <-> !d | !e | f) <-> " +
-                "#a #b #c (a & !b & c <-> !(e & !(!d & f))) <-> " +
-                "?a ?b ?c (!(!a & !(b <-> !c)) <-> !(!f <- (d -> !e)))",
-
-                "#ap #bp #cp #a1p #b1p #c1p #a2p #b2p #c2p #p1 #p2 #p3" +
+                "?a #b ?c (!b | a | !c <-> !f | (!d <-> e)) <-> " +
+                "#a ?b #c (!b & !a & !c <-> !f | d & e)",
+                
+                "#ap #a1p #p1 #p2 #bm #b1m" +
+                "?bp ?b1p ?p3 ?p4 ?cm ?c1m" +
+                "#cp #c1p #p5 #p6 (" +
+                "(" +
+                "  (p5 <-> (!bp | ap | !cp <-> !f | (!d <-> e))) &" +
+                "  (p6 <-> (!b1p & !a1p & !c1p <-> !f | d & e)) &" +
+                "  (!p5 -> (cp <-> cm)) &" +
+                "  (p6 -> (c1p <-> c1m))" +
+                ")" +
+                "->" +
+                "(" +
+                "  (p3 <-> p5) &" +
+                "  (p4 <-> p6) &" +
+                "  (p3 -> (bp <-> bm)) &" +
+                "  (!p4 -> (b1p <-> b1m))" +
+                ")" +
+                "&" +
                 "(" +
                 "  (" +
-                "    (p1 <-> (!(!ap <-> !(!bp <-> !cp)) <-> !d | !e | f)) &" +
-                "    (p2 <-> (a1p & !b1p & c1p <-> !(e & !(!d & f)))) &" +
-                "    (p3 <-> (!(!a2p & !(b2p <-> !c2p)) <-> !(!f <- (d -> !e))))" +
-                "  )" +
-                "  &" +
-                "  (" +
-                "    (p1 -> (ap <-> am) & (bp <-> bm) & (cp <-> cm)) &" +
-                "    (p2 -> (a1p <-> a1m) & (b1p <-> b1m) & (c1p <-> c1m)) &" +
-                "    (!p3 -> (a2p <-> a2m) & (b2p <-> b2m) & (c2p <-> c2m))" +
+                "    (p1 <-> p3) &" +
+                "    (p2 <-> p4) &" +
+                "    (!p1 -> (ap <-> am)) &" +
+                "    (p2 -> (a1p <-> a1m))" +
                 "  )" +
                 "  ->" +
-                "  (" +
-                "    p1 <-> p2 <-> p3" +
-                "  )" +
-                ")"
+                "  (p1 <-> p2)" +
+                "))"
                 );
         }
     }
