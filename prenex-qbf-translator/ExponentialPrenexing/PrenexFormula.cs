@@ -9,8 +9,9 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         private List<Quantifier> prefix;
         private IFormula matrix;
 
-        private HashSet<Variable> variables;
-        private HashSet<Variable> quantifiedVariables;
+        // store variables by alphabet to make renaming deterministic, which is convenient for testing
+        private SortedSet<Variable> variables; 
+        private SortedSet<Variable> quantifiedVariables;
 
         private readonly ExpVariableGenerator variableGenerator;
 
@@ -168,18 +169,15 @@ namespace prenex_qbf_translator.ExponentialPrenexing
         /// <param name="right"></param>
         private void RenameVariables(PrenexFormula right)
         {
-            var toRename = new HashSet<Variable>(this.quantifiedVariables);
+            var toRename = new SortedSet<Variable>(this.quantifiedVariables);
             toRename.IntersectWith(right.variables);
 
-            var temp = new HashSet<Variable>(right.quantifiedVariables);
+            var temp = new SortedSet<Variable>(right.quantifiedVariables);
             temp.IntersectWith(this.variables);
 
             toRename.UnionWith(temp);
 
-            List<Variable> toRenameSorted = toRename.ToList(); // sort by alphabet to make renaming deterministic, which is convenient for testing
-            toRenameSorted.Sort();
-
-            foreach (var v in toRenameSorted)
+            foreach (var v in toRename)
             {
                 Variable freshVar = variableGenerator.Next(v);
                 right.RenameVariable(v, freshVar);

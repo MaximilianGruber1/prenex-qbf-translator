@@ -51,7 +51,7 @@ namespace prenex_qbf_translator.Parsing
             {
                 return first;
             }
-            else // more than one subformula, return new disjunction of these subformulas
+            else // more than one subformula, return new equivalence of these subformulas
             {
                 return new Equivalent([first, ..other]);
             }
