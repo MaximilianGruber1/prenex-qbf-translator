@@ -21,9 +21,9 @@ namespace prenex_qbf_translator.Tests
             Assert.Equal(expected, actual);
         }
 
-
+        // no quantifiers
         [Fact]
-        public void ComplexBooleanFormulas() // no quantifiers, no prenexing required
+        public void ComplexBooleanFormulas() 
         {
             TestFormula("!(a & b) | c <- !(d | e) <-> f",
                         "!(a & b) | c <- !(d | e) <-> f");
@@ -242,8 +242,10 @@ namespace prenex_qbf_translator.Tests
             TestFormula("a <-> b", "a <-> b");
             TestFormula("!#a (a <-> b)", "?a !(a <-> b)");
             TestFormula("#c ?d (c <-> d) & ?e ?f (e <-> f)", "#c ?d ?e ?f ((c <-> d) & (e <-> f))");
+            TestFormula("#c ?d (c <-> d) & ?e ?f (e & f <-> g & h)", "#c ?d ?e ?f ((c <-> d) & (e & f <-> g & h))");
         }
 
+        // gen 2 2 2 --simplified --seed 0 
         [Fact]
         public void _222_Simplified_Seed0()
         {
@@ -265,8 +267,9 @@ namespace prenex_qbf_translator.Tests
                 );
         }
 
+        // gen 2 1 3 --seed 4
         [Fact]
-        public void _213_Simplified_Seed4()
+        public void _213_Seed4()
         {
             TestFormula(
                 "#a ?b (a <- b <-> !(!c <-> !d)) <-> " +

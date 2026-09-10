@@ -22,7 +22,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void TestBooleanFormulas() // for a boolean formula phi, Texists(phi) = phi
+        public void NoQuantifiers()
         {
             TestFormula("a", "a");
             TestFormula("!a", "!a");
@@ -38,7 +38,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void TestQuantifierWithSingleVariable()
+        public void QuantifierWithSingleVariable()
         {
             TestFormula(
                 "# a a",
@@ -51,7 +51,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void TestQuantifierWithBooleanOperator()
+        public void QuantifierWithBooleanOperator()
         {
             TestFormula(
                 "#a#b (a | b)",
@@ -76,7 +76,7 @@ namespace prenex_qbf_translator.Tests
         }
 
         [Fact]
-        public void TestExampleFromPaper()
+        public void ExampleFromPaper()
         {
             TestFormula(
                 "?x (psi & !?x xi) & !#y rho",
@@ -244,6 +244,7 @@ namespace prenex_qbf_translator.Tests
                 );
         }
 
+        // gen 1 3 3 --seed 1
         [Fact]
         public void _133_Seed1()
         {
@@ -273,6 +274,7 @@ namespace prenex_qbf_translator.Tests
                 );
         }
 
+        // gen 2 2 2 --simplified --seed 0
         [Fact]
         public void _222_Seed0_Simplified()
         {
@@ -303,6 +305,7 @@ namespace prenex_qbf_translator.Tests
                 ;
         }
 
+        // gen 3 1 2 --simplified --seed 2
         [Fact]
         public void _312_Seed2_Simplified()
         {
